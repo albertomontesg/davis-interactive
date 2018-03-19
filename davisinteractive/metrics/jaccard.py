@@ -1,5 +1,7 @@
 import numpy as np
 
+__all__ = ['batched_jaccard']
+
 
 def batched_jaccard(y_true, y_pred):
     """ Batch jaccard similarity for multiple instance segmentation.
