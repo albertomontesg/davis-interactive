@@ -1,9 +1,13 @@
+import time
+
 import cv2
 import networkx as nx
 import numpy as np
 from scipy.special import comb
 from skimage.morphology import medial_axis
 from sklearn.neighbors import radius_neighbors_graph
+
+from ..metrics import batched_jaccard
 
 __all__ = ['InteractiveScribblesRobot']
 
@@ -13,10 +17,8 @@ class InteractiveScribblesRobot(object):
     MIN_NB_NODES = 4  # To prune very small scribbles
     N_TIMES = 1000  # Number of points to interpolate the bezier curves
 
-    def __init__(self):
-        pass
-
-    def _generate_scribble_mask(self, mask):
+    @staticmethod
+    def _generate_scribble_mask(mask):
         """ Generate the skeleton from a mask
         Given an error mask, the medial axis is computed to obtain the
         skeleton of the objects. In order to obtain smoother skeleton and
@@ -34,7 +36,7 @@ class InteractiveScribblesRobot(object):
 
         # Remove small objects and small holes
         mask_ = mask.copy().astype(np.uint8)
-        kernel_size = int(self.KERNEL_SIZE * side)
+        kernel_size = int(InteractiveScribblesRobot.KERNEL_SIZE * side)
         if kernel_size > 0:
             kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,
                                                (kernel_size, kernel_size))
@@ -44,7 +46,8 @@ class InteractiveScribblesRobot(object):
         skel = medial_axis(mask_.astype(np.bool))
         return skel
 
-    def _mask2graph(self, skeleton_mask):
+    @staticmethod
+    def _mask2graph(skeleton_mask):
         """ Transforms a skeleton mask into a graph
 
         Args:
@@ -75,7 +78,8 @@ class InteractiveScribblesRobot(object):
 
         return T, points
 
-    def _acyclics_subgraphs(self, G):
+    @staticmethod
+    def _acyclics_subgraphs(G):
         """ Divide a graph into connected components subgraphs
         Divide a graph into connected components subgraphs and remove its
         cycles removing the edge with higher weight inside the cycle. Also
@@ -107,7 +111,7 @@ class InteractiveScribblesRobot(object):
                 except nx.NetworkXNoCycle:
                     has_cycles = False
 
-            if len(g) < self.MIN_NB_NODES:
+            if len(g) < InteractiveScribblesRobot.MIN_NB_NODES:
                 # Prune small subgraphs
                 continue
 
@@ -115,7 +119,8 @@ class InteractiveScribblesRobot(object):
 
         return S
 
-    def _longest_path_in_tree(self, G):
+    @staticmethod
+    def _longest_path_in_tree(G):
         """ Given a tree graph, compute the longest path and return it
         Given an undirected tree graph, compute the longest path and return it.
 
@@ -147,7 +152,8 @@ class InteractiveScribblesRobot(object):
 
         return list(longest_path)
 
-    def _bezier_curve(self, points):
+    @staticmethod
+    def _bezier_curve(points, nb_points):
         """ Given a list of points compute a bezier curve from it
 
         Args:
@@ -159,7 +165,6 @@ class InteractiveScribblesRobot(object):
             (ndarray): Array of shape (1000, 2) with the bezier curve of the
                 given path of points.
 
-
         """
         points = np.asarray(points, dtype=np.float)
         if points.ndim != 2 or points.shape[1] != 2:
@@ -167,7 +172,7 @@ class InteractiveScribblesRobot(object):
                 '`points` should be two dimensional and have shape: (N, 2)')
 
         n_points = len(points)
-        t = np.linspace(0., 1., self.N_TIMES).reshape(1, -1)
+        t = np.linspace(0., 1., nb_points).reshape(1, -1)
 
         # Compute the Bernstein polynomial of n, i as a function of t
         i = np.arange(n_points).reshape(-1, 1)
@@ -177,3 +182,68 @@ class InteractiveScribblesRobot(object):
         bezier_curve = polynomial_array.T.dot(points)
 
         return bezier_curve
+
+    @staticmethod
+    def interact(sequence, pred_masks, gt_masks):
+        """ Interaction of the Scribbles robot given a prediction.
+        Given the sequence and a mask prediction, the robot will return a
+        scribble in the worst path.
+
+        Args:
+            sequence (string): Name of the sequence to interact with
+            pred_masks (ndarray): Array with the prediction masks. It must be an
+                integer array with shape (B x H x W) being B the number of
+                frames of the sequence.
+            gt_masks (ndarray): Array with the ground truth of the sequence. It
+                must have the same data type and shape as `pred_masks`
+
+        Returns:
+            (dict): Return a scribble on its default representation.
+        """
+
+        predictions = np.asarray(pred_masks, dtype=np.int)
+        annotations = np.asarray(gt_masks, dtype=np.int)
+
+        jac = batched_jaccard(annotations, predictions)
+        worst_frame = jac.argmin()
+        pred, gt = predictions[worst_frame], annotations[worst_frame]
+
+        nb_frames = len(annotations)
+        obj_ids = np.unique(annotations[annotations < 255])
+
+        scribbles = [[] for _ in range(nb_frames)]
+
+        for obj_id in obj_ids:
+            start_time = time.time()
+            error_mask = (gt == obj_id) & (pred != obj_id)
+            # Generate scribbles
+            skel_mask = InteractiveScribblesRobot._generate_scribble_mask(
+                error_mask)
+            G, P = InteractiveScribblesRobot._mask2graph(skel_mask)
+            S = InteractiveScribblesRobot._acyclics_subgraphs(G)
+            longest_paths_idx = [
+                InteractiveScribblesRobot._longest_path_in_tree(s) for s in S
+            ]
+            longest_paths = [P[idx] for idx in longest_paths_idx]
+            scribbles_paths = [
+                InteractiveScribblesRobot._bezier_curve(
+                    p, InteractiveScribblesRobot.N_TIMES)
+                for p in longest_paths
+            ]
+            end_time = time.time()
+            # Generate scribbles data file
+            for p in scribbles_paths:
+                path_data = {
+                    'path': p.tolist(),
+                    'object_id': obj_id,
+                    'start_time': start_time,
+                    'end_time': end_time
+                }
+                scribbles[worst_frame].append(path_data)
+
+        scribbles_data = {
+            'scribbles': scribbles,
+            'sequence': sequence,
+            'annotated_frame': worst_frame
+        }
+        return scribbles_data
