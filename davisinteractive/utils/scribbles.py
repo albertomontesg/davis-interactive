@@ -71,6 +71,43 @@ def scribbles2mask(scribbles,
     return masks
 
 
+def scribbles2points(scribbles_data, output_resolution=None):
+    """ Convert the given scribbles into a list of points and object ids.
+
+    Args:
+        scribbles_data (dict): Scribbles in the default format
+        output_resolution (tuple): Output resolution (H, W) to scale the
+            points.
+            If None given, the points will be floats as a fraction of height
+            and width.
+    Returns:
+        (ndarray, ndarray): Returns (X, Y) where X is a list of points from the
+            scribbles represented in the output_resolution with shape (N x 2)
+            being N the total number of points on all the scribbles. Y is the
+            object id for each given point with shape (N,).
+    """
+    scribbles = scribbles_data['scribbles']
+
+    paths, object_ids = [], []
+
+    for s in scribbles:
+        for l in s:
+            p = l['path']
+            paths += p
+            object_ids += [l['object_id']] * len(p)
+
+    paths = np.asarray(paths, dtype=np.float)
+    object_ids = np.asarray(object_ids, dtype=np.int)
+
+    if output_resolution:
+        img_size = np.asarray(output_resolution, dtype=np.float)
+        img_size = img_size[::-1] - 1
+        paths *= img_size
+        paths = paths.astype(np.int)
+
+    return paths, object_ids
+
+
 def fuse_scribbles(scribbles_a, scribbles_b):
     """ Fuse two scribbles in the default format.
 
@@ -95,3 +132,14 @@ def fuse_scribbles(scribbles_a, scribbles_b):
         scribbles['scribbles'][i] += scribbles_b['scribbles'][i]
 
     return scribbles
+
+
+def is_empty(scribbles_data):
+    """ Checks wether the given scribble has any line.
+
+    Args:
+        scribbles_data (dict): Scribble in the default format
+    """
+    scribbles = scribbles_data['scribbles']
+    has_lines = [len(s) > 0 for s in scribbles]
+    return any(has_lines)
