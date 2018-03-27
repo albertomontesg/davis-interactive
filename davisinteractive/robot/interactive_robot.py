@@ -186,21 +186,13 @@ class InteractiveScribblesRobot(object):
         img_shape = np.asarray([w, h], dtype=np.float)
 
         jac = batched_jaccard(annotations, predictions)
-        print(jac)
         worst_frame = jac.argmin()
-        print(worst_frame)
         pred, gt = predictions[worst_frame], annotations[worst_frame]
-        # plt.imshow(annotations[49])
-        # plt.show()
-
-        # plt.imshow(predictions[49])
-        # plt.show()
 
         nb_frames = len(annotations)
         obj_ids = np.unique(annotations[annotations < 255])
 
         scribbles = [[] for _ in range(nb_frames)]
-        empty = True
 
         for obj_id in obj_ids:
             start_time = time.time()
@@ -230,7 +222,6 @@ class InteractiveScribblesRobot(object):
                     'end_time': end_time
                 }
                 scribbles[worst_frame].append(path_data)
-                empty = True
 
         scribbles_data = {
             'scribbles': scribbles,
