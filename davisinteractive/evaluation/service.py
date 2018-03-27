@@ -71,21 +71,20 @@ class EvaluationService:
     def submit_masks(self, sequence, scribble_idx, pred_masks, timming,
                      interaction):
         # Evaluate the submitted masks
-        # if self.report.loc[(self.report.sequence == sequence)
-        #                    & (self.report.scribble_idx == scribble_idx) &
-        #                    (self.report.interaction == interaction)]:
-        #     raise RuntimeError(
-        #         f'For {sequence} and scribble {scribble_idx} already exist a result for interaction {interaction}'
-        #     )
-        # if interaction > 1 and not self.report.loc[(
-        #         self.report.sequence == sequence)
-        #                                            & (self.report.scribble_idx
-        #                                               == scribble_idx) &
-        #                                            (self.report.interaction ==
-        #                                             interaction - 1)]:
-        #     raise RuntimeError(
-        #         f'For {sequence} and scribble {scribble_idx} does not exist a result for previous interaction {interaction-1}'
-        #     )
+        if len(self.report.loc[(self.report.sequence == sequence)
+                               & (self.report.scribble_idx == scribble_idx) &
+                               (self.report.interaction == interaction)]) > 0:
+            raise RuntimeError(
+                f'For {sequence} and scribble {scribble_idx} already exist a result for interaction {interaction}'
+            )
+        if interaction > 1 and len(
+                self.report.loc[(self.report.sequence == sequence)
+                                & (self.report.scribble_idx == scribble_idx) &
+                                (self.report.interaction == interaction -
+                                 1)]) == 0:
+            raise RuntimeError(
+                f'For {sequence} and scribble {scribble_idx} does not exist a result for previous interaction {interaction-1}'
+            )
         gt_masks = self.davis.load_annotations(sequence)
         jaccard = batched_jaccard(
             gt_masks, pred_masks, average_over_objects=False)
