@@ -21,11 +21,17 @@ def scribbles2mask(scribbles,
             object ids. The shape of the returned array is (B x H x W) by
             default or (H x W) if `only_annotated_frame==True`.
     """
+    if len(output_resolution) != 2:
+        raise ValueError(f'Invalid output resolution: {output_resolution}')
+    for r in output_resolution:
+        if r < 1:
+            raise ValueError(f'Invalid output resolution: {output_resolution}')
+
     nb_frames = len(scribbles['scribbles'])
     masks = np.full(
         (nb_frames, ) + output_resolution, default_value, dtype=np.int)
 
-    size_array = np.asarray(output_resolution[::-1], dtype=np.float)
+    size_array = np.asarray(output_resolution[::-1], dtype=np.float) - 1
 
     for f in range(nb_frames):
         sp = scribbles['scribbles'][f]
