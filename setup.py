@@ -11,8 +11,7 @@ setup(
     license='MIT',
     packages=['davisinteractive'],
     install_requires=[
-        'numpy', 'opencv-python', 'scikit-learn', 'scikit-image', 'networkx',
-        'scipy'
+        'numpy', 'scikit-learn', 'scikit-image', 'networkx', 'scipy'
     ],
     setup_requires=['pytest-runner'],
     test_require=['pytest'],

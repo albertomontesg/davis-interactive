@@ -17,7 +17,7 @@
     "SC",
     "SV"
   ],
-  "sets": ["train", "val", "val-dev"],
+  "sets": ["train", "val", "test-dev"],
   "years": [2016, 2017],
   "sequences": {
     "aerobatics": {

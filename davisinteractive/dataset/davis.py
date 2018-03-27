@@ -5,7 +5,7 @@ import numpy as np
 from PIL import Image
 
 
-class DAVIS:
+class Davis:
 
     ANNOTATIONS_DIR = 'Annotations'
     SCRIBBLES_DIR = 'Scribbles'
@@ -34,9 +34,9 @@ class DAVIS:
     def check_files(self, sequences):
         for seq in sequences:
             seq_scribbles_path = os.path.join(self.davis_root,
-                                              DAVIS.SCRIBBLES_DIR, seq)
+                                              Davis.SCRIBBLES_DIR, seq)
             seq_annotations_path = os.path.join(
-                self.davis_root, DAVIS.ANNOTATIONS_DIR, DAVIS.RESOLUTION, seq)
+                self.davis_root, Davis.ANNOTATIONS_DIR, Davis.RESOLUTION, seq)
 
             # Check scribbles files needed to give them as base for the user
             nb_scribbles = self.dataset['sequences'][seq]['num_scribbles']
@@ -49,7 +49,7 @@ class DAVIS:
 
             # Check annotations files required for the evaluation
             nb_frames = self.dataset['sequences'][seq]['num_frames']
-            for i in nb_frames:
+            for i in range(nb_frames):
                 if not os.path.exists(
                         os.path.join(seq_annotations_path, f'{i:05d}.png')):
                     raise FileNotFoundError(
@@ -57,7 +57,7 @@ class DAVIS:
                     )
 
     def load_scribble(self, sequence, scribble_idx):
-        scribble_file = os.path.join(self.davis_root, DAVIS.SCRIBBLES_DIR,
+        scribble_file = os.path.join(self.davis_root, Davis.SCRIBBLES_DIR,
                                      sequence, f'{scribble_idx:03d}.json')
 
         with open(scribble_file, 'r') as fp:
@@ -67,10 +67,10 @@ class DAVIS:
         return scribble_data
 
     def load_annotations(self, sequence):
-        root_path = os.path.join(self.davis_root, DAVIS.ANNOTATIONS_DIR,
-                                 DAVIS.RESOLUTION, sequence)
+        root_path = os.path.join(self.davis_root, Davis.ANNOTATIONS_DIR,
+                                 Davis.RESOLUTION, sequence)
         num_frames = self.dataset['sequences'][sequence]['num_frames']
-        img_size = self.dataset['sequence'][sequence]['image_size']
+        img_size = self.dataset['sequences'][sequence]['image_size']
 
         annotations = np.empty(
             (num_frames, img_size[1], img_size[0]), dtype=np.int)

@@ -1,6 +1,7 @@
 import time
 
 import cv2
+import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
 from scipy.special import comb
@@ -8,6 +9,7 @@ from skimage.morphology import medial_axis
 from sklearn.neighbors import radius_neighbors_graph
 
 from ..metrics import batched_jaccard
+from ..utils.operations import bezier_curve
 
 __all__ = ['InteractiveScribblesRobot']
 
@@ -40,11 +42,18 @@ class InteractiveScribblesRobot(object):
         # Remove small objects and small holes
         mask_ = mask.copy().astype(np.uint8)
         kernel_size = int(self.kernel_size * side)
-        if kernel_size > 0:
+        compute = True
+        while kernel_size > 0 and compute:
             kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,
                                                (kernel_size, kernel_size))
-            mask_ = cv2.erode(mask_, kernel, iterations=1)
+            mask_ = cv2.erode(
+                mask.copy().astype(np.uint8), kernel, iterations=1)
             mask_ = cv2.dilate(mask_, kernel, iterations=1)
+            compute = False
+            if mask_.astype(np.bool).sum() == 0:
+                compute = True
+                kernel_size = int(kernel_size * .95)
+                print('Reducing kernel size')
 
         skel = medial_axis(mask_.astype(np.bool))
         return skel
@@ -152,36 +161,6 @@ class InteractiveScribblesRobot(object):
 
         return list(longest_path)
 
-    def _bezier_curve(self, points):
-        """ Given a list of points compute a bezier curve from it
-
-        Args:
-            points (ndarray): Array of points with shape (N, 2) being N the
-                number of points and the second dimension representing the
-                (x, y) coordinates.
-
-        Returns:
-            (ndarray): Array of shape (1000, 2) with the bezier curve of the
-                given path of points.
-
-        """
-        points = np.asarray(points, dtype=np.float)
-        if points.ndim != 2 or points.shape[1] != 2:
-            raise ValueError(
-                '`points` should be two dimensional and have shape: (N, 2)')
-
-        n_points = len(points)
-        t = np.linspace(0., 1., self.nb_points).reshape(1, -1)
-
-        # Compute the Bernstein polynomial of n, i as a function of t
-        i = np.arange(n_points).reshape(-1, 1)
-        n = n_points - 1
-        polynomial_array = comb(n, i) * (t**(n - i)) * (1 - t)**i
-
-        bezier_curve = polynomial_array.T.dot(points)
-
-        return bezier_curve
-
     def interact(self, sequence, pred_masks, gt_masks):
         """ Interaction of the Scribbles robot given a prediction.
         Given the sequence and a mask prediction, the robot will return a
@@ -202,28 +181,48 @@ class InteractiveScribblesRobot(object):
         predictions = np.asarray(pred_masks, dtype=np.int)
         annotations = np.asarray(gt_masks, dtype=np.int)
 
+        # Infer height and width of the sequence
+        h, w = annotations.shape[1:3]
+        img_shape = np.asarray([w, h], dtype=np.float)
+
         jac = batched_jaccard(annotations, predictions)
+        print(jac)
         worst_frame = jac.argmin()
+        print(worst_frame)
         pred, gt = predictions[worst_frame], annotations[worst_frame]
+        # plt.imshow(annotations[49])
+        # plt.show()
+
+        # plt.imshow(predictions[49])
+        # plt.show()
 
         nb_frames = len(annotations)
         obj_ids = np.unique(annotations[annotations < 255])
 
         scribbles = [[] for _ in range(nb_frames)]
+        empty = True
 
         for obj_id in obj_ids:
             start_time = time.time()
             error_mask = (gt == obj_id) & (pred != obj_id)
+            if error_mask.sum() == 0:
+                continue
+
             # Generate scribbles
             skel_mask = self._generate_scribble_mask(error_mask)
+            if skel_mask.sum() == 0:
+                continue
             G, P = self._mask2graph(skel_mask)
             S = self._acyclics_subgraphs(G)
             longest_paths_idx = [self._longest_path_in_tree(s) for s in S]
             longest_paths = [P[idx] for idx in longest_paths_idx]
-            scribbles_paths = [self._bezier_curve(p) for p in longest_paths]
+            scribbles_paths = [
+                bezier_curve(p, self.nb_points) for p in longest_paths
+            ]
             end_time = time.time()
             # Generate scribbles data file
             for p in scribbles_paths:
+                p /= img_shape
                 path_data = {
                     'path': p.tolist(),
                     'object_id': obj_id,
@@ -231,6 +230,7 @@ class InteractiveScribblesRobot(object):
                     'end_time': end_time
                 }
                 scribbles[worst_frame].append(path_data)
+                empty = True
 
         scribbles_data = {
             'scribbles': scribbles,

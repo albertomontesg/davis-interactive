@@ -1,9 +1,13 @@
 import numpy as np
 
+from .operations import bezier_curve
+
 
 def scribbles2mask(scribbles,
                    output_resolution,
                    only_annotated_frame=False,
+                   bezier_curve_sampling=False,
+                   nb_points=1000,
                    default_value=-1):
     """ Convert the scribbles data into a mask.
 
@@ -13,6 +17,10 @@ def scribbles2mask(scribbles,
         only_annotated_frame (bool): Weather return the mask for all the frames
             or only the mask of the single annotated frame (only valid if one
             frame is annotated). Default False.
+        bezier_curve_sampling (bool): Weather sample first the returned
+            scribbles using bezier curve.
+        nb_points (int): If `bezier_curve_sampling` is `True` set the number of
+            points to sample from the bezier curve. Default 1000.
         default_value (int): default value for the pixels which do not belong
             to any scribble.
 
@@ -39,6 +47,8 @@ def scribbles2mask(scribbles,
             path = p['path']
             obj_id = p['object_id']
             path = np.asarray(path, dtype=np.float)
+            if bezier_curve_sampling:
+                path = bezier_curve(path, nb_points=nb_points)
             path *= size_array
             path = path.astype(np.int)
             m = masks[f]

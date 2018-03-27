@@ -5,7 +5,7 @@ from glob import glob
 
 import pandas as pd
 
-from ..dataset.davis import DAVIS
+from ..dataset.davis import Davis
 from ..metrics import batched_jaccard
 from ..robot import InteractiveScribblesRobot
 from .abstract import AbstractConnector
@@ -36,7 +36,7 @@ class LocalConnector(AbstractConnector):
         self.report = None
 
     def start_session(self, subset, davis_root=None):
-        self.davis = DAVIS(davis_root=davis_root)
+        self.davis = Davis(davis_root=davis_root)
         if subset not in self.VALID_SUBSETS:
             raise ValueError(
                 f'Subset must be a valid subset: {self.VALID_SUBSETS}')
@@ -77,21 +77,21 @@ class LocalConnector(AbstractConnector):
     def submit_masks(self, sequence, scribble_idx, pred_masks, timming,
                      interaction):
         # Evaluate the submitted masks
-        if self.report.loc[(self.report.sequence == sequence)
-                           & (self.report.scribble_idx == scribble_idx) &
-                           (self.report.interaction == interaction)]:
-            raise RuntimeError(
-                f'For {sequence} and scribble {scribble_idx} already exist a result for interaction {interaction}'
-            )
-        if interaction > 1 and not self.report.loc[(
-                self.report.sequence == sequence)
-                                                   & (self.report.scribble_idx
-                                                      == scribble_idx) &
-                                                   (self.report.interaction ==
-                                                    interaction - 1)]:
-            raise RuntimeError(
-                f'For {sequence} and scribble {scribble_idx} does not exist a result for previous interaction {interaction-1}'
-            )
+        # if self.report.loc[(self.report.sequence == sequence)
+        #                    & (self.report.scribble_idx == scribble_idx) &
+        #                    (self.report.interaction == interaction)]:
+        #     raise RuntimeError(
+        #         f'For {sequence} and scribble {scribble_idx} already exist a result for interaction {interaction}'
+        #     )
+        # if interaction > 1 and not self.report.loc[(
+        #         self.report.sequence == sequence)
+        #                                            & (self.report.scribble_idx
+        #                                               == scribble_idx) &
+        #                                            (self.report.interaction ==
+        #                                             interaction - 1)]:
+        #     raise RuntimeError(
+        #         f'For {sequence} and scribble {scribble_idx} does not exist a result for previous interaction {interaction-1}'
+        #     )
         gt_masks = self.davis.load_annotations(sequence)
         jaccard = batched_jaccard(
             gt_masks, pred_masks, average_over_objects=False)
@@ -104,3 +104,6 @@ class LocalConnector(AbstractConnector):
 
     def get_report(self):
         return self.report
+
+    def close(self):
+        pass
