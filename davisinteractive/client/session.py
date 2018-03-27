@@ -156,3 +156,6 @@ class DavisInteractiveSession:
                                                self.sample_last_scribble)
 
         self.running_model = False
+
+    def get_report(self):
+        return self.connector.get_report()
