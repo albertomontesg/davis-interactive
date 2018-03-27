@@ -13,12 +13,15 @@ __all__ = ['InteractiveScribblesRobot']
 
 
 class InteractiveScribblesRobot(object):
-    KERNEL_SIZE = .2  # Kernel size proportional to squared area
-    MIN_NB_NODES = 4  # To prune very small scribbles
-    N_TIMES = 1000  # Number of points to interpolate the bezier curves
+    def __init__(self, kernel_size=.2, min_nb_nodes=4, nb_points=1000):
+        # Kernel size proportional to squared area
+        self.kernel_size = kernel_size
+        # To prune very small scribbles
+        self.min_nb_nodes = min_nb_nodes
+        # Number of points to interpolate the bezier curves
+        self.nb_points = nb_points
 
-    @staticmethod
-    def _generate_scribble_mask(mask):
+    def _generate_scribble_mask(self, mask):
         """ Generate the skeleton from a mask
         Given an error mask, the medial axis is computed to obtain the
         skeleton of the objects. In order to obtain smoother skeleton and
@@ -36,7 +39,7 @@ class InteractiveScribblesRobot(object):
 
         # Remove small objects and small holes
         mask_ = mask.copy().astype(np.uint8)
-        kernel_size = int(InteractiveScribblesRobot.KERNEL_SIZE * side)
+        kernel_size = int(self.kernel_size * side)
         if kernel_size > 0:
             kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,
                                                (kernel_size, kernel_size))
@@ -46,8 +49,7 @@ class InteractiveScribblesRobot(object):
         skel = medial_axis(mask_.astype(np.bool))
         return skel
 
-    @staticmethod
-    def _mask2graph(skeleton_mask):
+    def _mask2graph(self, skeleton_mask):
         """ Transforms a skeleton mask into a graph
 
         Args:
@@ -78,8 +80,7 @@ class InteractiveScribblesRobot(object):
 
         return T, points
 
-    @staticmethod
-    def _acyclics_subgraphs(G):
+    def _acyclics_subgraphs(self, G):
         """ Divide a graph into connected components subgraphs
         Divide a graph into connected components subgraphs and remove its
         cycles removing the edge with higher weight inside the cycle. Also
@@ -111,7 +112,7 @@ class InteractiveScribblesRobot(object):
                 except nx.NetworkXNoCycle:
                     has_cycles = False
 
-            if len(g) < InteractiveScribblesRobot.MIN_NB_NODES:
+            if len(g) < self.min_nb_nodes:
                 # Prune small subgraphs
                 continue
 
@@ -119,8 +120,7 @@ class InteractiveScribblesRobot(object):
 
         return S
 
-    @staticmethod
-    def _longest_path_in_tree(G):
+    def _longest_path_in_tree(self, G):
         """ Given a tree graph, compute the longest path and return it
         Given an undirected tree graph, compute the longest path and return it.
 
@@ -152,8 +152,7 @@ class InteractiveScribblesRobot(object):
 
         return list(longest_path)
 
-    @staticmethod
-    def _bezier_curve(points, nb_points):
+    def _bezier_curve(self, points):
         """ Given a list of points compute a bezier curve from it
 
         Args:
@@ -172,7 +171,7 @@ class InteractiveScribblesRobot(object):
                 '`points` should be two dimensional and have shape: (N, 2)')
 
         n_points = len(points)
-        t = np.linspace(0., 1., nb_points).reshape(1, -1)
+        t = np.linspace(0., 1., self.nb_points).reshape(1, -1)
 
         # Compute the Bernstein polynomial of n, i as a function of t
         i = np.arange(n_points).reshape(-1, 1)
@@ -183,8 +182,7 @@ class InteractiveScribblesRobot(object):
 
         return bezier_curve
 
-    @staticmethod
-    def interact(sequence, pred_masks, gt_masks):
+    def interact(self, sequence, pred_masks, gt_masks):
         """ Interaction of the Scribbles robot given a prediction.
         Given the sequence and a mask prediction, the robot will return a
         scribble in the worst path.
@@ -217,19 +215,12 @@ class InteractiveScribblesRobot(object):
             start_time = time.time()
             error_mask = (gt == obj_id) & (pred != obj_id)
             # Generate scribbles
-            skel_mask = InteractiveScribblesRobot._generate_scribble_mask(
-                error_mask)
-            G, P = InteractiveScribblesRobot._mask2graph(skel_mask)
-            S = InteractiveScribblesRobot._acyclics_subgraphs(G)
-            longest_paths_idx = [
-                InteractiveScribblesRobot._longest_path_in_tree(s) for s in S
-            ]
+            skel_mask = self._generate_scribble_mask(error_mask)
+            G, P = self._mask2graph(skel_mask)
+            S = self._acyclics_subgraphs(G)
+            longest_paths_idx = [self._longest_path_in_tree(s) for s in S]
             longest_paths = [P[idx] for idx in longest_paths_idx]
-            scribbles_paths = [
-                InteractiveScribblesRobot._bezier_curve(
-                    p, InteractiveScribblesRobot.N_TIMES)
-                for p in longest_paths
-            ]
+            scribbles_paths = [self._bezier_curve(p) for p in longest_paths]
             end_time = time.time()
             # Generate scribbles data file
             for p in scribbles_paths:

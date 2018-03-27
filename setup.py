@@ -16,4 +16,5 @@ setup(
     ],
     setup_requires=['pytest-runner'],
     test_require=['pytest'],
+    include_package_data=True,
     zip_safe=False)

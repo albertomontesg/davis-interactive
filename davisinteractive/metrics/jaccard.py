@@ -3,7 +3,7 @@ import numpy as np
 __all__ = ['batched_jaccard']
 
 
-def batched_jaccard(y_true, y_pred):
+def batched_jaccard(y_true, y_pred, average_over_objects=True):
     """ Batch jaccard similarity for multiple instance segmentation.
 
     Args:
@@ -11,9 +11,13 @@ def batched_jaccard(y_true, y_pred):
             ground truth of the object instance segmentation.
         y_pred (ndarray): Array of shape (BxHxW) and type integer giving the
             prediction of the object instance segmentation.
+        average_over_objects (bool): Weather or not average the jaccard over
+            all the objects in the sequence. Default True.
     Returns:
         (ndarray): Returns an array of shape (B) with the average jaccard for
-            all instances at each frame.
+            all instances at each frame if `average_over_objects=True`. If
+            `average_over_objects=False` returns an array of shape (B x O)
+            being O the number of objects on `y_true`.
     """
     y_true = np.asarray(y_true, dtype=np.int)
     y_pred = np.asarray(y_pred, dtype=np.int)
@@ -24,7 +28,7 @@ def batched_jaccard(y_true, y_pred):
     if y_true.shape != y_pred.shape:
         raise ValueError('y_true and y_pred must have the same shape')
 
-    objects_ids = np.unique(y_true)
+    objects_ids = np.unique(y_true[(y_true < 255) & (y_true > 0)])
     nb_objects = len(objects_ids)
     nb_frames = len(y_true)
 
@@ -40,5 +44,6 @@ def batched_jaccard(y_true, y_pred):
         jac[union == 0.] = 1.
         jaccard[:, i] = jac
 
-    jaccard = jaccard.mean(axis=1)
+    if average_over_objects:
+        jaccard = jaccard.mean(axis=1)
     return jaccard
