@@ -1,6 +1,6 @@
 import numpy as np
 
-from .operations import bezier_curve
+from .operations import bezier_curve, bresenham
 
 
 def scribbles2mask(scribbles,
@@ -8,6 +8,7 @@ def scribbles2mask(scribbles,
                    only_annotated_frame=False,
                    bezier_curve_sampling=False,
                    nb_points=1000,
+                   bresenham_=True,
                    default_value=-1):
     """ Convert the scribbles data into a mask.
 
@@ -21,6 +22,8 @@ def scribbles2mask(scribbles,
             scribbles using bezier curve.
         nb_points (int): If `bezier_curve_sampling` is `True` set the number of
             points to sample from the bezier curve. Default 1000.
+        bresenham (bool): Wether to compute bresenham algorithm for the
+            scribbles lines.
         default_value (int): default value for the pixels which do not belong
             to any scribble.
 
@@ -51,6 +54,9 @@ def scribbles2mask(scribbles,
                 path = bezier_curve(path, nb_points=nb_points)
             path *= size_array
             path = path.astype(np.int)
+
+            if bresenham_:
+                path = bresenham(path)
             m = masks[f]
 
             m[path[:, 1], path[:, 0]] = obj_id
