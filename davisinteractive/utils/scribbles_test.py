@@ -81,12 +81,12 @@ class TestScribbles2Points:
         }
 
         X, Y = scribbles2points(scribbles_data)
-        assert X.shape == (2, 2)
+        assert X.shape == (2, 3)
         assert X.dtype == np.float
         assert Y.shape == (2, )
         assert Y.dtype == np.int
 
-        assert np.all(X == np.asarray([[0, 0], [0, 0.1]]))
+        assert np.all(X == np.asarray([[1, 0, 0], [1, 0, 0.1]]))
         assert np.all(Y == np.asarray([1, 1]))
 
     def test_w_output_resolution(self):
@@ -104,13 +104,13 @@ class TestScribbles2Points:
         }
 
         X, Y = scribbles2points(scribbles_data, output_resolution=(100, 100))
-        assert X.shape == (2, 2)
+        assert X.shape == (2, 3)
         assert X.dtype == np.int
         assert Y.shape == (2, )
         assert Y.dtype == np.int
 
-        assert np.all(X == np.asarray([[0, 0], [0, 9]], dtype=np.int))
+        assert np.all(X == np.asarray([[1, 0, 0], [1, 0, 9]], dtype=np.int))
         assert np.all(Y == np.asarray([1, 1]))
 
         X, Y = scribbles2points(scribbles_data, output_resolution=(101, 101))
-        assert np.all(X == np.asarray([[0, 0], [0, 10]], dtype=np.int))
+        assert np.all(X == np.asarray([[1, 0, 0], [1, 0, 10]], dtype=np.int))

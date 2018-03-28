@@ -82,26 +82,29 @@ def scribbles2points(scribbles_data, output_resolution=None):
             and width.
     Returns:
         (ndarray, ndarray): Returns (X, Y) where X is a list of points from the
-            scribbles represented in the output_resolution with shape (N x 2)
-            being N the total number of points on all the scribbles. Y is the
-            object id for each given point with shape (N,).
+            scribbles represented in the output_resolution with shape (N x 3)
+            being N the total number of points on all the scribbles. The three
+            coordinates given correspond the the frame number, height and width
+            respectively.
+            Y is the object id for each given point with shape (N,).
     """
     scribbles = scribbles_data['scribbles']
 
     paths, object_ids = [], []
 
-    for s in scribbles:
+    for frame, s in enumerate(scribbles):
         for l in s:
-            p = l['path']
-            paths += p
-            object_ids += [l['object_id']] * len(p)
+            # p = l['path']
+            coordinates = [[frame] + point for point in l['path']]
+            paths += coordinates
+            object_ids += [l['object_id']] * len(l['path'])
 
     paths = np.asarray(paths, dtype=np.float)
     object_ids = np.asarray(object_ids, dtype=np.int)
 
     if output_resolution:
-        img_size = np.asarray(output_resolution, dtype=np.float)
-        img_size = img_size[::-1] - 1
+        h, w = output_resolution
+        img_size = np.asarray([1, h - 1, w - 1], dtype=np.float)
         paths *= img_size
         paths = paths.astype(np.int)
 
