@@ -1,11 +1,10 @@
 import time
 
-import cv2
 import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
 from scipy.special import comb
-from skimage.morphology import medial_axis
+from skimage.morphology import dilation, disk, erosion, medial_axis
 from sklearn.neighbors import radius_neighbors_graph
 
 from ..metrics import batched_jaccard
@@ -15,12 +14,23 @@ __all__ = ['InteractiveScribblesRobot']
 
 
 class InteractiveScribblesRobot(object):
-    def __init__(self, kernel_size=.2, min_nb_nodes=4, nb_points=1000):
-        # Kernel size proportional to squared area
+    def __init__(self, kernel_size=.15, min_nb_nodes=4, nb_points=1000):
+        """ Robot constructor
+
+        Args:
+            kernel_size (float): Fraction of the square root of the area used
+                to compute the dilation and erosion before computing the
+                skeleton of the error masks.
+            min_nb_nodes (int): Number of nodes necessary to keep a connected
+                graph and convert it into a scribble.
+            nb_points (int): Number of points to sample the the bezier curve
+                when convert the final paths into curves.
+        """
+        if kernel_size >= 1. or kernel_size < 0:
+            raise ValueError('kernel_size must be a value between [0, 1).')
+
         self.kernel_size = kernel_size
-        # To prune very small scribbles
         self.min_nb_nodes = min_nb_nodes
-        # Number of points to interpolate the bezier curves
         self.nb_points = nb_points
 
     def _generate_scribble_mask(self, mask):
@@ -41,18 +51,17 @@ class InteractiveScribblesRobot(object):
 
         # Remove small objects and small holes
         mask_ = mask.copy().astype(np.uint8)
-        kernel_size = int(self.kernel_size * side)
+        # kernel_size = int(self.kernel_size * side)
+        kernel_radius = self.kernel_size * side * .5
         compute = True
-        while kernel_size > 0 and compute:
-            kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,
-                                               (kernel_size, kernel_size))
-            mask_ = cv2.erode(
-                mask.copy().astype(np.uint8), kernel, iterations=1)
-            mask_ = cv2.dilate(mask_, kernel, iterations=1)
+        while kernel_radius > 1. and compute:
+            kernel = disk(kernel_radius)
+            mask_ = erosion(mask.copy().astype(np.uint8), kernel)
+            mask_ = dilation(mask_, kernel)
             compute = False
             if mask_.astype(np.bool).sum() == 0:
                 compute = True
-                kernel_size = int(kernel_size * .95)
+                kernel_radius *= .9
                 print('Reducing kernel size')
 
         skel = medial_axis(mask_.astype(np.bool))
