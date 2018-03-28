@@ -27,4 +27,17 @@ class PixelWiseMetricLearningModel:
         dataset.close()
 
     def __call__(self, points, object_ids):
-        pass
+        E = self.embeddings
+
+        f, h, w, d = E.shape
+
+        E = E.reshape(f * h * w, d)
+
+        P = np.ravel_multi_index(points.T, (f, h, w))
+        X = E[P, :]
+
+        S = E.dot(X.T)
+        S_closest = S.argmax(axis=1)
+        M = object_ids[S_closest]
+        M = M.reshape(f, h, w)
+        return M
