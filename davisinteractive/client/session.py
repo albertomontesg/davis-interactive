@@ -14,20 +14,12 @@ class DavisInteractiveSession:
                  connector=None,
                  davis_root=None,
                  subset='val',
-                 max_time=300,
-                 max_nb_interactions=None,
-                 log=False,
+                 max_time=None,
+                 max_nb_interactions=5,
                  progbar=False):
         # self.host = host
         # self.key = key
-        self.davis_root = davis_root or os.environ.get('DAVIS_DATASET')
-        if self.davis_root is None:
-            raise ValueError(
-                'Davis root dir not especified. Please specify it in the environmental variable DAVIS_DATASET or give it as parameter in davis_root.'
-            )
-
-        if log and progbar:
-            raise ValueError('log and progbar, only one can be set to True.')
+        self.davis_root = davis_root
 
         self.subset = subset
         self.max_time = min(max_time,
@@ -36,7 +28,6 @@ class DavisInteractiveSession:
             max_nb_interactions,
             16) if max_nb_interactions is not None else max_nb_interactions
 
-        self.log = log
         self.progbar = progbar
         self.running_model = False
 
@@ -59,9 +50,9 @@ class DavisInteractiveSession:
             self.subset, davis_root=self.davis_root)
         self.samples = samples
 
-        if self.log:
-            print(f'Session consist on {len(self.samples)} samples.')
-        elif self.progbar:
+        # if self.log:
+        #     print(f'Session consist on {len(self.samples)} samples.')
+        if self.progbar:
             from tqdm import tqdm
             self.progbar = tqdm(self.samples, desc='Evaluating')
 
@@ -78,9 +69,7 @@ class DavisInteractiveSession:
     def __exit__(self, type_, value, traceback):
         self.connector.close()
 
-    def is_running(self, log=True, progbar=False):
-        if log and progbar:
-            raise ValueError('log and progbar, only one can be set to True.')
+    def is_running(self):
 
         # Here start counter for this interaction, and keep track to move to
         # the next sequence and so on
