@@ -30,6 +30,9 @@ def batched_jaccard(y_true, y_pred, average_over_objects=True):
 
     objects_ids = np.unique(y_true[(y_true < 255) & (y_true > 0)])
     nb_objects = len(objects_ids)
+    if nb_objects == 0:
+        raise ValueError(
+            'Number of objects in y_true should be higher than 0.')
     nb_frames = len(y_true)
 
     jaccard = np.empty((nb_frames, nb_objects), dtype=np.float)
@@ -40,9 +43,11 @@ def batched_jaccard(y_true, y_pred, average_over_objects=True):
         union = (mask_true | mask_pred).sum(axis=(1, 2))
         intersection = (mask_true & mask_pred).sum(axis=(1, 2))
 
-        jac = intersection / union
-        jac[union == 0.] = 1.
-        jaccard[:, i] = jac
+        for j in range(nb_frames):
+            if np.isclose(union[j], 0):
+                jaccard[j, i] = 1.
+            else:
+                jaccard[j, i] = intersection[j] / union[j]
 
     if average_over_objects:
         jaccard = jaccard.mean(axis=1)

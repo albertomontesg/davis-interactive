@@ -4,7 +4,7 @@ import h5py
 import numpy as np
 
 
-class PixelWiseMetricLearningModel:
+class PixelWiseMetricLearningModel:  # pragma: no cover
     IMG_SIZE = (60, 120)
 
     def __init__(self, embeddings_path):

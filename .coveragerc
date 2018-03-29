@@ -1,11 +1,17 @@
 [run]
 branch = True
 source = davisinteractive
+omit = */models/
 
 [report]
 exclude_lines =
-    if self.debug:
+    # Have to re-enable the standard pragma
     pragma: no cover
+
+    # Don't complain if tests don't hit defensive assertion code:
+    raise AssertionError
+    raise ValueError
+    raise TypeError
     raise NotImplementedError
-    if __name__ == .__main__.:
+
 ignore_errors = True

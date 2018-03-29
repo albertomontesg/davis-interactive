@@ -123,10 +123,10 @@ def fuse_scribbles(scribbles_a, scribbles_b):
             both scribbles A and B.
     """
 
-    assert scribbles_a['sequence'] == scribbles_b[
-        'sequence'], 'Scribbles to fuse not from the same sequence'
-    assert len(scribbles_a['scribbles']) == len(scribbles_b[
-        'scribbles']), 'Scribbles does not have the same number of frames'
+    if scribbles_a['sequence'] != scribbles_b['sequence']:
+        raise ValueError('Scribbles to fuse are not from the same sequence')
+    if len(scribbles_a['scribbles']) != len(scribbles_b['scribbles']):
+        raise ValueError('Scribbles does not have the same number of frames')
 
     scribbles = dict(scribbles_a)
     nb_frames = len(scribbles['scribbles'])
@@ -145,4 +145,4 @@ def is_empty(scribbles_data):
     """
     scribbles = scribbles_data['scribbles']
     has_lines = [len(s) > 0 for s in scribbles]
-    return any(has_lines)
+    return not any(has_lines)
