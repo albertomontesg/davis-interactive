@@ -11,9 +11,10 @@ setup(
     license='MIT',
     packages=['davisinteractive'],
     install_requires=[
-        'numpy', 'scikit-learn', 'scikit-image', 'networkx', 'scipy', 'pandas'
+        'numpy>=1.12.1', 'scikit-learn>=0.18', 'scikit-image>=0.13.1',
+        'networkx>=2.0', 'scipy>=1.0.0', 'pandas>=0.21.1'
     ],
     setup_requires=['pytest-runner'],
-    test_require=['pytest'],
+    test_require=['pytest', 'pytest-cov'],
     include_package_data=True,
     zip_safe=False)
