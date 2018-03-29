@@ -48,8 +48,8 @@ class Davis:
                 if not os.path.exists(
                         os.path.join(seq_scribbles_path, f'{i:03d}.json')):
                     raise FileNotFoundError(
-                        f'Scribble file not found for sequence {seq} and scribble {i}'
-                    )
+                        f'Scribble file not found for sequence {seq} ' +
+                        f'and scribble {i}')
 
             # Check annotations files required for the evaluation
             nb_frames = self.dataset['sequences'][seq]['num_frames']
@@ -57,8 +57,8 @@ class Davis:
                 if not os.path.exists(
                         os.path.join(seq_annotations_path, f'{i:05d}.png')):
                     raise FileNotFoundError(
-                        f'Annotations file not found for sequence {seq} and frame {i}'
-                    )
+                        f'Annotations file not found for sequence {seq} ' +
+                        f'and frame {i}')
 
     def load_scribble(self, sequence, scribble_idx):
         scribble_file = os.path.join(self.davis_root, Davis.SCRIBBLES_DIR,
