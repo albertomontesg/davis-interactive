@@ -1,6 +1,8 @@
 import os
 import time
 
+from absl import logging
+
 from ..connector.fabric import ServerConnectionFabric
 from ..utils.scribbles import fuse_scribbles, scribbles2mask
 
@@ -50,8 +52,8 @@ class DavisInteractiveSession:
             self.subset, davis_root=self.davis_root)
         self.samples = samples
 
-        # if self.log:
-        #     print(f'Session consist on {len(self.samples)} samples.')
+        logging.info(f'Started session with {len(self.samples)} samples')
+
         if self.progbar:
             from tqdm import tqdm
             self.progbar = tqdm(self.samples, desc='Evaluating')
@@ -75,16 +77,23 @@ class DavisInteractiveSession:
         # the next sequence and so on
 
         c_time = time.time()
-        max_time = self.max_time()
 
         # sample_change = self.sample_idx < 0
         sample_change = self.sample_idx < 0
         if self.max_nb_interactions:
-            sample_change |= self.interaction_nb >= self.max_nb_interactions
+            change_because_interaction = self.interaction_nb >= self.max_nb_interactions
+            sample_change |= change_because_interaction
+            if change_because_interaction:
+                logging.info(
+                    'Maximum number of interaction have been reached.')
         if self.max_time and self.sample_start_time:
             _, _, nb_objects = self.samples[self.sample_idx]
             max_time = self.max_time * nb_objects
-            sample_change |= (c_time - self.sample_start_time) > max_time
+            change_because_timing = (
+                c_time - self.sample_start_time) > max_time
+            sample_change |= change_because_timing
+            if change_because_timing:
+                logging.info('Maximum time per sample has been reached.')
 
         if sample_change:
             self.sample_idx += 1
@@ -94,18 +103,11 @@ class DavisInteractiveSession:
             self.sample_scribbles = None
             self.sample_last_scribble = None
 
-            if self.progbar:
-                _ = self.progbar.update(1)
-
-        if self.progbar:
-            seq, _, _ = self.samples[self.sample_idx]
-            self.progbar.desc = f'Evaluating {seq} ' + \
-                    f'Interaction {self.interaction_nb}'
-
         end = self.sample_idx >= len(self.samples)
-        if end and self.progbar:
-            self.progbar.close()
-            self.progbar = None
+        if not end and sample_change:
+            seq, _, _ = self.samples[self.sample_idx]
+            logging.info(f'Start evaluation for sequence {seq}')
+
         return not end
 
     def get_scribbles(self, only_last=False):  #, return_scribbles_mask=False):
@@ -141,6 +143,8 @@ class DavisInteractiveSession:
 
         time_end = time.time()
         timing = time_end - self.interaction_start_time
+        logging.info(
+            f'The model took {timing:.3f} seconds to make a prediction')
 
         self.interaction_nb += 1
         sequence, scribble_idx, _ = self.samples[self.sample_idx]

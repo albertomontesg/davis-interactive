@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 
+from .. import logging
 from ..dataset.davis import Davis
 from ..metrics import batched_jaccard
 from ..robot import InteractiveScribblesRobot
@@ -15,6 +16,7 @@ class EvaluationService:
     ]
     ROBOT_DEFAULT_PARAMETERS = {
         'kernel_size': .2,
+        'max_kernel_radius': 16,
         'min_nb_nodes': 4,
         'nb_points': 1000
     }
@@ -37,8 +39,6 @@ class EvaluationService:
 
         # Get the list of sequences to evaluate and also from all the scribbles
         # available
-        # sequences = DAVIS.sets[subset]
-        # self.sequences_counter = {s: 0 for s in sequences}
         self.sequences = self.davis.sets[subset]
         self.sequences_scribble_idx = []
         for s in self.sequences:
@@ -48,6 +48,7 @@ class EvaluationService:
                 self.sequences_scribble_idx.append((s, i, nb_objects))
 
         # Check all the files are placed
+        logging.verbose('Checking DAVIS dataset files', 1)
         self.davis.check_files(self.sequences)
 
         # Create empty report
@@ -55,6 +56,8 @@ class EvaluationService:
 
         self.session_started = True
         max_t, max_i = None, None
+
+        logging.info('Starting evaluation session')
         return self.sequences_scribble_idx, max_t, max_i
 
     def get_starting_scribble(self, sequence, scribble_idx):
@@ -62,7 +65,9 @@ class EvaluationService:
             raise RuntimeError('Session not started')
         if sequence not in self.sequences:
             raise ValueError(f'Invalid sequence: {sequence}')
-        if (sequence, scribble_idx) not in self.sequences_scribble_idx:
+        if (sequence, scribble_idx) not in [
+            (s, i) for s, i, _ in self.sequences_scribble_idx
+        ]:
             raise ValueError(f'Invalid scribble index: {scribble_idx}')
 
         scribble = self.davis.load_scribble(sequence, scribble_idx)

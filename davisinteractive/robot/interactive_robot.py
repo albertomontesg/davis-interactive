@@ -3,10 +3,12 @@ import time
 import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
+from scipy.ndimage import binary_dilation, binary_erosion
 from scipy.special import comb
 from skimage.morphology import dilation, disk, erosion, medial_axis
 from sklearn.neighbors import radius_neighbors_graph
 
+from .. import logging
 from ..metrics import batched_jaccard
 from ..utils.operations import bezier_curve
 
@@ -14,13 +16,19 @@ __all__ = ['InteractiveScribblesRobot']
 
 
 class InteractiveScribblesRobot(object):
-    def __init__(self, kernel_size=.15, min_nb_nodes=4, nb_points=1000):
+    def __init__(self,
+                 kernel_size=.15,
+                 max_kernel_radius=16,
+                 min_nb_nodes=4,
+                 nb_points=1000):
         """ Robot constructor
 
         Args:
             kernel_size (float): Fraction of the square root of the area used
                 to compute the dilation and erosion before computing the
                 skeleton of the error masks.
+            max_kernel_radius (float): Maximum kernel radius when applying
+                dilation and erosion. Default 16 pixels.
             min_nb_nodes (int): Number of nodes necessary to keep a connected
                 graph and convert it into a scribble.
             nb_points (int): Number of points to sample the the bezier curve
@@ -30,6 +38,7 @@ class InteractiveScribblesRobot(object):
             raise ValueError('kernel_size must be a value between [0, 1).')
 
         self.kernel_size = kernel_size
+        self.max_kernel_radius = max_kernel_radius
         self.min_nb_nodes = min_nb_nodes
         self.nb_points = nb_points
 
@@ -53,16 +62,24 @@ class InteractiveScribblesRobot(object):
         mask_ = mask.copy().astype(np.uint8)
         # kernel_size = int(self.kernel_size * side)
         kernel_radius = self.kernel_size * side * .5
+        kernel_radius = min(kernel_radius, self.max_kernel_radius)
+        logging.verbose(
+            f'Erosion and dilation with kernel radius: {kernel_radius:.1f}', 2)
         compute = True
         while kernel_radius > 1. and compute:
             kernel = disk(kernel_radius)
-            mask_ = erosion(mask.copy().astype(np.uint8), kernel)
-            mask_ = dilation(mask_, kernel)
+            # mask_ = erosion(mask.copy().astype(np.uint8), kernel)
+            mask_ = binary_erosion(mask.copy(), kernel)
+            mask_ = binary_dilation(mask_, kernel)
+            # mask_ = dilation(mask_, kernel)
             compute = False
             if mask_.astype(np.bool).sum() == 0:
                 compute = True
+                prev_kernel_radius = kernel_radius
                 kernel_radius *= .9
-                print('Reducing kernel size')
+                logging.verbose(
+                    f'Reducing kernel radius from {prev_kernel_radius:.1f} ' +
+                    f'pixels to {kernel_radius:.1f}', 1)
 
         skel = medial_axis(mask_.astype(np.bool))
         return skel
@@ -132,6 +149,7 @@ class InteractiveScribblesRobot(object):
 
             if len(g) < self.min_nb_nodes:
                 # Prune small subgraphs
+                logging.verbose(f'Remove a small line with {len(g)} nodes', 1)
                 continue
 
             S.append(g)
@@ -186,6 +204,7 @@ class InteractiveScribblesRobot(object):
         Returns:
             (dict): Return a scribble on its default representation.
         """
+        robot_start = time.time()
 
         predictions = np.asarray(pred_masks, dtype=np.int)
         annotations = np.asarray(gt_masks, dtype=np.int)
@@ -197,6 +216,9 @@ class InteractiveScribblesRobot(object):
         jac = batched_jaccard(annotations, predictions)
         worst_frame = jac.argmin()
         pred, gt = predictions[worst_frame], annotations[worst_frame]
+        logging.verbose(
+            f'For sequence {sequence} the worst frames is #{worst_frame} ' +
+            f'with Jaccard: {jac.min():.3f}', 2)
 
         nb_frames = len(annotations)
         obj_ids = np.unique(annotations[annotations < 255])
@@ -204,23 +226,57 @@ class InteractiveScribblesRobot(object):
         scribbles = [[] for _ in range(nb_frames)]
 
         for obj_id in obj_ids:
+            logging.verbose(
+                f'Creating scribbles from error mask at object_id={obj_id}', 2)
             start_time = time.time()
             error_mask = (gt == obj_id) & (pred != obj_id)
             if error_mask.sum() == 0:
+                logging.warn(f'Error mask of object ID {obj_id} is empty. ' +
+                             'Skip object ID.')
                 continue
 
             # Generate scribbles
             skel_mask = self._generate_scribble_mask(error_mask)
+            skel_time = time.time() - start_time
+            logging.verbose(
+                f'Time to compute the skeleton mask: {skel_time*1000:.3f} ms',
+                2)
             if skel_mask.sum() == 0:
                 continue
+
             G, P = self._mask2graph(skel_mask)
+            mask2graph_time = time.time() - start_time - skel_time
+            logging.verbose(
+                'Time to transform the skeleton mask into a graph: ' +
+                f'{mask2graph_time * 1000:.3f} ms', 2)
+
+            t_start = time.time()
             S = self._acyclics_subgraphs(G)
+            t = (time.time() - t_start) * 1000
+            logging.verbose(
+                'Time to split into connected components subgraphs ' +
+                f'and remove the cycles: {t:.3f} ms', 2)
+
+            t_start = time.time()
             longest_paths_idx = [self._longest_path_in_tree(s) for s in S]
             longest_paths = [P[idx] for idx in longest_paths_idx]
+            t = (time.time() - t_start) * 1000
+            logging.verbose(
+                f'Time to compute the longest path on the trees: {t:.3f} ms',
+                2)
+
+            t_start = time.time()
             scribbles_paths = [
                 bezier_curve(p, self.nb_points) for p in longest_paths
             ]
+            t = (time.time() - t_start) * 1000
+            logging.verbose(f'Time to compute the bezier curves: {t:.3f} ms',
+                            2)
+
             end_time = time.time()
+            logging.verbose(
+                f'Generating the scribble for object id {obj_id} ' +
+                f'took {(end_time - start_time) * 1000:.3f} ms', 2)
             # Generate scribbles data file
             for p in scribbles_paths:
                 p /= img_shape
@@ -237,4 +293,7 @@ class InteractiveScribblesRobot(object):
             'sequence': sequence,
             'annotated_frame': worst_frame
         }
+
+        t = time.time() - robot_start
+        logging.info(f'The robot took {t:.3f} s to generate all the scribbles')
         return scribbles_data

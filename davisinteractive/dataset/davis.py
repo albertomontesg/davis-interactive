@@ -4,6 +4,8 @@ import os
 import numpy as np
 from PIL import Image
 
+from .. import logging
+
 
 class Davis:
 
@@ -25,8 +27,10 @@ class Davis:
                     os.path.dirname(os.path.abspath(__file__)), 'davis.json'),
                 'r') as fp:
             self.dataset = json.load(fp)
+        logging.verbose('Loaded dataset data', 2)
 
         self.sets = {s: [] for s in self.dataset['sets']}
+        logging.verbose('Extracted sequences for each subset', 2)
 
         for s in self.dataset['sequences'].values():
             self.sets[s['set']].append(s['name'])
@@ -64,6 +68,10 @@ class Davis:
             scribble_data = json.load(fp)
         assert scribble_data['sequence'] == sequence
 
+        logging.verbose(f'Loaded scribble for sequence {sequence} and ' +
+                        f'scribble_idx {scribble_idx}', 1)
+        logging.verbose(scribble_file, 2)
+
         return scribble_data
 
     def load_annotations(self, sequence):
@@ -80,5 +88,9 @@ class Davis:
             mask = np.asarray(mask)
             assert mask.shape == tuple(img_size[::-1])
             annotations[f] = mask
+
+        logging.verbose(f'Loaded annotations for sequence {sequence}', 1)
+        logging.verbose(f'at path: {root_path}', 2)
+        logging.verbose(f'Annotations shape: {annotations.shape}', 2)
 
         return annotations
