@@ -1,8 +1,9 @@
 import os
+import random
 import time
+from copy import deepcopy
 
-from absl import logging
-
+from .. import logging
 from ..connector.fabric import ServerConnectionFabric
 from ..utils.scribbles import fuse_scribbles, scribbles2mask
 
@@ -16,6 +17,7 @@ class DavisInteractiveSession:
                  connector=None,
                  davis_root=None,
                  subset='val',
+                 shuffle=False,
                  max_time=None,
                  max_nb_interactions=5,
                  progbar=False):
@@ -24,6 +26,7 @@ class DavisInteractiveSession:
         self.davis_root = davis_root
 
         self.subset = subset
+        self.shuffle = shuffle
         self.max_time = min(max_time,
                             10 * 60) if max_time is not None else max_time
         self.max_nb_interactions = min(
@@ -50,6 +53,9 @@ class DavisInteractiveSession:
         #     self.host, self.key)
         samples, max_t, max_i = self.connector.start_session(
             self.subset, davis_root=self.davis_root)
+        if self.shuffle:
+            logging.verbose('Shuffling samples', 1)
+            random.shuffle(samples)
         self.samples = samples
 
         logging.info(f'Started session with {len(self.samples)} samples')
@@ -131,8 +137,12 @@ class DavisInteractiveSession:
             scribbles = self.sample_last_scribble
         else:
             scribbles = self.sample_scribbles
-        # if return_scribbles_mask:
-        #     scribbles = scribbles2masks(scribbles)
+
+        # Create a copy to not pass a reference
+        scribbles = deepcopy(scribbles)
+
+        logging.info('Giving scribble to the user')
+
         return sequence, scribbles, new_sequence
 
     def submit_masks(self, pred_masks):
