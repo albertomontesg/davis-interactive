@@ -43,8 +43,9 @@ class EvaluationService:
         self.sequences_scribble_idx = []
         for s in self.sequences:
             nb_scribbles = self.davis.dataset['sequences'][s]['num_scribbles']
+            nb_objects = self.davis.dataset['sequences'][s]['num_objects']
             for i in range(1, nb_scribbles + 1):
-                self.sequences_scribble_idx.append((s, i))
+                self.sequences_scribble_idx.append((s, i, nb_objects))
 
         # Check all the files are placed
         self.davis.check_files(self.sequences)

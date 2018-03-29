@@ -11,14 +11,15 @@ class DavisInteractiveSession:
     def __init__(self,
                  host='localhost',
                  key=None,
+                 connector=None,
                  davis_root=None,
                  subset='val',
                  max_time=300,
                  max_nb_interactions=None,
                  log=False,
                  progbar=False):
-        self.host = host
-        self.key = key
+        # self.host = host
+        # self.key = key
         self.davis_root = davis_root or os.environ.get('DAVIS_DATASET')
         if self.davis_root is None:
             raise ValueError(
@@ -39,7 +40,9 @@ class DavisInteractiveSession:
         self.progbar = progbar
         self.running_model = False
 
-        self.connector = None
+        self.connector = connector or ServerConnectionFabric.get_connector(
+            host, key)
+
         self.samples = None
         self.sample_idx = None
         self.interaction_nb = None
@@ -50,8 +53,8 @@ class DavisInteractiveSession:
 
     def __enter__(self):
         # Create connector
-        self.connector = ServerConnectionFabric.get_connector(
-            self.host, self.key)
+        # self.connector = ServerConnectionFabric.get_connector(
+        #     self.host, self.key)
         samples, max_t, max_i = self.connector.start_session(
             self.subset, davis_root=self.davis_root)
         self.samples = samples
@@ -83,13 +86,16 @@ class DavisInteractiveSession:
         # the next sequence and so on
 
         c_time = time.time()
+        max_time = self.max_time()
+
+        # sample_change = self.sample_idx < 0
         sample_change = self.sample_idx < 0
-        if self.max_nb_interactions and \
-                self.interaction_nb >= self.max_nb_interactions:
-            sample_change = True
-        if self.max_time and self.sample_start_time and (
-                c_time - self.sample_start_time) > self.max_time:
-            sample_change = True
+        if self.max_nb_interactions:
+            sample_change |= self.interaction_nb >= self.max_nb_interactions
+        if self.max_time and self.sample_start_time:
+            _, _, nb_objects = self.samples[self.sample_idx]
+            max_time = self.max_time * nb_objects
+            sample_change |= (c_time - self.sample_start_time) > max_time
 
         if sample_change:
             self.sample_idx += 1
@@ -103,7 +109,7 @@ class DavisInteractiveSession:
                 _ = self.progbar.update(1)
 
         if self.progbar:
-            seq, _ = self.samples[self.sample_idx]
+            seq, _, _ = self.samples[self.sample_idx]
             self.progbar.desc = f'Evaluating {seq} ' + \
                     f'Interaction {self.interaction_nb}'
 
@@ -119,7 +125,7 @@ class DavisInteractiveSession:
                 'You can not call get_scribbles twice without submitting the masks first'
             )
 
-        sequence, scribble_idx = self.samples[self.sample_idx]
+        sequence, scribble_idx, _ = self.samples[self.sample_idx]
         new_sequence = False
         if self.interaction_nb == 0 and self.sample_scribbles is None:
             self.sample_scribbles = self.connector.get_starting_scribble(
@@ -148,7 +154,7 @@ class DavisInteractiveSession:
         timing = time_end - self.interaction_start_time
 
         self.interaction_nb += 1
-        sequence, scribble_idx = self.samples[self.sample_idx]
+        sequence, scribble_idx, _ = self.samples[self.sample_idx]
 
         self.sample_last_scribble = self.connector.submit_masks(
             sequence, scribble_idx, pred_masks, timing, self.interaction_nb)
