@@ -5,12 +5,13 @@ from copy import deepcopy
 
 from .. import logging
 from ..connector.fabric import ServerConnectionFabric
-from ..utils.scribbles import fuse_scribbles, scribbles2mask
+from ..utils.scribbles import fuse_scribbles
 
 __all__ = ['DavisInteractiveSession']
 
 
 class DavisInteractiveSession:
+
     def __init__(self,
                  host='localhost',
                  key=None,
@@ -90,13 +91,11 @@ class DavisInteractiveSession:
             change_because_interaction = self.interaction_nb >= self.max_nb_interactions
             sample_change |= change_because_interaction
             if change_because_interaction:
-                logging.info(
-                    'Maximum number of interaction have been reached.')
+                logging.info('Maximum number of interaction have been reached.')
         if self.max_time and self.sample_start_time:
             _, _, nb_objects = self.samples[self.sample_idx]
             max_time = self.max_time * nb_objects
-            change_because_timing = (
-                c_time - self.sample_start_time) > max_time
+            change_because_timing = (c_time - self.sample_start_time) > max_time
             sample_change |= change_because_timing
             if change_because_timing:
                 logging.info('Maximum time per sample has been reached.')
@@ -116,7 +115,8 @@ class DavisInteractiveSession:
 
         return not end
 
-    def get_scribbles(self, only_last=False):  #, return_scribbles_mask=False):
+    # , return_scribbles_mask=False):
+    def get_scribbles(self, only_last=False):
         if self.running_model:
             raise RuntimeError(
                 'You can not call get_scribbles twice without submitting the masks first'
