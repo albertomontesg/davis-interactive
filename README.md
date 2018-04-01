@@ -11,9 +11,6 @@ More info on the challenge [webpage](http://davischallenge.org/challenge2018/int
 
 ## DAVIS Scribbles
 
-![dogs-jump](docs/images/scribbles/dogs-jump-image.jpg)
-
-
+<img src="docs/images/scribbles/dogs-jump-image.jpg" width="240"/> <img src="docs/images/scribbles/dogs-jump-scribble01.jpg" width="240"/> <img src="docs/images/scribbles/dogs-jump-scribble02.jpg" width="240"/>
 
 **Note**: code still under development.
-
