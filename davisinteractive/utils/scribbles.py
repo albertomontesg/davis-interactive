@@ -12,23 +12,23 @@ def scribbles2mask(scribbles,
                    default_value=-1):
     """ Convert the scribbles data into a mask.
 
-    Args:
-        scribbles (dict): Scribbles in the default format
-        output_resolution (tuple): Output resolution (H, W).
-        only_annotated_frame (bool): Weather return the mask for all the frames
+    # Arguments
+        scribbles: Dictionary. Scribbles in the default format
+        output_resolution: Tuple. Output resolution (H, W).
+        only_annotated_frame: Boolean. Weather return the mask for all the frames
             or only the mask of the single annotated frame (only valid if one
-            frame is annotated). Default False.
-        bezier_curve_sampling (bool): Weather sample first the returned
+            frame is annotated).
+        bezier_curve_sampling: Boolean. Weather sample first the returned
             scribbles using bezier curve.
-        nb_points (int): If `bezier_curve_sampling` is `True` set the number of
-            points to sample from the bezier curve. Default 1000.
-        bresenham (bool): Wether to compute bresenham algorithm for the
+        nb_points: Integer. If `bezier_curve_sampling` is `True` set the number of
+            points to sample from the bezier curve.
+        bresenham: Boolean. Wether to compute bresenham algorithm for the
             scribbles lines.
-        default_value (int): default value for the pixels which do not belong
+        default_value: Integer. Default value for the pixels which do not belong
             to any scribble.
 
-    Returns:
-        (ndarray): Array with the mask of the scribbles with the index of the
+    # Returns
+        ndarray: Array with the mask of the scribbles with the index of the
             object ids. The shape of the returned array is (B x H x W) by
             default or (H x W) if `only_annotated_frame==True`.
     """
@@ -40,7 +40,7 @@ def scribbles2mask(scribbles,
 
     nb_frames = len(scribbles['scribbles'])
     masks = np.full(
-        (nb_frames, ) + output_resolution, default_value, dtype=np.int)
+        (nb_frames,) + output_resolution, default_value, dtype=np.int)
 
     size_array = np.asarray(output_resolution[::-1], dtype=np.float) - 1
 
@@ -74,13 +74,14 @@ def scribbles2mask(scribbles,
 def scribbles2points(scribbles_data, output_resolution=None):
     """ Convert the given scribbles into a list of points and object ids.
 
-    Args:
-        scribbles_data (dict): Scribbles in the default format
-        output_resolution (tuple): Output resolution (H, W) to scale the
+    # Arguments
+        scribbles_data: Dictionary. Scribbles in the default format
+        output_resolution: Tuple. Output resolution (H, W) to scale the
             points.
             If None given, the points will be floats as a fraction of height
             and width.
-    Returns:
+
+    # Returns
         (ndarray, ndarray): Returns (X, Y) where X is a list of points from the
             scribbles represented in the output_resolution with shape (N x 3)
             being N the total number of points on all the scribbles. The three
@@ -114,12 +115,12 @@ def scribbles2points(scribbles_data, output_resolution=None):
 def fuse_scribbles(scribbles_a, scribbles_b):
     """ Fuse two scribbles in the default format.
 
-    Args:
-        scribbles_a (dict): Default representation of scribbles A.
-        scribbles_b (dict): Default representation of scribbles B.
+    # Arguments
+        scribbles_a: Dictionary. Default representation of scribbles A.
+        scribbles_b: Dictionary. Default representation of scribbles B.
 
-    Returns:
-        (dict): Return a dictionary being the representation of the addition of
+    # Returns
+        dict: Return a dictionary being the representation of the addition of
             both scribbles A and B.
     """
 
@@ -140,8 +141,11 @@ def fuse_scribbles(scribbles_a, scribbles_b):
 def is_empty(scribbles_data):
     """ Checks wether the given scribble has any line.
 
-    Args:
+    # Arguments
         scribbles_data (dict): Scribble in the default format
+
+    # Returns
+        bool: Wether the scribble is empty or not.
     """
     scribbles = scribbles_data['scribbles']
     has_lines = [len(s) > 0 for s in scribbles]

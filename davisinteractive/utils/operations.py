@@ -5,16 +5,16 @@ from scipy.special import comb
 def bezier_curve(points, nb_points=1000):
     """ Given a list of points compute a bezier curve from it
 
-    Args:
-        points (ndarray): Array of points with shape (N, 2) being N the
+    # Arguments
+        points: ndarray. Array of points with shape (N, 2) being N the
             number of points and the second dimension representing the
             (x, y) coordinates.
-        nb_points (int): Number of points to sample from the bezier curve.
+        nb_points: Integer. Number of points to sample from the bezier curve.
             This value must be larger than the number of points given in
-            `points`. Maximum value: 10000
+            `points`. Maximum value 10000
 
-    Returns:
-        (ndarray): Array of shape (1000, 2) with the bezier curve of the
+    # Returns
+        ndarray: Array of shape (1000, 2) with the bezier curve of the
             given path of points.
 
     """
@@ -45,12 +45,15 @@ def bezier_curve(points, nb_points=1000):
 def bresenham(points):
     """ Apply Bresenham algorithm for a list points
 
-    Args:
-        points (ndarray): Array of points with shape (N, 2) being N the number
+    More info: https://en.wikipedia.org/wiki/Bresenham's_line_algorithm
+
+    # Arguments
+        points: ndarray. Array of points with shape (N, 2) being N the number
             if points and the second coordinate representing the (x, y)
             coordinates.
 
-    More info: https://en.wikipedia.org/wiki/Bresenham's_line_algorithm
+    # Returns
+        ndarray: Array of points having the applied the bresenham algorithm.
     """
 
     points = np.asarray(points, dtype=np.int)

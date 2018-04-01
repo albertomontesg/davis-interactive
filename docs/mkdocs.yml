@@ -1,0 +1,78 @@
+---
+site_name: DAVIS Interactive Evaluation Framework
+docs_dir: _build/gen
+site_dir: _build/site
+
+repo_name: 'albertomontesg/davis-interactive'
+repo_url: 'https://github.com/albertomontesg/davis-interactive'
+edit_uri: '#'
+
+# Copyright
+copyright: 'Copyright &copy; 2018 Alberto Montes'
+
+# This tree needs to be the same as in pydocmd.yml
+pages:
+  - Home: index.md
+  - API:
+      - Interactive Session:
+          - session: docs/session.md
+      - Dataset:
+          - dataset.davis: docs/dataset.davis.md
+      - Robot:
+          - robot.interactive_robot: docs/robot.md
+      - Metrics:
+          - metrics.jaccard: docs/metrics.jaccard.md
+      - Utils:
+          - utils.operations: docs/utils.operations.md
+          - utils.scribbles: docs/utils.scribbles.md
+          - utils.visualization: docs/utils.visualization.md
+  - License: license.md
+
+# Theme
+theme:
+  font:
+    text: Roboto
+    code: Roboto Mono
+  logo:
+    icon: laptop
+  name: material
+  palette:
+    primary: teal
+    accent: red
+  # feature:
+  #   tabs: true
+extra_javascript:
+  - 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML'
+
+markdown_extensions:
+  - markdown.extensions.admonition
+  - markdown.extensions.codehilite:
+      guess_lang: false
+  - markdown.extensions.def_list
+  - markdown.extensions.footnotes
+  - markdown.extensions.meta
+  - markdown.extensions.toc:
+      permalink: true
+  - pymdownx.arithmatex
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.critic
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_generator: !!python/name:pymdownx.emoji.to_svg
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.magiclink
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.superfences
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+
+# Customization
+extra:
+  social:
+    - type: github-alt
+      link: https://github.com/albertomontesg/davis-interactive

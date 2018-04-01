@@ -16,23 +16,26 @@ __all__ = ['InteractiveScribblesRobot']
 
 
 class InteractiveScribblesRobot(object):
+    """ Robot that generates realistic scribbles simulating human interaction.
+
+    # Attributes
+        kernel_size: Float. Fraction of the square root of the area used
+            to compute the dilation and erosion before computing the
+            skeleton of the error masks.
+        max_kernel_radius: Float. Maximum kernel radius when applying
+            dilation and erosion. Default 16 pixels.
+        min_nb_nodes: Integer. Number of nodes necessary to keep a connected
+            graph and convert it into a scribble.
+        nb_points: Integer. Number of points to sample the the bezier curve
+            when convert the final paths into curves.
+    """
+
     def __init__(self,
                  kernel_size=.15,
                  max_kernel_radius=16,
                  min_nb_nodes=4,
                  nb_points=1000):
         """ Robot constructor
-
-        Args:
-            kernel_size (float): Fraction of the square root of the area used
-                to compute the dilation and erosion before computing the
-                skeleton of the error masks.
-            max_kernel_radius (float): Maximum kernel radius when applying
-                dilation and erosion. Default 16 pixels.
-            min_nb_nodes (int): Number of nodes necessary to keep a connected
-                graph and convert it into a scribble.
-            nb_points (int): Number of points to sample the the bezier curve
-                when convert the final paths into curves.
         """
         if kernel_size >= 1. or kernel_size < 0:
             raise ValueError('kernel_size must be a value between [0, 1).')
@@ -49,11 +52,11 @@ class InteractiveScribblesRobot(object):
         remove small objects, an erosion and dilation operations are performed.
         The kernel size used is proportional the squared of the area.
 
-        Args:
-            mask (ndarray): Error mask
+        # Arguments
+            mask: Numpy Array. Error mask
 
         Returns:
-            skel (ndarray): Skeleton mask
+            skel: Numpy Array. Skeleton mask
         """
         mask = np.asarray(mask)
         side = np.sqrt(np.sum(mask > 0))
@@ -193,16 +196,16 @@ class InteractiveScribblesRobot(object):
         Given the sequence and a mask prediction, the robot will return a
         scribble in the worst path.
 
-        Args:
-            sequence (string): Name of the sequence to interact with
-            pred_masks (ndarray): Array with the prediction masks. It must be an
+        # Arguments
+            sequence: String. Name of the sequence to interact with
+            pred_masks: Numpy Array. Array with the prediction masks. It must be an
                 integer array with shape (B x H x W) being B the number of
                 frames of the sequence.
-            gt_masks (ndarray): Array with the ground truth of the sequence. It
+            gt_masks: Numpy Array. Array with the ground truth of the sequence. It
                 must have the same data type and shape as `pred_masks`
 
-        Returns:
-            (dict): Return a scribble on its default representation.
+        # Returns
+            dict: Return a scribble on its default representation.
         """
         robot_start = time.time()
 
@@ -262,21 +265,18 @@ class InteractiveScribblesRobot(object):
             longest_paths = [P[idx] for idx in longest_paths_idx]
             t = (time.time() - t_start) * 1000
             logging.verbose(
-                f'Time to compute the longest path on the trees: {t:.3f} ms',
-                2)
+                f'Time to compute the longest path on the trees: {t:.3f} ms', 2)
 
             t_start = time.time()
             scribbles_paths = [
                 bezier_curve(p, self.nb_points) for p in longest_paths
             ]
             t = (time.time() - t_start) * 1000
-            logging.verbose(f'Time to compute the bezier curves: {t:.3f} ms',
-                            2)
+            logging.verbose(f'Time to compute the bezier curves: {t:.3f} ms', 2)
 
             end_time = time.time()
-            logging.verbose(
-                f'Generating the scribble for object id {obj_id} ' +
-                f'took {(end_time - start_time) * 1000:.3f} ms', 2)
+            logging.verbose(f'Generating the scribble for object id {obj_id} ' +
+                            f'took {(end_time - start_time) * 1000:.3f} ms', 2)
             # Generate scribbles data file
             for p in scribbles_paths:
                 p /= img_shape

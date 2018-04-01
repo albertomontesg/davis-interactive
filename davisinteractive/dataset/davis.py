@@ -8,9 +8,12 @@ from .. import logging
 
 
 class Davis:
+    """ DAVIS class to encapsulate some information about the dataset.
 
-    ANNOTATIONS_DIR = 'Annotations'
-    SCRIBBLES_DIR = 'Scribbles'
+    """
+
+    ANNOTATIONS_SUBDIR = 'Annotations'
+    SCRIBBLES_SUBDIR = 'Scribbles'
     RESOLUTION = '480p'
 
     def __init__(self, davis_root=None):
@@ -38,9 +41,10 @@ class Davis:
     def check_files(self, sequences):
         for seq in sequences:
             seq_scribbles_path = os.path.join(self.davis_root,
-                                              Davis.SCRIBBLES_DIR, seq)
-            seq_annotations_path = os.path.join(
-                self.davis_root, Davis.ANNOTATIONS_DIR, Davis.RESOLUTION, seq)
+                                              Davis.SCRIBBLES_SUBDIR, seq)
+            seq_annotations_path = os.path.join(self.davis_root,
+                                                Davis.ANNOTATIONS_SUBDIR,
+                                                Davis.RESOLUTION, seq)
 
             # Check scribbles files needed to give them as base for the user
             nb_scribbles = self.dataset['sequences'][seq]['num_scribbles']
@@ -61,7 +65,7 @@ class Davis:
                         f'and frame {i}')
 
     def load_scribble(self, sequence, scribble_idx):
-        scribble_file = os.path.join(self.davis_root, Davis.SCRIBBLES_DIR,
+        scribble_file = os.path.join(self.davis_root, Davis.SCRIBBLES_SUBDIR,
                                      sequence, f'{scribble_idx:03d}.json')
 
         with open(scribble_file, 'r') as fp:
@@ -75,7 +79,7 @@ class Davis:
         return scribble_data
 
     def load_annotations(self, sequence):
-        root_path = os.path.join(self.davis_root, Davis.ANNOTATIONS_DIR,
+        root_path = os.path.join(self.davis_root, Davis.ANNOTATIONS_SUBDIR,
                                  Davis.RESOLUTION, sequence)
         num_frames = self.dataset['sequences'][sequence]['num_frames']
         img_size = self.dataset['sequences'][sequence]['image_size']

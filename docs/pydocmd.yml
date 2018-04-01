@@ -1,0 +1,45 @@
+---
+# site_name: "DAVIS Interactive Evaluation Framework"
+
+# This tells pydocmd which pages to generate from which Python modules,
+# functions and classes. At the first level is the page name, below that
+# is a tree of Python member names (modules, classes, etc.) that should be
+# documented. Higher indentation leads to smaller header size.
+generate:
+  - docs/session.md:
+      - davisinteractive.session
+      - davisinteractive.session.DavisInteractiveSession++
+  - docs/dataset.davis.md:
+      - davisinteractive.dataset+
+      - davisinteractive.dataset.Davis+
+  - docs/robot.md:
+      - davisinteractive.robot.interactive_robot
+      - davisinteractive.robot.interactive_robot.InteractiveScribblesRobot+
+  - docs/metrics.jaccard.md:
+      - davisinteractive.metrics.jaccard+
+  - docs/utils.operations.md:
+      - davisinteractive.utils.operations+
+  - docs/utils.scribbles.md:
+      - davisinteractive.utils.scribbles+
+  - docs/utils.visualization.md:
+      - davisinteractive.utils.visualization+
+
+# MkDocs pages configuration. The `<<` operator is sugar added by pydocmd
+# that allows you to use an external Markdown file (eg. your project's README)
+# in the documentation. The path must be relative to current working directory.
+# Put here all md documentation to generate it
+pages:
+  - home: index.md << ../README.md
+  - license: license.md << ../LICENSE
+
+# These options all show off their default values. You don't have to add
+# them to your configuration if you're fine with the default.
+# docs_dir: sources
+gens_dir: _build/gen     # This will end up as the MkDocs 'docs_dir'
+site_dir: _build/site
+
+# Additional search path for your Python module. If you use Pydocmd from a
+# subdirectory of your project (eg. docs/), you may want to add the parent
+# directory here.
+additional_search_paths:
+  - ..

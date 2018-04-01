@@ -29,6 +29,20 @@ def _pascal_color_map(N=256, normalized=False):
 
 
 def plot_scribble(ax, scribble, frame, output_size=None, **kwargs):
+    """ Plot scribbles into an axis
+
+    # Arguments
+        ax: Matplotlib Axis. Axis where to plot the scribble lines.
+        scribbles: Scribble. Scribble to plot.
+        frame: Integer. Frame of the scribble to plot.
+        output_size: Tuple. Image size to scale the scribble points `(H, W)`.
+        **kwargs: Dictionary. Additional parameters to pass at the
+            `ax.plot(**kwargs)` method.
+
+    # Returns
+        matplotlib.axis: Return the given axis with the scribbles plotted on
+            it.
+    """
     scribbles = scribble['scribbles']
     if frame >= len(scribbles):
         raise ValueError('Frame value not valid')
