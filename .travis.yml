@@ -8,3 +8,9 @@ script:
   - pytest --cov=./
 after_success:
   - codecov --token=$CODECOV_TOKEN
+
+deploy:
+  provider: script
+  script: bash scripts/deploy_documentation.sh
+  on:
+    branch: master
