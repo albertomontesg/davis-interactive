@@ -11,7 +11,10 @@ generate:
       - davisinteractive.session.DavisInteractiveSession++
   - docs/dataset.davis.md:
       - davisinteractive.dataset+
-      - davisinteractive.dataset.Davis+
+      - davisinteractive.dataset.Davis
+      - davisinteractive.dataset.Davis.check_files
+      - davisinteractive.dataset.Davis.load_annotations
+      - davisinteractive.dataset.Davis.load_scribble
   - docs/robot.md:
       - davisinteractive.robot.interactive_robot
       - davisinteractive.robot.interactive_robot.InteractiveScribblesRobot+

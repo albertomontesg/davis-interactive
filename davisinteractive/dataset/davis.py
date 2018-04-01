@@ -12,9 +12,9 @@ class Davis:
 
     """
 
-    ANNOTATIONS_SUBDIR = 'Annotations'
-    SCRIBBLES_SUBDIR = 'Scribbles'
-    RESOLUTION = '480p'
+    ANNOTATIONS_SUBDIR = "Annotations"
+    SCRIBBLES_SUBDIR = "Scribbles"
+    RESOLUTION = "480p"
 
     def __init__(self, davis_root=None):
         self.davis_root = davis_root or os.environ.get('DATASET_DAVIS')
