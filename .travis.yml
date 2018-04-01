@@ -9,9 +9,9 @@ script:
 after_success:
   - codecov --token=$CODECOV_TOKEN
 
-deploy:
-  skip_cleanup: true
-  provider: script
-  script: bash scripts/deploy_documentation.sh
-  on:
-    branch: master
+# deploy:
+#   skip_cleanup: true
+#   provider: script
+#   script: bash scripts/deploy_documentation.sh
+#   on:
+#     branch: master
