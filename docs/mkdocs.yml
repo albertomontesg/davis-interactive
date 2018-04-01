@@ -1,7 +1,7 @@
 ---
 site_name: DAVIS Interactive Evaluation Framework
-docs_dir: _build/gen
-site_dir: _build/site
+docs_dir: _build
+site_dir: site
 
 repo_name: 'albertomontesg/davis-interactive'
 repo_url: 'https://github.com/albertomontesg/davis-interactive'
@@ -13,6 +13,8 @@ copyright: 'Copyright &copy; 2018 Alberto Montes'
 # This tree needs to be the same as in pydocmd.yml
 pages:
   - Home: index.md
+  - User Guide:
+      - Scribbles Format: user_guide/scribbles_format.md
   - API:
       - Interactive Session:
           - session: docs/session.md

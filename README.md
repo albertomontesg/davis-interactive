@@ -7,5 +7,13 @@ This is a framework to evaluate interactive segmentation models over the [DAVIS]
 The interactions are done through scribbles.
 More info on the challenge [webpage](http://davischallenge.org/challenge2018/interactive.html).
 
+
+
+## DAVIS Scribbles
+
+![dogs-jump](docs/images/scribbles/dogs-jump-image.jpg)
+
+
+
 **Note**: code still under development.
 

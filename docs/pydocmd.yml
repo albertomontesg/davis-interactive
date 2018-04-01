@@ -34,12 +34,13 @@ generate:
 pages:
   - home: index.md << ../README.md
   - license: license.md << ../LICENSE
+  - user_guide.scribbles_format: user_guide/scribbles_format.md << pages/user_guide/scribbles_format.md
 
 # These options all show off their default values. You don't have to add
 # them to your configuration if you're fine with the default.
 # docs_dir: sources
-gens_dir: _build/gen     # This will end up as the MkDocs 'docs_dir'
-site_dir: _build/site
+gens_dir: _build     # This will end up as the MkDocs 'docs_dir'
+site_dir: site
 
 # Additional search path for your Python module. If you use Pydocmd from a
 # subdirectory of your project (eg. docs/), you may want to add the parent
