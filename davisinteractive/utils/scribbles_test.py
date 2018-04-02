@@ -6,6 +6,7 @@ from .scribbles import (fuse_scribbles, is_empty, scribbles2mask,
 
 
 class TestScribbles2Mask:
+
     def test_resolution(self):
         scribbles_data = {
             'scribbles': [[], [{
@@ -93,7 +94,7 @@ class TestScribbles2Mask:
         mask = scribbles2mask(
             scribbles_data, (100, 150),
             only_annotated_frame=True,
-            bresenham_=False,
+            bresenham=False,
             default_value=0)
         assert mask.sum() == 2
         assert mask.dtype == np.int
@@ -117,7 +118,7 @@ class TestScribbles2Mask:
         mask = scribbles2mask(
             scribbles_data, (100, 150),
             only_annotated_frame=True,
-            bresenham_=True,
+            bresenham=True,
             default_value=0)
         assert np.all(mask[:, 0] == 1)
         assert np.all(mask[:, 1:] == 0)
@@ -138,7 +139,7 @@ class TestScribbles2Mask:
         mask = scribbles2mask(
             scribbles_data, (100, 150),
             only_annotated_frame=True,
-            bresenham_=False,
+            bresenham=False,
             bezier_curve_sampling=True,
             default_value=0)
         assert np.all(mask[:, 0] == 1)
@@ -146,6 +147,7 @@ class TestScribbles2Mask:
 
 
 class TestScribbles2Points:
+
     def test_wo_output_resolution(self):
         scribbles_data = {
             'scribbles': [[], [{
@@ -163,7 +165,7 @@ class TestScribbles2Points:
         X, Y = scribbles2points(scribbles_data)
         assert X.shape == (2, 3)
         assert X.dtype == np.float
-        assert Y.shape == (2, )
+        assert Y.shape == (2,)
         assert Y.dtype == np.int
 
         assert np.all(X == np.asarray([[1, 0, 0], [1, 0, 0.1]]))
@@ -186,7 +188,7 @@ class TestScribbles2Points:
         X, Y = scribbles2points(scribbles_data, output_resolution=(100, 100))
         assert X.shape == (2, 3)
         assert X.dtype == np.int
-        assert Y.shape == (2, )
+        assert Y.shape == (2,)
         assert Y.dtype == np.int
 
         assert np.all(X == np.asarray([[1, 0, 0], [1, 0, 9]], dtype=np.int))
@@ -197,6 +199,7 @@ class TestScribbles2Points:
 
 
 class TestFuseScribbles:
+
     def test_fuse_different_frame(self):
         scribble_1 = {
             'scribbles': [[], [{
@@ -333,6 +336,7 @@ class TestFuseScribbles:
 
 
 class TestEmpytScribble:
+
     def test_not_empty(self):
         scribble = {
             'scribbles': [[], [{

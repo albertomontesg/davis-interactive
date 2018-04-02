@@ -13,7 +13,7 @@ __all__ = ['DavisInteractiveSession']
 class DavisInteractiveSession:
     """ Class which allows to interface with the evaluation
 
-    # Attributes
+    # Arguments
         host: String. Host of the evuation server. Only `localhost`
             available for now.
         davis_root: String. Path to the Davis dataset root path. Necessary
@@ -192,6 +192,33 @@ class DavisInteractiveSession:
         logging.info('Giving scribble to the user')
 
         return sequence, scribbles, new_sequence
+
+    def scribbles_iterator(self, *args, **kwargs):
+        """ Iterate over all the samples and iterations to evaluate.
+
+        Instead of running a while loop with
+        #DavisInteractiveSession.is_running and then call to
+        #DavisInteractiveSession.get_scribbles, you can iterate with this
+        generator:
+
+        # Example
+        ```python
+        for sequence, scribble, new_sequence in sess.scribbles_iterator():
+            # Predict with model
+        ```
+
+        # Arguments
+            *args, **kwargs: This arguments will be passed internally to
+                #DavisInteractiveSession.get_scribbles method.
+
+        # Yields
+        `(string, dict, bool)`: Yields the name of the sequence of the
+                current sample, the scribbles of the current sample and a
+                boolean indicating if it is the first iteration of the given
+                sample respectively.
+        """
+        while self.is_running():
+            yield self.get_scribbles(*args, **kwargs)
 
     def submit_masks(self, pred_masks):
         """ Submit the predicted masks

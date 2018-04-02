@@ -1,6 +1,6 @@
 # Scribbles Default Format
 
-The scribbles data is stored in a key-value dictionary which can be encoded in a `json` file. The body of this dictionary should have the following fields:
+The scribbles data is stored in a key-value dictionary which can be encoded in a `json` file or a dictionary object. The body of this dictionary should have the following fields:
 
 ```json
 {
