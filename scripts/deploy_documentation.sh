@@ -1,6 +1,7 @@
 #!/bin/bash
 
 pip install mkdocs pydoc-markdown mkdocs-material
-cd docs || exit
+cd docs || exit 1
 ./build_docs.sh
-pydocmd gh-deploy
+touch site/.nojekyll
+# pydocmd gh-deploy
