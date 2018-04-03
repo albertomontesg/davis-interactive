@@ -84,7 +84,10 @@ class InteractiveScribblesRobot(object):
                     f'Reducing kernel radius from {prev_kernel_radius:.1f} ' +
                     f'pixels to {kernel_radius:.1f}', 1)
 
+        mask_ = np.pad(
+            mask_, ((1, 1), (1, 1)), mode='constant', constant_values=False)
         skel = medial_axis(mask_.astype(np.bool))
+        skel = skel[1:-1, 1:-1]
         return skel
 
     def _mask2graph(self, skeleton_mask):
