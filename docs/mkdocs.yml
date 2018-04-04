@@ -14,6 +14,7 @@ copyright: 'Copyright &copy; 2018 Alberto Montes'
 pages:
   - Home: index.md
   - User Guide:
+      - Installation: user_guide/installation.md
       - Usage: user_guide/usage.md
       - Scribbles Format: user_guide/scribbles.md
   - API:

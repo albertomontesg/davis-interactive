@@ -36,6 +36,7 @@ pages:
   - license: license.md << ../LICENSE
   - user_guide.scribbles: user_guide/scribbles.md << pages/user_guide/scribbles.md
   - user_guide.usage: user_guide/usage.md << pages/user_guide/usage.md
+  - user_guide.installation: user_guide/installation.md << pages/user_guide/installation.md
 
 # These options all show off their default values. You don't have to add
 # them to your configuration if you're fine with the default.
