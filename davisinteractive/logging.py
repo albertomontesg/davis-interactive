@@ -6,7 +6,8 @@ An addition is being made in order to allow different levels of verbosity.
 
 from absl import flags
 from absl.logging import (DEBUG, ERROR, FATAL, INFO, WARN, WARNING, debug,
-                          error, fatal, info, set_verbosity, warn, warning)
+                          error, fatal, info, set_verbosity, skip_log_prefix,
+                          warn, warning)
 
 # This removes warning and redirection to stderr
 flags.FLAGS.mark_as_parsed()
@@ -24,3 +25,7 @@ def set_info_level(level):
 def verbose(msg, level=0):
     if level <= _VERBOSITY_INFO_LEVEL:
         info(msg)
+
+
+# Register frame to not show that verbose messages come from this file
+skip_log_prefix(verbose)

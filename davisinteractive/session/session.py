@@ -167,8 +167,8 @@ class DavisInteractiveSession:
         """
         if self.running_model:
             raise RuntimeError(
-                'You can not call get_scribbles twice without submitting the masks first'
-            )
+                'You can not call get_scribbles twice without submitting the '
+                'masks first')
 
         sequence, scribble_idx, _ = self.samples[self.sample_idx]
         new_sequence = False
@@ -230,12 +230,12 @@ class DavisInteractiveSession:
                 dataset.
         """
         if not self.running_model:
-            raise RuntimeError(
-                'You must have called .get_scribbles before submiting the masks'
-            )
+            raise RuntimeError('You must have called .get_scribbles before '
+                               'submiting the masks')
 
         time_end = time.time()
         timing = time_end - self.interaction_start_time
+        self.interaction_start_time = None
         logging.info(
             f'The model took {timing:.3f} seconds to make a prediction')
 

@@ -5,7 +5,7 @@ import numpy as np
 from sklearn.neighbors import KNeighborsClassifier
 
 
-class PixelWiseMetricLearningModel:  # pragma: no cover
+class PixelWiseMetricLearningModel:
     IMG_SIZE = (60, 120)
 
     def __init__(self, embeddings_path, n_neighbors=1, metric='cosine'):

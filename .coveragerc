@@ -1,7 +1,7 @@
 [run]
 branch = True
 source = davisinteractive
-omit = */models/
+omit = *models*
 
 [report]
 exclude_lines =
@@ -12,6 +12,7 @@ exclude_lines =
     raise AssertionError
     raise ValueError
     raise TypeError
+    raise RuntimeError
     raise NotImplementedError
 
 ignore_errors = True
