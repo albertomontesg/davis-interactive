@@ -58,7 +58,7 @@ class TestDavisInteractiveSession(unittest.TestCase):
             assert mock_start_session.call_count == 1
 
             for i in range(7):
-                assert session.is_running()
+                assert session.next()
                 seq, scribbles, new_seq = session.get_scribbles()
                 assert seq == 'test-sequence'
                 assert is_empty(scribbles)

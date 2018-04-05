@@ -98,9 +98,12 @@ class DavisInteractiveSession:
     def __exit__(self, type_, value, traceback):
         self.connector.close()
 
-    def is_running(self):
-        """ Returns if the evaulation is still active
+    def next(self):
+        """ Iterate to the next iteration/sample of the evaluation process
 
+        This function move the iteration to the next iteration or to the next
+        sample in case the maximum number of iterations or maximum time have
+        been hit.
         This function can be used as control flow on user's code to know until
         which iteration the evuation is being performed.
 
@@ -197,7 +200,7 @@ class DavisInteractiveSession:
         """ Iterate over all the samples and iterations to evaluate.
 
         Instead of running a while loop with
-        #DavisInteractiveSession.is_running and then call to
+        #DavisInteractiveSession.next and then call to
         #DavisInteractiveSession.get_scribbles, you can iterate with this
         generator:
 
@@ -217,7 +220,7 @@ class DavisInteractiveSession:
                 boolean indicating if it is the first iteration of the given
                 sample respectively.
         """
-        while self.is_running():
+        while self.next():
             yield self.get_scribbles(*args, **kwargs)
 
     def submit_masks(self, pred_masks):

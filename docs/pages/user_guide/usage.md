@@ -10,7 +10,7 @@ from davisinteractive.session import DavisInteractiveSession
 model = SegmentationModel() # Your segmentation model
 
 with DavisInteractiveSession(host='localhost', davis_root='path/to/davis') as sess:
-    while sess.is_running():
+    while sess.next():
         # Get the current iteration scribbles
         sequence, scribbles, _ = sess.get_scribbles()
         # Your model predicts the segmentation masks from the scribbles
@@ -41,8 +41,10 @@ For more information about the class and its possible values please check [Davis
 To make the framework as eassy as possible and don't leave the control flow of the evaluation to the user, the session gives a method to know for how long the session is running:
 
 ```python
-while sess.is_running():
+while sess.next():
 ```
+
+Also this function is necessary to be called after each iteration as it is responsible to move the evaluation to the next iteration or sample if maximum time or maximum number of iterations have been hit.
 
 ## Obtain Scribbles
 
@@ -54,7 +56,7 @@ For every sample there will be multiple iterations (depending on the time limit 
 
 ```python
 with DavisInteractiveSession(host='localhost', davis_root='path/to/davis') as sess:
-    while sess.is_running():
+    while sess.next():
         sequence, scribbles, new_sequence = sess.get_scribbles(only_last)
         if new_sequence:
             model.load_weights(sequence)
