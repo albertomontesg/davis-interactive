@@ -41,7 +41,7 @@ theme:
     icon: laptop
   name: material
   palette:
-    primary: teal
+    primary: blue grey
     accent: red
   # feature:
   #   tabs: true
