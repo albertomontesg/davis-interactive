@@ -1,4 +1,5 @@
 ---
+sudo: false
 language: python
 python:
   - "3.6"
@@ -12,12 +13,16 @@ after_success:
   - codecov --token=$CODECOV_TOKEN
 
 before_deploy:
+  - pip install mkdocs pydoc-markdown mkdocs-material twine
   - bash scripts/deploy_documentation.sh
 deploy:
-  skip_cleanup: true
-  provider: pages
-  skip-cleanup: true
-  github-token: $GITHUB_TOKEN
-  local-dir: docs/site
-  on:
-    branch: master
+  - provider: pages
+    skip_cleanup: true
+    github-token: $GITHUB_TOKEN
+    local-dir: docs/site
+    on:
+      branch: master
+  - provider: pypi
+    user: $PYPI_USER
+    password: $PYPI_PASSWORD
+    distributions: "sdist bdist_wheel"
