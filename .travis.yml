@@ -22,7 +22,7 @@ deploy:
     local-dir: docs/site
     on:
       branch: master
-  - provider: pypi
-    user: $PYPI_USER
-    password: $PYPI_PASSWORD
-    distributions: "sdist bdist_wheel"
+  # - provider: pypi
+  #   user: $PYPI_USER
+  #   password: $PYPI_PASSWORD
+  #   distributions: "sdist bdist_wheel"
