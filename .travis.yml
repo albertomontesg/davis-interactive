@@ -2,6 +2,7 @@
 language: python
 python:
   - "3.6"
+cache: pip
 install:
   - pip install codecov pytest pytest-cov
   - pip install -e .
@@ -20,9 +21,3 @@ deploy:
   local-dir: docs/site
   on:
     branch: master
-# deploy:
-#   skip_cleanup: true
-#   provider: script
-#   script: bash scripts/deploy_documentation.sh
-#   on:
-#     branch: master

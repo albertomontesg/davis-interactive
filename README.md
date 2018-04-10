@@ -1,7 +1,7 @@
 # DAVIS Interactive Evaluation Framework
 
 
-[![Travis](https://img.shields.io/travis/albertomontesg/davis-interactive.svg?style=for-the-badge)](https://travis-ci.org/albertomontesg/davis-interactive) [![Codecov branch](https://img.shields.io/codecov/c/github/albertomontesg/davis-interactive/master.svg?style=for-the-badge)](https://codecov.io/gh/albertomontesg/davis-interactive) [![license](https://img.shields.io/github/license/mashape/apistatus.svg?style=for-the-badge)](https://github.com/albertomontesg/davis-interactive/blob/master/LICENSE)
+[![Travis](https://img.shields.io/travis/albertomontesg/davis-interactive.svg?style=for-the-badge)](https://travis-ci.org/albertomontesg/davis-interactive) [![Codecov branch](https://img.shields.io/codecov/c/github/albertomontesg/davis-interactive/master.svg?style=for-the-badge)](https://codecov.io/gh/albertomontesg/davis-interactive) [![GPLv3 license](https://img.shields.io/badge/License-GPL_v3-blue.svg?style=for-the-badge)](https://github.com/albertomontesg/davis-interactive/blob/master/LICENSE)
 
 This is a framework to evaluate interactive segmentation models over the [DAVIS](http://davischallenge.org/index.html) dataset. The code aims to provide an easy-to-use interface to test and validate interactive segmentation models.
 
