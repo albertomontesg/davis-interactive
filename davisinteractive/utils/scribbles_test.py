@@ -2,7 +2,8 @@ import numpy as np
 import pytest
 
 from .scribbles import (fuse_scribbles, is_empty, scribbles2mask,
-                        scribbles2points)
+                        scribbles2points, annotated_frames,
+                        annotated_frames_object)
 
 
 class TestScribbles2Mask:
@@ -359,3 +360,65 @@ class TestEmpytScribble:
             'annotated_frame': 1
         }
         assert is_empty(scribble)
+
+
+class TestAnnotatedFrames:
+
+    def test_annotated_frames(self):
+        scribble = {
+            'scribbles': [[], [{
+                'path': [[0, 0], [0, 0.1]],
+                'object_id': 1,
+                'start_time': 0,
+                'end_time': 1000
+            }, {
+                'path': [[0, 0], [0, 0.1]],
+                'object_id': 1,
+                'start_time': 0,
+                'end_time': 1000
+            }], [], [], [{
+                'path': [[0, 0], [0, 0.1]],
+                'object_id': 1,
+                'start_time': 0,
+                'end_time': 1000
+            }], []],
+            'sequence': 'test',
+        }
+        assert annotated_frames(scribble) == [1, 4]
+
+
+class TestAnnotatedFramesObject:
+
+    def test_annotated_frames(self):
+        scribble = {
+            'scribbles': [[], [{
+                'path': [[0, 0], [0, 0.1]],
+                'object_id': 1,
+                'start_time': 0,
+                'end_time': 1000
+            }, {
+                'path': [[0, 0], [0, 0.1]],
+                'object_id': 1,
+                'start_time': 0,
+                'end_time': 1000
+            }], [], [], [{
+                'path': [[0, 0], [0, 0.1]],
+                'object_id': 2,
+                'start_time': 0,
+                'end_time': 1000
+            }, {
+                'path': [[0, 0], [0, 0.1]],
+                'object_id': 3,
+                'start_time': 0,
+                'end_time': 1000
+            }], [{
+                'path': [[0, 0], [0, 0.1]],
+                'object_id': 2,
+                'start_time': 0,
+                'end_time': 1000
+            }], []],
+            'sequence': 'test',
+        }
+        assert annotated_frames_object(scribble, 1) == [1]
+        assert annotated_frames_object(scribble, 2) == [4, 5]
+        assert annotated_frames_object(scribble, 3) == [4]
