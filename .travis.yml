@@ -14,14 +14,18 @@ after_success:
 
 before_deploy:
   - pip install mkdocs pydoc-markdown mkdocs-material twine
-  - bash scripts/deploy_documentation.sh
+  - bash scripts/build_documentation.sh
 deploy:
   - provider: pages
     skip_cleanup: true
     github-token: $GITHUB_TOKEN
     local-dir: docs/site
     on:
+      tags: true
       branch: master
   - provider: script
     skip_cleanup: true
     script: bash scripts/deploy_pypi.sh
+    on:
+      tags: true
+      branch: master
