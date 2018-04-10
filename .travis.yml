@@ -24,7 +24,3 @@ deploy:
       branch: master
   - provider: script
     script: bash scripts/deploy_pypi.sh
-  # - provider: pypi
-  #   user: $PYPI_USER
-  #   password: $PYPI_PASSWORD
-  #   distributions: "sdist bdist_wheel"

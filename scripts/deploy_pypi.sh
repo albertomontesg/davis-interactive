@@ -1,7 +1,7 @@
 #!/bin/bash
 
-python setup.py clean --all
-python setup sdist bdist_wheel
+python3 setup.py clean --all
+python3 setup.py sdist bdist_wheel
 
 # Upload to PyPi test
 twine upload --repository-url "https://test.pypi.org/legacy/" \
