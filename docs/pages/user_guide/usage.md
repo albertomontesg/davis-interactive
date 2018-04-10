@@ -78,7 +78,7 @@ If you think there is any new transformation or a modification to the currents o
 
 ## Prediction Submission
 
-After each iteration, it is mandatory to submit tha scribbles to evaluate and at the same time automatically generate the scribble for the next iteration.
+After each iteration, it is mandatory to submit the scribbles to evaluate and at the same time automatically generate the scribble for the next iteration.
 
 ```python
 pred_masks = model.predict()
