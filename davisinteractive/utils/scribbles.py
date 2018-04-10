@@ -161,11 +161,8 @@ def annotated_frames(scribbles_data):
     # Returns
         list: Number of the frames that contain at least one scribble
     """
-    frames_list = []
     scribbles = scribbles_data['scribbles']
-    for ii, scribble_frame in enumerate(scribbles):
-        if scribble_frame:
-            frames_list.append(ii)
+    frames_list = [i for i, s in enumerate(scribbles) if s]
     return frames_list
 
 
@@ -181,9 +178,8 @@ def annotated_frames_object(scribbles_data, object_id):
     frames_list = []
     scribbles = scribbles_data['scribbles']
     for ii, scribble_frame in enumerate(scribbles):
-        if scribble_frame:
-            for scribble in scribble_frame:
-                if scribble['object_id'] == object_id:
-                    frames_list.append(ii)
-                    break
+        for scribble in scribble_frame:
+            if scribble['object_id'] == object_id:
+                frames_list.append(ii)
+                break
     return frames_list
