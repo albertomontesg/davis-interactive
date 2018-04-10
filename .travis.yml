@@ -23,4 +23,5 @@ deploy:
     on:
       branch: master
   - provider: script
+    skip_cleanup: true
     script: bash scripts/deploy_pypi.sh
