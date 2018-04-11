@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division
+
 import os
 import random
 import time
@@ -79,7 +81,8 @@ class DavisInteractiveSession:
             random.shuffle(samples)
         self.samples = samples
 
-        logging.info(f'Started session with {len(self.samples)} samples')
+        logging.info('Started session with {} samples'.format(
+            len(self.samples)))
 
         if self.progbar:
             from tqdm import tqdm
@@ -142,7 +145,7 @@ class DavisInteractiveSession:
         end = self.sample_idx >= len(self.samples)
         if not end and sample_change:
             seq, _, _ = self.samples[self.sample_idx]
-            logging.info(f'Start evaluation for sequence {seq}')
+            logging.info('Start evaluation for sequence %s' % seq)
 
         return not end
 
@@ -240,7 +243,7 @@ class DavisInteractiveSession:
         timing = time_end - self.interaction_start_time
         self.interaction_start_time = None
         logging.info(
-            f'The model took {timing:.3f} seconds to make a prediction')
+            'The model took {:.3f} seconds to make a prediction'.format(timing))
 
         self.interaction_nb += 1
         sequence, scribble_idx, _ = self.samples[self.sample_idx]

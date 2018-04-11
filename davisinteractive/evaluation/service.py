@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division
+
 import numpy as np
 import pandas as pd
 
@@ -34,8 +36,8 @@ class EvaluationService:
 
     def start(self, subset):
         if subset not in self.davis.sets:
-            raise ValueError(
-                f'Subset must be a valid subset: {self.davis.sets.keys()}')
+            raise ValueError('Subset must be a valid subset: {}'.format(
+                self.davis.sets.keys()))
 
         # Get the list of sequences to evaluate and also from all the scribbles
         # available
@@ -64,11 +66,11 @@ class EvaluationService:
         if not self.session_started:
             raise RuntimeError('Session not started')
         if sequence not in self.sequences:
-            raise ValueError(f'Invalid sequence: {sequence}')
+            raise ValueError('Invalid sequence: %s' % sequence)
         if (sequence, scribble_idx) not in [
             (s, i) for s, i, _ in self.sequences_scribble_idx
         ]:
-            raise ValueError(f'Invalid scribble index: {scribble_idx}')
+            raise ValueError('Invalid scribble index: {}'.format(scribble_idx))
 
         scribble = self.davis.load_scribble(sequence, scribble_idx)
 
@@ -77,20 +79,20 @@ class EvaluationService:
     def submit_masks(self, sequence, scribble_idx, pred_masks, timming,
                      interaction):
         # Evaluate the submitted masks
-        if len(self.report.loc[(self.report.sequence == sequence)
-                               & (self.report.scribble_idx == scribble_idx) &
+        if len(self.report.loc[(self.report.sequence == sequence) &
+                               (self.report.scribble_idx == scribble_idx) &
                                (self.report.interaction == interaction)]) > 0:
             raise RuntimeError(
-                f'For {sequence} and scribble {scribble_idx} already exist a result for interaction {interaction}'
-            )
+                'For {} and scribble {} already exist a result for interaction {}'.
+                format(sequence, scribble_idx, interaction))
         if interaction > 1 and len(
-                self.report.loc[(self.report.sequence == sequence)
-                                & (self.report.scribble_idx == scribble_idx) &
+                self.report.loc[(self.report.sequence == sequence) &
+                                (self.report.scribble_idx == scribble_idx) &
                                 (self.report.interaction == interaction -
                                  1)]) == 0:
             raise RuntimeError(
-                f'For {sequence} and scribble {scribble_idx} does not exist a result for previous interaction {interaction-1}'
-            )
+                'For {} and scribble {} does not exist a result for previous interaction {}'.
+                format(sequence, scribble_idx, interaction - 1))
         gt_masks = self.davis.load_annotations(sequence)
         jaccard = batched_jaccard(
             gt_masks, pred_masks, average_over_objects=False)

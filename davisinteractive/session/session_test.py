@@ -1,6 +1,7 @@
+from __future__ import absolute_import, division
+
 import os
 import unittest
-from unittest.mock import patch
 
 import pytest
 
@@ -8,6 +9,11 @@ from ..connector.local import LocalConnector
 from ..dataset import Davis
 from ..utils.scribbles import is_empty
 from .session import DavisInteractiveSession
+
+try:
+    from unittest.mock import patch
+except ImportError:
+    from mock import patch
 
 EMPTY_SCRIBBLE = {
     'scribbles': [[] for _ in range(69)],

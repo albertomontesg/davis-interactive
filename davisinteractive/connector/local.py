@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division
+
 import json
 import os
 import random
@@ -21,8 +23,8 @@ class LocalConnector(AbstractConnector):
     def start_session(self, subset, davis_root=None):
         if subset not in self.VALID_SUBSETS:
             raise ValueError(
-                f'For local connector, `subset` must be a valid subset: {self.VALID_SUBSETS}'
-            )
+                'For local connector, `subset` must be a valid subset: {}'.
+                format(self.VALID_SUBSETS))
 
         self.service = EvaluationService(davis_root=davis_root)
         return self.service.start(subset)

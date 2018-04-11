@@ -1,9 +1,11 @@
+from __future__ import absolute_import, division
+
 import numpy as np
 import pytest
 
-from .scribbles import (fuse_scribbles, is_empty, scribbles2mask,
-                        scribbles2points, annotated_frames,
-                        annotated_frames_object)
+from .scribbles import (annotated_frames, annotated_frames_object,
+                        fuse_scribbles, is_empty, scribbles2mask,
+                        scribbles2points)
 
 
 class TestScribbles2Mask:
@@ -382,7 +384,8 @@ class TestAnnotatedFrames:
                 'start_time': 0,
                 'end_time': 1000
             }], []],
-            'sequence': 'test',
+            'sequence':
+            'test',
         }
         assert annotated_frames(scribble) == [1, 4]
 
@@ -417,7 +420,8 @@ class TestAnnotatedFramesObject:
                 'start_time': 0,
                 'end_time': 1000
             }], []],
-            'sequence': 'test',
+            'sequence':
+            'test',
         }
         assert annotated_frames_object(scribble, 1) == [1]
         assert annotated_frames_object(scribble, 2) == [4, 5]
