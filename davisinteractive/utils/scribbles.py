@@ -8,7 +8,6 @@ from .operations import bresenham as bresenham_function
 
 def scribbles2mask(scribbles,
                    output_resolution,
-                   only_annotated_frame=False,
                    bezier_curve_sampling=False,
                    nb_points=1000,
                    bresenham=True,
@@ -18,13 +17,10 @@ def scribbles2mask(scribbles,
     # Arguments
         scribbles: Dictionary. Scribbles in the default format
         output_resolution: Tuple. Output resolution (H, W).
-        only_annotated_frame: Boolean. Weather return the mask for all the frames
-            or only the mask of the single annotated frame (only valid if one
-            frame is annotated).
         bezier_curve_sampling: Boolean. Weather sample first the returned
             scribbles using bezier curve.
-        nb_points: Integer. If `bezier_curve_sampling` is `True` set the number of
-            points to sample from the bezier curve.
+        nb_points: Integer. If `bezier_curve_sampling` is `True` set the number
+            of points to sample from the bezier curve.
         bresenham: Boolean. Wether to compute bresenham algorithm for the
             scribbles lines.
         default_value: Integer. Default value for the pixels which do not belong
@@ -66,12 +62,6 @@ def scribbles2mask(scribbles,
 
             m[path[:, 1], path[:, 0]] = obj_id
             masks[f] = m
-
-    if only_annotated_frame:
-        if 'annotated_frame' not in scribbles:
-            raise ValueError('`annotated_frame` not in scribble')
-        annotated_frame = scribbles['annotated_frame']
-        return masks[annotated_frame]
 
     return masks
 

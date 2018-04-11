@@ -299,11 +299,7 @@ class InteractiveScribblesRobot(object):
                 }
                 scribbles[worst_frame].append(path_data)
 
-        scribbles_data = {
-            'scribbles': scribbles,
-            'sequence': sequence,
-            'annotated_frame': worst_frame
-        }
+        scribbles_data = {'scribbles': scribbles, 'sequence': sequence}
 
         t = time.time() - robot_start
         logging.info(

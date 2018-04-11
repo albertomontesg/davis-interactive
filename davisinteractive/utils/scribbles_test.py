@@ -19,9 +19,7 @@ class TestScribbles2Mask:
                 'end_time': 1000
             }]],
             'sequence':
-            'test',
-            'annotated_frame':
-            1
+            'test'
         }
 
         mask = scribbles2mask(scribbles_data, (480, 856))
@@ -52,25 +50,16 @@ class TestScribbles2Mask:
                 'end_time': 1000
             }]],
             'sequence':
-            'test',
-            'annotated_frame':
-            1
+            'test'
         }
         mask = scribbles2mask(scribbles_data, (480, 856))
         assert mask.shape == (2, 480, 856)
         assert mask.dtype == np.int
 
-        mask = scribbles2mask(
-            scribbles_data, (480, 856), only_annotated_frame=True)
-        assert mask.shape == (480, 856)
-        assert mask.dtype == np.int
-        assert np.any(mask != -1)
-
     def test_mask_value(self):
         scribble_empty = {
             'scribbles': [[], []],
             'sequence': 'test',
-            'annotated_frame': 0
         }
         mask_0 = scribbles2mask(scribble_empty, (100, 100), default_value=-1)
         assert np.all(mask_0 == -1)
@@ -90,20 +79,15 @@ class TestScribbles2Mask:
                 'end_time': 1000
             }]],
             'sequence':
-            'test',
-            'annotated_frame':
-            1
+            'test'
         }
         mask = scribbles2mask(
-            scribbles_data, (100, 150),
-            only_annotated_frame=True,
-            bresenham=False,
-            default_value=0)
+            scribbles_data, (100, 150), bresenham=False, default_value=0)
         assert mask.sum() == 2
         assert mask.dtype == np.int
         assert mask.min() == 0 and mask.max() == 1
-        assert mask[0, 0] == 1
-        assert mask[-1, 0] == 1
+        assert mask[1, 0, 0] == 1
+        assert mask[1, -1, 0] == 1
 
     def test_mask_w_bresenham(self):
         scribbles_data = {
@@ -114,17 +98,13 @@ class TestScribbles2Mask:
                 'end_time': 1000
             }]],
             'sequence':
-            'test',
-            'annotated_frame':
-            1
+            'test'
         }
         mask = scribbles2mask(
-            scribbles_data, (100, 150),
-            only_annotated_frame=True,
-            bresenham=True,
-            default_value=0)
-        assert np.all(mask[:, 0] == 1)
-        assert np.all(mask[:, 1:] == 0)
+            scribbles_data, (100, 150), bresenham=True, default_value=0)
+        assert np.all(mask[0] == 0)
+        assert np.all(mask[1, :, 0] == 1)
+        assert np.all(mask[1, :, 1:] == 0)
 
     def test_mask_w_brezier(self):
         scribbles_data = {
@@ -135,18 +115,16 @@ class TestScribbles2Mask:
                 'end_time': 1000
             }]],
             'sequence':
-            'test',
-            'annotated_frame':
-            1
+            'test'
         }
         mask = scribbles2mask(
             scribbles_data, (100, 150),
-            only_annotated_frame=True,
             bresenham=False,
             bezier_curve_sampling=True,
             default_value=0)
-        assert np.all(mask[:, 0] == 1)
-        assert np.all(mask[:, 1:] == 0)
+        assert np.all(mask[0] == 0)
+        assert np.all(mask[1, :, 0] == 1)
+        assert np.all(mask[1, :, 1:] == 0)
 
 
 class TestScribbles2Points:
