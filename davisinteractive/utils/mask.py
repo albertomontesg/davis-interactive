@@ -18,11 +18,13 @@ def combine_masks(masks, th=0.5, method='max_per_pixel'):
     n_objects = len(masks)
     output_masks = []
     for fr_id in range(n_frames):
-        res_mat = np.zeros((masks[0].shape[0], masks[0].shape[1], n_objects))
+        res_mat = np.zeros((masks[0][fr_id].shape[0], masks[0][fr_id].shape[1], n_objects))
         for obj_id in range(n_objects):
-            res_mat[:, :, obj_id] = masks[obj_id]
+            res_mat[:, :, obj_id] = masks[obj_id][fr_id]
         marker = np.argmax(res_mat, axis=2)
+        out_mask = np.zeros((masks[0][fr_id].shape[0], masks[0][fr_id].shape[1]))
         for obj_id in range(n_objects):
-            output_masks.append(np.logical_and(marker == obj_id, masks[obj_id] > th))
-
+            tmp_mask = np.logical_and(marker == obj_id, masks[obj_id][fr_id] > th)
+            out_mask[tmp_mask] = obj_id+1
+        output_masks.append(out_mask)
     return output_masks

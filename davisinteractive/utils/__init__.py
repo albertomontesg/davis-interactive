@@ -1,3 +1,3 @@
 from __future__ import absolute_import
 
-from . import masks, operations, scribbles, visualization
+from . import mask, operations, scribbles, visualization
