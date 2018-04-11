@@ -25,11 +25,11 @@ deploy:
     github-token: $GITHUB_TOKEN
     local-dir: docs/site
     on:
+      python: "3.6"
       tags: true
-      branch: master
   - provider: script
     skip_cleanup: true
     script: bash scripts/deploy_pypi.sh
     on:
+      python: "3.6"
       tags: true
-      branch: master
