@@ -17,8 +17,7 @@ except ImportError:
 
 EMPTY_SCRIBBLE = {
     'scribbles': [[] for _ in range(69)],
-    'sequence': 'test-sequence',
-    'annotated_frame': 0
+    'sequence': 'test-sequence'
 }
 
 
