@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division
+
 import networkx as nx
 import numpy as np
 
@@ -5,6 +7,7 @@ from . import InteractiveScribblesRobot
 
 
 class TestInteractiveScribblesRobot:
+
     def test_generate_scribble_mask_empty(self):
         empty_mask = np.zeros((100, 200), dtype=np.bool)
 

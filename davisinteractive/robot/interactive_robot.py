@@ -1,6 +1,7 @@
+from __future__ import absolute_import, division
+
 import time
 
-import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
 from scipy.ndimage import binary_dilation, binary_erosion
@@ -67,7 +68,8 @@ class InteractiveScribblesRobot(object):
         kernel_radius = self.kernel_size * side * .5
         kernel_radius = min(kernel_radius, self.max_kernel_radius)
         logging.verbose(
-            f'Erosion and dilation with kernel radius: {kernel_radius:.1f}', 2)
+            'Erosion and dilation with kernel radius: {:.1f}'.format(
+                kernel_radius), 2)
         compute = True
         while kernel_radius > 1. and compute:
             kernel = disk(kernel_radius)
@@ -80,9 +82,9 @@ class InteractiveScribblesRobot(object):
                 compute = True
                 prev_kernel_radius = kernel_radius
                 kernel_radius *= .9
-                logging.verbose(
-                    f'Reducing kernel radius from {prev_kernel_radius:.1f} ' +
-                    f'pixels to {kernel_radius:.1f}', 1)
+                logging.verbose('Reducing kernel radius from {:.1f} '.format(
+                    prev_kernel_radius) +
+                                'pixels to {:.1f}'.format(kernel_radius), 1)
 
         mask_ = np.pad(
             mask_, ((1, 1), (1, 1)), mode='constant', constant_values=False)
@@ -155,7 +157,8 @@ class InteractiveScribblesRobot(object):
 
             if len(g) < self.min_nb_nodes:
                 # Prune small subgraphs
-                logging.verbose(f'Remove a small line with {len(g)} nodes', 1)
+                logging.verbose('Remove a small line with {} nodes'.format(
+                    len(g)), 1)
                 continue
 
             S.append(g)
@@ -201,11 +204,11 @@ class InteractiveScribblesRobot(object):
 
         # Arguments
             sequence: String. Name of the sequence to interact with
-            pred_masks: Numpy Array. Array with the prediction masks. It must be an
-                integer array with shape (B x H x W) being B the number of
-                frames of the sequence.
-            gt_masks: Numpy Array. Array with the ground truth of the sequence. It
-                must have the same data type and shape as `pred_masks`
+            pred_masks: Numpy Array. Array with the prediction masks. It must
+				be an integer array with shape (B x H x W) being B the number
+				of frames of the sequence.
+            gt_masks: Numpy Array. Array with the ground truth of the sequence.
+				It must have the same data type and shape as `pred_masks`
 
         # Returns
             dict: Return a scribble on its default representation.
@@ -223,8 +226,8 @@ class InteractiveScribblesRobot(object):
         worst_frame = jac.argmin()
         pred, gt = predictions[worst_frame], annotations[worst_frame]
         logging.verbose(
-            f'For sequence {sequence} the worst frames is #{worst_frame} ' +
-            f'with Jaccard: {jac.min():.3f}', 2)
+            'For sequence {} the worst frames is #{} with Jaccard: {:.3f}'.
+            format(sequence, worst_frame, jac.min()), 2)
 
         nb_frames = len(annotations)
         obj_ids = np.unique(annotations[annotations < 255])
@@ -233,20 +236,22 @@ class InteractiveScribblesRobot(object):
 
         for obj_id in obj_ids:
             logging.verbose(
-                f'Creating scribbles from error mask at object_id={obj_id}', 2)
+                'Creating scribbles from error mask at object_id={}'.format(
+                    obj_id), 2)
             start_time = time.time()
             error_mask = (gt == obj_id) & (pred != obj_id)
             if error_mask.sum() == 0:
-                logging.warn(f'Error mask of object ID {obj_id} is empty. ' +
-                             'Skip object ID.')
+                logging.warn(
+                    'Error mask of object ID {} is empty. Skip object ID.'.
+                    format(obj_id))
                 continue
 
             # Generate scribbles
             skel_mask = self._generate_scribble_mask(error_mask)
             skel_time = time.time() - start_time
             logging.verbose(
-                f'Time to compute the skeleton mask: {skel_time*1000:.3f} ms',
-                2)
+                'Time to compute the skeleton mask: {:.3f} ms'.format(
+                    skel_time * 1000), 2)
             if skel_mask.sum() == 0:
                 continue
 
@@ -254,32 +259,35 @@ class InteractiveScribblesRobot(object):
             mask2graph_time = time.time() - start_time - skel_time
             logging.verbose(
                 'Time to transform the skeleton mask into a graph: ' +
-                f'{mask2graph_time * 1000:.3f} ms', 2)
+                '{:.3f} ms'.format(mask2graph_time * 1000), 2)
 
             t_start = time.time()
             S = self._acyclics_subgraphs(G)
             t = (time.time() - t_start) * 1000
             logging.verbose(
                 'Time to split into connected components subgraphs ' +
-                f'and remove the cycles: {t:.3f} ms', 2)
+                'and remove the cycles: {:.3f} ms'.format(t), 2)
 
             t_start = time.time()
             longest_paths_idx = [self._longest_path_in_tree(s) for s in S]
             longest_paths = [P[idx] for idx in longest_paths_idx]
             t = (time.time() - t_start) * 1000
             logging.verbose(
-                f'Time to compute the longest path on the trees: {t:.3f} ms', 2)
+                'Time to compute the longest path on the trees: {:.3f} ms'.
+                format(t), 2)
 
             t_start = time.time()
             scribbles_paths = [
                 bezier_curve(p, self.nb_points) for p in longest_paths
             ]
             t = (time.time() - t_start) * 1000
-            logging.verbose(f'Time to compute the bezier curves: {t:.3f} ms', 2)
+            logging.verbose(
+                'Time to compute the bezier curves: {:.3f} ms'.format(t), 2)
 
             end_time = time.time()
-            logging.verbose(f'Generating the scribble for object id {obj_id} ' +
-                            f'took {(end_time - start_time) * 1000:.3f} ms', 2)
+            logging.verbose(
+                'Generating the scribble for object id {} '.format(obj_id) +
+                'took {:.3f} ms'.format((end_time - start_time) * 1000), 2)
             # Generate scribbles data file
             for p in scribbles_paths:
                 p /= img_shape
@@ -298,5 +306,6 @@ class InteractiveScribblesRobot(object):
         }
 
         t = time.time() - robot_start
-        logging.info(f'The robot took {t:.3f} s to generate all the scribbles')
+        logging.info(
+            'The robot took {:.3f} s to generate all the scribbles'.format(t))
         return scribbles_data

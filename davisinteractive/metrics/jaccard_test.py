@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division
+
 import numpy as np
 import pytest
 
@@ -5,6 +7,7 @@ from .jaccard import batched_jaccard
 
 
 class TestJaccard:
+
     @pytest.mark.parametrize('nb_objects,nb_frames,height,width',
                              [(1, 10, 400, 800), (2, 10, 400, 800),
                               (10, 10, 400, 800), (3, 2, 100, 100),
@@ -19,7 +22,7 @@ class TestJaccard:
             y_true, y_pred, average_over_objects=True)
 
         assert jaccard_frames.dtype == np.float
-        assert jaccard_frames.shape == (nb_frames, )
+        assert jaccard_frames.shape == (nb_frames,)
         assert jaccard_frames.min() >= 0.
         assert jaccard_frames.max() <= 1.
 

@@ -1,12 +1,19 @@
+from __future__ import absolute_import, division
+
 import os
-from unittest.mock import patch
 
 import pytest
 
 from .davis import Davis
 
+try:
+    from unittest.mock import patch
+except ImportError:
+    from mock import patch
+
 
 class TestDavis:
+
     def test_path(self):
         with pytest.raises(ValueError):
             davis = Davis()

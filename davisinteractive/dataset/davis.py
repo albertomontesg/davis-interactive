@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division
+
 import json
 import os
 
@@ -78,30 +80,34 @@ class Davis:
             nb_scribbles = self.dataset['sequences'][seq]['num_scribbles']
             for i in range(1, nb_scribbles):
                 if not os.path.exists(
-                        os.path.join(seq_scribbles_path, f'{i:03d}.json')):
+                        os.path.join(seq_scribbles_path,
+                                     '{:03d}.json'.format(i))):
                     raise FileNotFoundError(
-                        f'Scribble file not found for sequence {seq} ' +
-                        f'and scribble {i}')
+                        'Scribble file not found for sequence {} and scribble {}'.
+                        format(seq, i))
 
             # Check annotations files required for the evaluation
             nb_frames = self.dataset['sequences'][seq]['num_frames']
             for i in range(nb_frames):
                 if not os.path.exists(
-                        os.path.join(seq_annotations_path, f'{i:05d}.png')):
+                        os.path.join(seq_annotations_path,
+                                     '{:05d}.png'.format(i))):
                     raise FileNotFoundError(
-                        f'Annotations file not found for sequence {seq} ' +
-                        f'and frame {i}')
+                        'Annotations file not found for sequence {} and frame {}'.
+                        format(seq, i))
 
     def load_scribble(self, sequence, scribble_idx):
         scribble_file = os.path.join(self.davis_root, Davis.SCRIBBLES_SUBDIR,
-                                     sequence, f'{scribble_idx:03d}.json')
+                                     sequence,
+                                     '{:03d}.json'.format(scribble_idx))
 
         with open(scribble_file, 'r') as fp:
             scribble_data = json.load(fp)
         assert scribble_data['sequence'] == sequence
 
-        logging.verbose(f'Loaded scribble for sequence {sequence} and ' +
-                        f'scribble_idx {scribble_idx}', 1)
+        logging.verbose(
+            'Loaded scribble for sequence {} and scribble_idx {}'.format(
+                sequence, scribble_idx), 1)
         logging.verbose(scribble_file, 2)
 
         return scribble_data
@@ -116,13 +122,13 @@ class Davis:
             (num_frames, img_size[1], img_size[0]), dtype=np.int)
 
         for f in range(num_frames):
-            mask = Image.open(os.path.join(root_path, f'{f:05d}.png'))
+            mask = Image.open(os.path.join(root_path, '{:05d}.png'.format(f)))
             mask = np.asarray(mask)
             assert mask.shape == tuple(img_size[::-1])
             annotations[f] = mask
 
-        logging.verbose(f'Loaded annotations for sequence {sequence}', 1)
-        logging.verbose(f'at path: {root_path}', 2)
-        logging.verbose(f'Annotations shape: {annotations.shape}', 2)
+        logging.verbose('Loaded annotations for sequence %s' % sequence, 1)
+        logging.verbose('at path: %s' % root_path, 2)
+        logging.verbose('Annotations shape: {}'.format(annotations.shape), 2)
 
         return annotations

@@ -3,6 +3,7 @@
 The logging will be handled with the abseil library.
 An addition is being made in order to allow different levels of verbosity.
 """
+from __future__ import absolute_import
 
 from absl import flags
 from absl.logging import (DEBUG, ERROR, FATAL, INFO, WARN, WARNING, debug,

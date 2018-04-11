@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division
+
 import numpy as np
 
 from .operations import bezier_curve
@@ -34,10 +36,12 @@ def scribbles2mask(scribbles,
             default or (H x W) if `only_annotated_frame==True`.
     """
     if len(output_resolution) != 2:
-        raise ValueError(f'Invalid output resolution: {output_resolution}')
+        raise ValueError(
+            'Invalid output resolution: {}'.format(output_resolution))
     for r in output_resolution:
         if r < 1:
-            raise ValueError(f'Invalid output resolution: {output_resolution}')
+            raise ValueError(
+                'Invalid output resolution: {}'.format(output_resolution))
 
     nb_frames = len(scribbles['scribbles'])
     masks = np.full(
