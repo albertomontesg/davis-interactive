@@ -151,3 +151,35 @@ def is_empty(scribbles_data):
     scribbles = scribbles_data['scribbles']
     has_lines = [len(s) > 0 for s in scribbles]
     return not any(has_lines)
+
+
+def annotated_frames(scribbles_data):
+    """ Computes which frames have a scribble
+
+    # Arguments
+        scribbles_data (dict): Scribble in the default format
+    # Returns
+        list: Number of the frames that contain at least one scribble
+    """
+    scribbles = scribbles_data['scribbles']
+    frames_list = [i for i, s in enumerate(scribbles) if s]
+    return frames_list
+
+
+def annotated_frames_object(scribbles_data, object_id):
+    """ Computes which frames have a scribble for a certain object
+
+    # Arguments
+        scribbles_data (dict): Scribble in the default format
+        object_id (int): Id of the object of interest
+    # Returns
+        dict: Number of the frames that contain at least one scribble
+    """
+    frames_list = []
+    scribbles = scribbles_data['scribbles']
+    for ii, scribble_frame in enumerate(scribbles):
+        for scribble in scribble_frame:
+            if scribble['object_id'] == object_id:
+                frames_list.append(ii)
+                break
+    return frames_list
