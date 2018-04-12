@@ -24,6 +24,8 @@ generate:
       - davisinteractive.utils.operations+
   - docs/utils.scribbles.md:
       - davisinteractive.utils.scribbles+
+  - docs/utils.mask.md:
+      - davisinteractive.utils.mask+
   - docs/utils.visualization.md:
       - davisinteractive.utils.visualization+
 

@@ -29,6 +29,7 @@ pages:
       - Utils:
           - utils.operations: docs/utils.operations.md
           - utils.scribbles: docs/utils.scribbles.md
+          - utils.mask: docs/utils.mask.md
           - utils.visualization: docs/utils.visualization.md
   - License: license.md
 
