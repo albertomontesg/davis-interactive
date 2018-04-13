@@ -4,6 +4,7 @@ import os
 import random
 import time
 from copy import deepcopy
+from datetime import datetime
 
 from .. import logging
 from ..connector.fabric import ServerConnectionFabric
@@ -29,6 +30,9 @@ class DavisInteractiveSession:
             sample.
         max_nb_interactions: Integer. Maximum number of interactions to
             evaluate per sample.
+        report_save_dir: String. Path to the directory where the report will
+            be stored during the evaluation. By default is the current working
+            directory.
         progbar: Boolean. Wether to show a progbar to show the evolution
             of the evaluation. If `True`, `tqdm` Python package will be
             required.
@@ -43,6 +47,7 @@ class DavisInteractiveSession:
                  shuffle=False,
                  max_time=None,
                  max_nb_interactions=5,
+                 report_save_dir=None,
                  progbar=False):
         # self.host = host
         # self.key = key
@@ -70,10 +75,15 @@ class DavisInteractiveSession:
         self.sample_last_scribble = None
         self.interaction_start_time = None
 
+        self.report_save_dir = report_save_dir or os.getcwd()
+        # Crete the directory if does not exists
+        if not os.path.exists(self.report_save_dir):
+            os.makedirs(self.report_save_dir)
+        self.report_name = 'result_%s' % datetime.now().strftime(
+            '%Y%m%d_%H%M%S')
+
     def __enter__(self):
         # Create connector
-        # self.connector = ServerConnectionFabric.get_connector(
-        #     self.host, self.key)
         samples, max_t, max_i = self.connector.start_session(
             self.subset, davis_root=self.davis_root)
         if self.shuffle:
@@ -146,6 +156,17 @@ class DavisInteractiveSession:
         if not end and sample_change:
             seq, _, _ = self.samples[self.sample_idx]
             logging.info('Start evaluation for sequence %s' % seq)
+
+        # Save report on final version if the evaluation ends
+        if end:
+            df = self._get_report()
+            report_filename = os.path.join(self.report_save_dir,
+                                           '%s.csv' % self.report_name)
+            df.to_csv(report_filename)
+            # Remove the temporal file
+            tmp_report_filename = os.path.join(self.report_save_dir,
+                                               '%s.tmp.csv' % self.report_name)
+            os.remove(tmp_report_filename)
 
         return not end
 
@@ -253,9 +274,14 @@ class DavisInteractiveSession:
         self.sample_scribbles = fuse_scribbles(self.sample_scribbles,
                                                self.sample_last_scribble)
 
+        df = self._get_report()
+        tmp_report_filename = os.path.join(self.report_save_dir,
+                                           '%s.tmp.csv' % self.report_name)
+        df.to_csv(tmp_report_filename)
+
         self.running_model = False
 
-    def get_report(self):
+    def _get_report(self):
         """ Gives the current report of the evaluation
 
         # Returns
