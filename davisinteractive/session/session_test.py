@@ -1,8 +1,10 @@
 from __future__ import absolute_import, division
 
 import os
+import tempfile
 import unittest
 
+import pandas as pd
 import pytest
 
 from ..connector.local import LocalConnector
@@ -44,6 +46,7 @@ class TestDavisInteractiveSession(unittest.TestCase):
 
     @patch.object(LocalConnector, 'close', return_value=None)
     @patch.object(LocalConnector, 'submit_masks', return_value=EMPTY_SCRIBBLE)
+    @patch.object(LocalConnector, 'get_report', return_value=pd.DataFrame())
     @patch.object(
         LocalConnector, 'get_starting_scribble', return_value=EMPTY_SCRIBBLE)
     @patch.object(
@@ -52,12 +55,14 @@ class TestDavisInteractiveSession(unittest.TestCase):
         return_value=([('test-sequence', 2, 2), ('test-sequence', 1, 3)], 5,
                       None))
     def test_interactions_limit(self, mock_start_session,
-                                mock_get_starting_scribble, mock_submit_masks,
-                                mock_close):
+                                mock_get_starting_scribble, mock_get_report,
+                                mock_submit_masks, mock_close):
         davis_root = '/tmp'
 
         with DavisInteractiveSession(
-                davis_root=davis_root, max_nb_interactions=5,
+                davis_root=davis_root,
+                max_nb_interactions=5,
+                report_save_dir=tempfile.mkdtemp(),
                 max_time=None) as session:
 
             assert mock_start_session.call_count == 1
