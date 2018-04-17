@@ -8,6 +8,7 @@ This is a framework to evaluate interactive segmentation models over the [DAVIS 
 This is the tool that will be used to evaluate the interactive track on the DAVIS Challenge on Video Object Segmentation 2018. More info about the challenge on the [website](http://davischallenge.org/challenge2018/interactive.html).
 
 You can find an example of how to use the package in the following repository:
+
 *  [Scribble-OSVOS](https://github.com/kmaninis/Scribble-OSVOS)
 
 
