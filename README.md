@@ -36,11 +36,11 @@ Please cite both papers in your publications if DAVIS or this code helps your re
 ```
 
 ```latex
-@inproceedings{Perazzi2016,
-  author = {F. Perazzi and J. Pont-Tuset and B. McWilliams and L. {Van Gool} and M. Gross and A. Sorkine-Hornung},
-  title = {A Benchmark Dataset and Evaluation Methodology for Video Object Segmentation},
-  booktitle = {Computer Vision and Pattern Recognition},
-  year = {2016}
+@article{Pont-Tuset_arXiv_2017,
+  author = {Jordi Pont-Tuset and Federico Perazzi and Sergi Caelles and Pablo Arbel\'aez and Alexander Sorkine-Hornung and Luc {Van Gool}},
+  title = {The 2017 DAVIS Challenge on Video Object Segmentation},
+  journal = {arXiv:1704.00675},
+  year = {2017}
 }
 ```
 
