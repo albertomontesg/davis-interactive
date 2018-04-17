@@ -26,13 +26,20 @@ Now lets explain every component in detail to give a better understanding about 
 
 ## Session
 
+A session consists on a sequence of samples to evaluate which each sample is a DAVIS sequence plus an initial scribble annotated by a real human.
+Every sample is going to be evaluated interactively a number of iterations or as many iterations possible in a defined time window.
+The whole evaluation will consist on the selected dataset of DAVIS sequences with all the annotated scribbles available. 
+Right now there is 3 annotated scribbles per sequence so every annotation and its sequence will be evaluated separetly.
+
 The first step is to create a session to evaluate:
 
 ```python
 with DavisInteractiveSession(host='localhost', davis_root='path/to/davis') as sess:
 ```
 
-This can specify the server where to perform the evaluation against, as well as the path of the DAVIS dataset files. In case of development and local testing against `localhost` (the only option available for now), the maximum number of interations per sample or the time per sample when evaluating can be customize as well as the dataset of the evaluation. 
+This can specify the server where to perform the evaluation against, as well as the path of the DAVIS dataset files. 
+In case of development and local testing against `localhost` (the only option available for now), 
+the maximum number of interations per sample or the time per sample when evaluating can be customize as well as the dataset of the evaluation. 
 
 For more information about the class and its possible values please check [DavisInteractiveSession](/docs/session).
 
