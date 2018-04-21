@@ -109,3 +109,4 @@ examples/
 
 #Pycharm
 .idea/
+.DS_Store
