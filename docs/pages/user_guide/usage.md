@@ -9,7 +9,7 @@ model = SegmentationModel() # Your segmentation model
 
 with DavisInteractiveSession(host='localhost', davis_root='path/to/davis') as sess:
     while sess.next():
-        # Get the current iteration scribbles
+        # Get the current iteration's scribbles
         sequence, scribbles, _ = sess.get_scribbles()
         # Your model predicts the segmentation masks from the scribbles
         pred_masks = model(sequence, scribbles)
@@ -26,8 +26,8 @@ Let us explain every component in detail to give a better understanding about ho
 
 A session is a sequence of samples (a DAVIS sequence plus an initial scribble annotated by a human).
 Every sample is going to be evaluated interactively for a number of iterations (in a defined time window).
-<!--- I DON'T GET THESE TWO SENTENCES: The whole evaluation will consist in the selected dataset of DAVIS sequences with all the annotated scribbles available. 
-Right now there are 3 annotated scribbles per sequence so every annotation and its sequence will be evaluated separately. -->
+<!--- The whole evaluation will consist in the selected dataset of DAVIS sequences with all the annotated scribbles available. -->
+In order to be more realistic, we provide 3 manually annotated scribbles per sequence. Submitted methods will be evaluated starting from all 3 scribbles for each sequence, and the results will be averaged.
 
 The first step is to create a session to evaluate:
 
@@ -35,9 +35,9 @@ The first step is to create a session to evaluate:
 with DavisInteractiveSession(host='localhost', davis_root='path/to/davis') as sess:
 ```
 
-This can specify the server where to perform the evaluation against, as well as the path of the DAVIS dataset files. 
-In case of development and local testing against `localhost` (the only option available for now), 
-the maximum number of interactions per sample or the time per sample when evaluating can be customized as well as the dataset of the evaluation. 
+This instructs the server where to perform the evaluation (`localhost` or (soon) `remote`), as well as the path of the DAVIS dataset files. 
+In case of development and local testing  (`host='localhost'` - the only option available for now), 
+parameters such as the maximum number of interactions per object, the maximum interaction time per object, as well as the dataset split used, can be tuned. 
 
 For more information about the class and its possible values please check [DavisInteractiveSession](/docs/session).
 
@@ -56,8 +56,8 @@ Also this function is necessary to be called after each iteration as it is respo
 For every sample, there will be multiple iterations (depending on the time limit or the maximum number of iterations per sample). For every iteration you can call `get_scribbles` to obtain the scribbles for the next iteration. A tuple of three elements will be returned:
 
 * `sequence`: the name of the sequence in the case you are using a model that depends on the sequence of the DAVIS dataset which you are evaluating.
-* `scribbles`: the scribbles of the current iteration. This scribbles by default will be all the scribbles generated for the current sample (the first human annotated and all the automatic generated at next iterations). If you call the the method setting a flag `get_scribbles(only_last=True)` only the last iteration scribbles will be returned.
-* `new_sequence`: this is a flag indicating if the given scribbles correspond to the first iteration of the sample. This might be useful in the case a model is being trained online at every iteration and at sample change need a reset. Example:
+* `scribbles`: the scribbles of the current iteration. This scribbles by default will be all the scribbles generated for the current sample (the first human annotated and all the automatic generated at next iterations). If you call the method setting a flag `get_scribbles(only_last=True)` only the last iteration's scribbles will be returned.
+* `new_sequence`: this is a flag indicating whether the given scribbles correspond to the first iteration of the sample.
 
 ```python
 with DavisInteractiveSession(host='localhost', davis_root='path/to/davis') as sess:
@@ -83,7 +83,7 @@ If you think there is any new transformation or a modification to the current on
 
 ## Prediction Submission
 
-After each iteration, it is mandatory to submit the scribbles to evaluate and at the same time automatically generate the scribble for the next iteration.
+After each iteration, it is mandatory to submit the scribbles to evaluate and at the same time to automatically generate the scribble for the next iteration.
 
 ```python
 pred_masks = model.predict()
@@ -92,4 +92,4 @@ sess.submit_masks(pred_masks)
 
 ## Final Result
 
-Once the session has finished a report can be asked using the `get_report` method. This method returns a Pandas DataFrame where every row is the evaluation of every sequence, iteration and frame; as well as the timing of every iteration. From this report, information of the performance against processing time can be extracted for comparison between interactive methods.
+Once the session has finished a report can be asked using the `get_report` method. This method returns a Pandas DataFrame where every row is the evaluation of every sequence, iteration and frame; as well as the timing of every iteration. From this report, information of the performance against processing time can be extracted for comparison among interactive methods.
