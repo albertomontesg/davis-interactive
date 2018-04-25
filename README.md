@@ -5,7 +5,7 @@
 
 This is a framework to evaluate interactive segmentation models over the [DAVIS 2017](http://davischallenge.org/index.html) dataset. The code aims to provide an easy-to-use interface to test and validate interactive segmentation models.
 
-This is the tool that will be used to evaluate the interactive track on the DAVIS Challenge on Video Object Segmentation 2018. More info about the challenge on the [website](http://davischallenge.org/challenge2018/interactive.html).
+This is the tool used to evaluate the interactive track on the DAVIS Challenge on Video Object Segmentation 2018. More info about the challenge on the [official website](http://davischallenge.org/challenge2018/interactive.html).
 
 You can find an example of how to use the package in the following repository:
 
@@ -14,13 +14,13 @@ You can find an example of how to use the package in the following repository:
 
 ## DAVIS Scribbles
 
-In the DAVIS **Main** Challenge track, the task consists on object segmentation in a *semi-supervised* manner, i.e. the given input is the ground truth mask of the first frame. In the DAVIS **Interactive** Challenge, in contrast, the user input is in form of scribbles, which can be drawn faster by humans and thus is a more realistic type of input.
+In the DAVIS **Main** Challenge track, the task consists on object segmentation in a *semi-supervised* manner, i.e. the given input is the ground truth mask of the first frame. In the DAVIS **Interactive** Challenge, in contrast, the user input is in form of scribbles, which can be drawn much faster by humans and thus is a more realistic type of input. The same objects as the ones of the **Main** track have been annotated with scribbles.
 
 <img src="docs/images/scribbles/dogs-jump-image.jpg" width="30%"/> <img src="docs/images/scribbles/dogs-jump-scribble01.jpg" width="30%"/> <img src="docs/images/scribbles/dogs-jump-scribble02.jpg" width="30%"/>
 
 The interactive annotation and segmentation consist in an iterative loop which is going to be evaluated as follows:
 
-* On the first iteration, a human-annotated scribble will be provided to the segmentation model. All the scribbles are annotated over the DAVIS 2017 dataset and the objects annotated will be the same as the ground truth masks.<br> **Note**: the annotated frame can be any of the sequence as the humans where asked to annotate the frames that found most relevant and meaningfull to annotate.
+* On the first iteration, a human-annotated scribble is provided to the segmentation model. <br> **Note**: the annotated frame can be any of the sequence, as the annotators were instructed to annotate the most relevant and meaningful frame. This is in contrast to the **Main** track, where - only and strictly - the first frame is annotated.
 * During the rest of the iterations, once the predicted masks have been submitted, a scribble is simulated by the server. The new annotation will be performed on a single frame and this frame will be chosen as the one on which the current result is the worst.
 
 **Evaluation**: For now, the evaluation metric will be the Jaccard similarity $\mathcal{J}$.
