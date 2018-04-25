@@ -58,12 +58,12 @@ class Davis:
 
     def __init__(self, davis_root=None):
         self.davis_root = davis_root or os.environ.get('DATASET_DAVIS')
-        self.davis_root = Path(self.davis_root)
-        if not self.davis_root.exists() or not self.davis_root.is_dir():
+        if self.davis_root is None:
             raise ValueError(
                 'Davis root dir not especified. Please specify it in the '
                 'environmental variable DAVIS_DATASET or give it as parameter '
                 'in davis_root.')
+        self.davis_root = Path(self.davis_root)
 
         # Load DAVIS data
         with Path(__file__).parent.joinpath('davis.json').open() as fp:
