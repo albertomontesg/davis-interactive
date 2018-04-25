@@ -4,7 +4,7 @@ import os
 
 import pytest
 
-from .davis import Davis
+from davisinteractive.dataset import Davis
 
 try:
     from unittest.mock import patch
