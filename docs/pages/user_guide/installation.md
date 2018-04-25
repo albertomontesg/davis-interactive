@@ -4,16 +4,16 @@ To use this package it is necessary to install it (with `pip` or by source) and 
 
 ## PyPi Install
 
-To install the package you can run the following command on your bash command line terminal:
+To install the package you can run the following command on your terminal:
 
 ```bash
-# Python 3
-pip3 install davisinteractive
+# Python 3 strongly recommended
+pip install davisinteractive
 ```
 
 ## DAVIS Dataset
 
-In addition to the framework, you will need to download the `trainval` DAVIS 2017 Dataset with 480p resolution from [here](http://davischallenge.org/davis2017/code.html).
+In addition to installing the framework, you will need to download the `trainval` DAVIS 2017 Dataset with 480p resolution from [here](http://davischallenge.org/davis2017/code.html).
 
 Moreover, you can download the `trainval` scribbles from [here](https://data.vision.ee.ethz.ch/csergi/share/DAVIS-Interactive/DAVIS-2017-scribbles-trainval.zip).
 You have to unzip the scibbles zip file in the folder containing DAVIS (in /path/to supposing DAVIS is in /path/to/DAVIS).
@@ -27,8 +27,8 @@ If you prefer, you can install the package downloading the source code and insta
 ```bash
 # Download the code
 git clone https://github.com/albertomontesg/davis-interactive.git && cd davis-interactive
-# Install it
-python3 setup.py install
+# Install it - Python 3 recommended
+python setup.py install
 ```
 
 ## Development
