@@ -4,13 +4,19 @@ import hashlib
 import json
 import os
 import tempfile
-import urllib.request as request
 import zipfile
 
 import numpy as np
 from PIL import Image
+from six.moves import urllib
 
-from .. import Path, logging
+from .. import logging
+
+try:
+    from pathlib import Path
+    Path().expanduser()
+except (ImportError, AttributeError):
+    from pathlib2 import Path
 
 
 class Davis:
@@ -82,7 +88,7 @@ class Davis:
 
         # Downloading
         logging.info('Downloading Scribbles')
-        request.urlretrieve(self.SCRIBBLES_URL, download_file)
+        urllib.request.urlretrieve(self.SCRIBBLES_URL, download_file)
 
         # Check integrity
         logging.info('Checking hash')
