@@ -1,12 +1,16 @@
 from __future__ import absolute_import, division
 
+import hashlib
 import json
 import os
+import tempfile
+import urllib.request as request
+import zipfile
 
 import numpy as np
 from PIL import Image
 
-from .. import logging
+from .. import Path, logging
 
 
 class Davis:
@@ -42,23 +46,27 @@ class Davis:
             `DATASET_DAVIS` are specified.
     """
 
+    # Download information
+    # pylint: disable=line-too-long
+    SCRIBBLES_URL = 'https://data.vision.ee.ethz.ch/csergi/share/DAVIS-Interactive/DAVIS-2017-scribbles-trainval.zip'
+    SCRIBBLES_HASH = '6c6811c67ef757091212a98b68b841305f92b57f6cd2938e0fa94ae8591c3226'
+    # pylint: enable=line-too-long
+
     ANNOTATIONS_SUBDIR = "Annotations"
     SCRIBBLES_SUBDIR = "Scribbles"
     RESOLUTION = "480p"
 
     def __init__(self, davis_root=None):
         self.davis_root = davis_root or os.environ.get('DATASET_DAVIS')
-        if self.davis_root is None:
+        self.davis_root = Path(self.davis_root)
+        if not self.davis_root.exists() or not self.davis_root.is_dir():
             raise ValueError(
-                'Davis root dir not especified. Please specify it in the ' +
+                'Davis root dir not especified. Please specify it in the '
                 'environmental variable DAVIS_DATASET or give it as parameter '
-                + 'in davis_root.')
+                'in davis_root.')
 
         # Load DAVIS data
-        with open(
-                os.path.join(
-                    os.path.dirname(os.path.abspath(__file__)), 'davis.json'),
-                'r') as fp:
+        with Path(__file__).parent.joinpath('davis.json').open() as fp:
             self.dataset = json.load(fp)
         logging.verbose('Loaded dataset data', 2)
 
@@ -67,6 +75,34 @@ class Davis:
 
         for s in self.dataset['sequences'].values():
             self.sets[s['set']].append(s['name'])
+
+    def _download_scribbles(self):
+        file_name = Path(self.SCRIBBLES_URL).name
+        download_file = Path(tempfile.mkdtemp()) / file_name
+
+        # Downloading
+        logging.info('Downloading Scribbles')
+        request.urlretrieve(self.SCRIBBLES_URL, download_file)
+
+        # Check integrity
+        logging.info('Checking hash')
+        md5 = hashlib.sha256(download_file.read_bytes()).hexdigest()
+        if md5 != self.SCRIBBLES_HASH:
+            raise ValueError(('Downloaded file do not have a correct hash.\n'
+                              'Expected {}\n'
+                              'Obtained: {}').format(self.SCRIBBLES_HASH, md5))
+
+        # Extract file
+        logging.info('Extracting file')
+        zipfile.ZipFile(download_file).extractall(self.davis_root.parent)
+
+        logging.info('Download completed')
+
+    def _check_annotations_files(self, sequences):
+        pass
+
+    def _check_scribbles_files(self, sequences):
+        pass
 
     def check_files(self, sequences):
         for seq in sequences:
@@ -82,9 +118,13 @@ class Davis:
                 if not os.path.exists(
                         os.path.join(seq_scribbles_path,
                                      '{:03d}.json'.format(i))):
-                    raise FileNotFoundError(
-                        'Scribble file not found for sequence {} and scribble {}'.
-                        format(seq, i))
+                    self._download_scribbles()
+                    if not os.path.exists(
+                            os.path.join(seq_scribbles_path,
+                                         '{:03d}.json'.format(i))):
+                        raise FileNotFoundError(
+                            ('Scribble file not found for sequence '
+                             '{} and scribble {}').format(seq, i))
 
             # Check annotations files required for the evaluation
             nb_frames = self.dataset['sequences'][seq]['num_frames']
@@ -92,9 +132,9 @@ class Davis:
                 if not os.path.exists(
                         os.path.join(seq_annotations_path,
                                      '{:05d}.png'.format(i))):
-                    raise FileNotFoundError(
-                        'Annotations file not found for sequence {} and frame {}'.
-                        format(seq, i))
+                    raise FileNotFoundError(('Annotations file not found for '
+                                             'sequence {} and frame {}').format(
+                                                 seq, i))
 
     def load_scribble(self, sequence, scribble_idx):
         scribble_file = os.path.join(self.davis_root, Davis.SCRIBBLES_SUBDIR,
