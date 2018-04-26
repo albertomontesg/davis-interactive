@@ -15,13 +15,13 @@ def scribbles2mask(scribbles,
     """ Convert the scribbles data into a mask.
 
     # Arguments
-        scribbles: Dictionary. Scribbles in the default format
+        scribbles: Dictionary. Scribbles in the default format.
         output_resolution: Tuple. Output resolution (H, W).
-        bezier_curve_sampling: Boolean. Weather sample first the returned
-            scribbles using bezier curve.
+        bezier_curve_sampling: Boolean. Weather to sample first the returned
+            scribbles using bezier curve or not.
         nb_points: Integer. If `bezier_curve_sampling` is `True` set the number
             of points to sample from the bezier curve.
-        bresenham: Boolean. Wether to compute bresenham algorithm for the
+        bresenham: Boolean. Whether to compute bresenham algorithm for the
             scribbles lines.
         default_value: Integer. Default value for the pixels which do not belong
             to any scribble.
@@ -79,8 +79,8 @@ def scribbles2points(scribbles_data, output_resolution=None):
     # Returns
         (ndarray, ndarray): Returns (X, Y) where X is a list of points from the
             scribbles represented in the output_resolution with shape (N x 3)
-            being N the total number of points on all the scribbles. The three
-            coordinates given correspond the the frame number, height and width
+            with N being the total number of points on all the scribbles. The three
+            coordinates given correspond the the frame number, height and width,
             respectively.
             Y is the object id for each given point with shape (N,).
     """
@@ -115,8 +115,7 @@ def fuse_scribbles(scribbles_a, scribbles_b):
         scribbles_b: Dictionary. Default representation of scribbles B.
 
     # Returns
-        dict: Return a dictionary being the representation of the addition of
-            both scribbles A and B.
+        dict: Returns a dictionary with scribbles A and B fused.
     """
 
     if scribbles_a['sequence'] != scribbles_b['sequence']:
@@ -134,13 +133,13 @@ def fuse_scribbles(scribbles_a, scribbles_b):
 
 
 def is_empty(scribbles_data):
-    """ Checks wether the given scribble has any line.
+    """ Checks whether the given scribble has any non-empty line.
 
     # Arguments
         scribbles_data (dict): Scribble in the default format
 
     # Returns
-        bool: Wether the scribble is empty or not.
+        bool: Whether the scribble is empty or not.
     """
     scribbles = scribbles_data['scribbles']
     has_lines = [len(s) > 0 for s in scribbles]
@@ -148,12 +147,12 @@ def is_empty(scribbles_data):
 
 
 def annotated_frames(scribbles_data):
-    """ Computes which frames have a scribble
+    """ Finds which frames have a scribble.
 
     # Arguments
-        scribbles_data (dict): Scribble in the default format
+        scribbles_data (dict): Scribble in the default format.
     # Returns
-        list: Number of the frames that contain at least one scribble
+        list: Number of the frames that contain at least one scribble.
     """
     scribbles = scribbles_data['scribbles']
     frames_list = [i for i, s in enumerate(scribbles) if s]
@@ -161,13 +160,13 @@ def annotated_frames(scribbles_data):
 
 
 def annotated_frames_object(scribbles_data, object_id):
-    """ Computes which frames have a scribble for a certain object
+    """ Computes which frames have a scribble for a certain object.
 
     # Arguments
-        scribbles_data (dict): Scribble in the default format
-        object_id (int): Id of the object of interest
+        scribbles_data (dict): Scribble in the default format.
+        object_id (int): Id of the object of interest.
     # Returns
-        dict: Number of the frames that contain at least one scribble
+        dict: Number of the frames that contain at least one scribble.
     """
     frames_list = []
     scribbles = scribbles_data['scribbles']
