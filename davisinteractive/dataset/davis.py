@@ -22,7 +22,7 @@ except (ImportError, AttributeError):
 class Davis:
     """ DAVIS class to encapsulate some information about the dataset.
 
-    This class only needs to have specified the root path. When done, some
+    This class only needs to have the root path specified. Some
     atributes can be accessible like the sequence list for every subset, or
     specific information for every sequence like the number of frames, the
     number of objects or the image size for every sequence.
@@ -30,7 +30,7 @@ class Davis:
     [file](https://github.com/albertomontesg/davis-interactive/blob/master/davisinteractive/dataset/davis.json).
 
     # Arguments
-        davis_root: String. Path to the DAVIS dataset files. This argument can
+        davis_root: String. Path to the DAVIS dataset. This argument can
             be left as `None` and specify it as an environtmental variable
             `DATASET_DAVIS`. This usage is useful in the case a group of
             people is working with the same code and every one has a different
@@ -45,7 +45,7 @@ class Davis:
             evaluation. (480p)
         sets: Dictionary. The keys are all the DAVIS dataset subsets and the
             values are the list of sequences belonging to that subset.
-        dataset: Dictionary. Contains all the information from all the dataset.
+        dataset: Dictionary. Contains all the information for the entire dataset.
 
     # Raises
         ValueError: if neither `davis_root` or environmental variable
