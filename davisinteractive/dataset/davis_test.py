@@ -8,10 +8,15 @@ import pytest
 
 from davisinteractive.dataset import Davis
 
+# Python2/3 Compatibility
 try:
     from unittest.mock import patch
 except ImportError:
     from mock import patch
+try:
+    FileNotFoundError
+except NameError:
+    FileNotFoundError = IOError  # pylint: disable=redefined-builtin
 
 FIXTURE_DIR = os.path.join(tempfile.mkdtemp(), 'DAVIS')
 
