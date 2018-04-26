@@ -107,6 +107,9 @@ docs/site/
 # example files
 examples/
 
+# Pylint
+.pylintrc
+
 #Pycharm
 .idea/
 .DS_Store
