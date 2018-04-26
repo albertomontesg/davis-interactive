@@ -11,12 +11,9 @@ from PIL import Image
 from six.moves import urllib
 
 from .. import logging
+from ..common import Path
 
 # Python2/3 Compatibility
-try:
-    from pathlib2 import Path
-except ImportError:
-    from pathlib import Path
 try:
     FileNotFoundError
 except NameError:
@@ -91,7 +88,7 @@ class Davis:
                 'Davis root dir not especified. Please specify it in the '
                 'environmental variable DAVIS_DATASET or give it as parameter '
                 'in davis_root.')
-        self.davis_root = Path(self.davis_root)
+        self.davis_root = Path(self.davis_root).expanduser()
         if self.davis_root.name != 'DAVIS':
             raise ValueError('Davis root folder must be named "DAVIS"')
 
@@ -213,7 +210,8 @@ class Davis:
             (num_frames, img_size[1], img_size[0]), dtype=dtype)
 
         for f in range(num_frames):
-            mask = Image.open(os.path.join(root_path, '{:05d}.png'.format(f)))
+            ann_path = root_path / '{:05d}.png'.format(f)
+            mask = Image.open(ann_path)
             mask = np.asarray(mask)
             assert mask.shape == tuple(img_size[::-1])
             annotations[f] = mask
@@ -242,12 +240,15 @@ class Davis:
         num_frames = self.dataset[sequence]['num_frames']
         img_size = self.dataset[sequence]['image_size']
 
-        images = np.empty((num_frames, img_size[1], img_size[0]), dtype=dtype)
+        images = np.empty(
+            (num_frames, img_size[1], img_size[0], 3), dtype=dtype)
 
         for f in range(num_frames):
-            img = Image.open(os.path.join(root_path, '{:05d}.png'.format(f)))
+            img_path = root_path / '{:05d}.jpg'.format(f)
+            img = Image.open(img_path)
             img = np.asarray(img)
-            assert img.shape == tuple(img_size[::-1])
+            assert img.shape[:2] == tuple(img_size[::-1])
+            assert img.shape[-1] == 3
             images[f] = img
 
         logging.verbose('Loaded images for sequence %s' % sequence, 1)
