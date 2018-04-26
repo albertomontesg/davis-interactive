@@ -1,5 +1,7 @@
 from __future__ import absolute_import, division
 
+import unittest
+
 import networkx as nx
 import numpy as np
 import pytest
@@ -8,7 +10,7 @@ from davisinteractive.robot import InteractiveScribblesRobot
 from davisinteractive.utils.scribbles import annotated_frames, is_empty
 
 
-class TestInteractiveScribblesRobot:
+class TestInteractiveScribblesRobot(unittest.TestCase):
 
     def test_generate_scribble_mask_empty(self):
         empty_mask = np.zeros((100, 200), dtype=np.bool)

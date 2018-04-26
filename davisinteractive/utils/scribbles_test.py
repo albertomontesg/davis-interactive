@@ -1,5 +1,7 @@
 from __future__ import absolute_import, division
 
+import unittest
+
 import numpy as np
 import pytest
 
@@ -8,7 +10,7 @@ from .scribbles import (annotated_frames, annotated_frames_object,
                         scribbles2points)
 
 
-class TestScribbles2Mask:
+class TestScribbles2Mask(unittest.TestCase):
 
     def test_resolution(self):
         scribbles_data = {
@@ -127,7 +129,7 @@ class TestScribbles2Mask:
         assert np.all(mask[1, :, 1:] == 0)
 
 
-class TestScribbles2Points:
+class TestScribbles2Points(unittest.TestCase):
 
     def test_wo_output_resolution(self):
         scribbles_data = {
@@ -179,7 +181,7 @@ class TestScribbles2Points:
         assert np.all(X == np.asarray([[1, 0, 0], [1, 0, 10]], dtype=np.int))
 
 
-class TestFuseScribbles:
+class TestFuseScribbles(unittest.TestCase):
 
     def test_fuse_different_frame(self):
         scribble_1 = {
@@ -316,7 +318,7 @@ class TestFuseScribbles:
             fuse_scribbles(scribble_1, scribble_2)
 
 
-class TestEmpytScribble:
+class TestEmpytScribble(unittest.TestCase):
 
     def test_not_empty(self):
         scribble = {
@@ -342,7 +344,7 @@ class TestEmpytScribble:
         assert is_empty(scribble)
 
 
-class TestAnnotatedFrames:
+class TestAnnotatedFrames(unittest.TestCase):
 
     def test_annotated_frames(self):
         scribble = {
@@ -368,7 +370,7 @@ class TestAnnotatedFrames:
         assert annotated_frames(scribble) == [1, 4]
 
 
-class TestAnnotatedFramesObject:
+class TestAnnotatedFramesObject(unittest.TestCase):
 
     def test_annotated_frames(self):
         scribble = {
