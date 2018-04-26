@@ -5,13 +5,19 @@ import json
 import os
 import tempfile
 import zipfile
-from pathlib import Path
 
 import numpy as np
 from PIL import Image
 from six.moves import urllib
 
 from .. import logging
+from ..common import Path
+
+# Python2/3 Compatibility
+try:
+    FileNotFoundError
+except NameError:
+    FileNotFoundError = IOError  # pylint: disable=redefined-builtin
 
 with Path(__file__).parent.joinpath('davis.json').open() as fp:
     _DATASET = json.load(fp)
@@ -82,7 +88,7 @@ class Davis:
                 'Davis root dir not especified. Please specify it in the '
                 'environmental variable DAVIS_DATASET or give it as parameter '
                 'in davis_root.')
-        self.davis_root = Path(self.davis_root)
+        self.davis_root = Path(self.davis_root).expanduser()
         if self.davis_root.name != 'DAVIS':
             raise ValueError('Davis root folder must be named "DAVIS"')
 
@@ -96,7 +102,7 @@ class Davis:
 
         # Downloading
         logging.info('Downloading Scribbles')
-        urllib.request.urlretrieve(self.SCRIBBLES_URL, download_file)
+        urllib.request.urlretrieve(self.SCRIBBLES_URL, str(download_file))
 
         # Check integrity
         logging.info('Checking hash')
@@ -108,7 +114,9 @@ class Davis:
 
         # Extract file
         logging.info('Extracting file')
-        zipfile.ZipFile(download_file).extractall(self.davis_root.parent)
+        print(download_file)
+        zipfile.ZipFile(download_file.open(mode='rb')).extractall(
+            str(self.davis_root.parent))
         download_file.unlink()
         logging.info('Download completed')
 
@@ -127,22 +135,18 @@ class Davis:
             FileNotFoundError: if any required files is not found.
         """
         for seq in sequences:
-            seq_scribbles_path = os.path.join(self.davis_root,
-                                              Davis.SCRIBBLES_SUBDIR, seq)
-            seq_annotations_path = os.path.join(self.davis_root,
-                                                Davis.ANNOTATIONS_SUBDIR,
-                                                Davis.RESOLUTION, seq)
+            seq_scribbles_path = self.davis_root.joinpath(
+                Davis.SCRIBBLES_SUBDIR, seq)
+            seq_annotations_path = self.davis_root.joinpath(
+                Davis.ANNOTATIONS_SUBDIR, Davis.RESOLUTION, seq)
 
             # Check scribbles files needed to give them as base for the user
             nb_scribbles = self.dataset[seq]['num_scribbles']
-            for i in range(1, nb_scribbles):
-                if not os.path.exists(
-                        os.path.join(seq_scribbles_path,
-                                     '{:03d}.json'.format(i))):
+            for i in range(1, nb_scribbles + 1):
+                scribble_file = seq_scribbles_path / '{:03d}.json'.format(i)
+                if not scribble_file.exists():
                     self._download_scribbles()
-                    if not os.path.exists(
-                            os.path.join(seq_scribbles_path,
-                                         '{:03d}.json'.format(i))):
+                    if not scribble_file.exists():
                         raise FileNotFoundError(
                             ('Scribble file not found for sequence '
                              '{} and scribble {}').format(seq, i))
@@ -150,9 +154,8 @@ class Davis:
             # Check annotations files required for the evaluation
             nb_frames = self.dataset[seq]['num_frames']
             for i in range(nb_frames):
-                if not os.path.exists(
-                        os.path.join(seq_annotations_path,
-                                     '{:05d}.png'.format(i))):
+                annotation_file = seq_annotations_path / '{:05}.png'.format(i)
+                if not annotation_file.exists():
                     raise FileNotFoundError(('Annotations file not found for '
                                              'sequence {} and frame {}').format(
                                                  seq, i))
@@ -207,7 +210,8 @@ class Davis:
             (num_frames, img_size[1], img_size[0]), dtype=dtype)
 
         for f in range(num_frames):
-            mask = Image.open(os.path.join(root_path, '{:05d}.png'.format(f)))
+            ann_path = root_path / '{:05d}.png'.format(f)
+            mask = Image.open(ann_path)
             mask = np.asarray(mask)
             assert mask.shape == tuple(img_size[::-1])
             annotations[f] = mask
@@ -236,12 +240,15 @@ class Davis:
         num_frames = self.dataset[sequence]['num_frames']
         img_size = self.dataset[sequence]['image_size']
 
-        images = np.empty((num_frames, img_size[1], img_size[0]), dtype=dtype)
+        images = np.empty(
+            (num_frames, img_size[1], img_size[0], 3), dtype=dtype)
 
         for f in range(num_frames):
-            img = Image.open(os.path.join(root_path, '{:05d}.png'.format(f)))
+            img_path = root_path / '{:05d}.jpg'.format(f)
+            img = Image.open(img_path)
             img = np.asarray(img)
-            assert img.shape == tuple(img_size[::-1])
+            assert img.shape[:2] == tuple(img_size[::-1])
+            assert img.shape[-1] == 3
             images[f] = img
 
         logging.verbose('Loaded images for sequence %s' % sequence, 1)
