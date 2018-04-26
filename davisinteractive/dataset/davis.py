@@ -114,7 +114,6 @@ class Davis:
 
         # Extract file
         logging.info('Extracting file')
-        print(download_file)
         zipfile.ZipFile(download_file.open(mode='rb')).extractall(
             str(self.davis_root.parent))
         download_file.unlink()

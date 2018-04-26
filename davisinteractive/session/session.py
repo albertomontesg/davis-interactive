@@ -158,7 +158,6 @@ class DavisInteractiveSession:
 
         end = self.sample_idx >= len(self.samples)
         if not end and sample_change:
-            print(self.samples[self.sample_idx])
             seq, _ = self.samples[self.sample_idx]
             # seq, _, _ = self.samples[self.sample_idx]
             logging.info('Start evaluation for sequence %s' % seq)
