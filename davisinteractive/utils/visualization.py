@@ -31,7 +31,7 @@ def _pascal_color_map(N=256, normalized=False):
 
 
 def plot_scribble(ax, scribble, frame, output_size=None, **kwargs):
-    """ Plot scribbles into an axis
+    """ Plot scribbles into an axis.
 
     # Arguments
         ax: Matplotlib Axis. Axis where to plot the scribble lines.
@@ -42,7 +42,7 @@ def plot_scribble(ax, scribble, frame, output_size=None, **kwargs):
             `ax.plot(**kwargs)` method.
 
     # Returns
-        matplotlib.axis: Return the given axis with the scribbles plotted on
+        matplotlib.axis: Returns the given axis with the scribbles plotted on
             it.
     """
     scribbles = scribble['scribbles']
