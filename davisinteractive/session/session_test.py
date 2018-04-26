@@ -7,15 +7,11 @@ import unittest
 import pandas as pd
 import pytest
 
-from ..connector.local import LocalConnector
-from ..dataset import Davis
-from ..utils.scribbles import is_empty
-from .session import DavisInteractiveSession
-
-try:
-    from unittest.mock import patch
-except ImportError:
-    from mock import patch
+from davisinteractive.common import patch
+from davisinteractive.connector.local import LocalConnector
+from davisinteractive.dataset import Davis
+from davisinteractive.session import DavisInteractiveSession
+from davisinteractive.utils.scribbles import is_empty
 
 EMPTY_SCRIBBLE = {
     'scribbles': [[] for _ in range(69)],
@@ -52,8 +48,7 @@ class TestDavisInteractiveSession(unittest.TestCase):
     @patch.object(
         LocalConnector,
         'start_session',
-        return_value=([('test-sequence', 2, 2), ('test-sequence', 1, 3)], 5,
-                      None))
+        return_value=([('bear', 2), ('bear', 1)], 5, None))
     def test_interactions_limit(self, mock_start_session,
                                 mock_get_starting_scribble, mock_get_report,
                                 mock_submit_masks, mock_close):
@@ -70,7 +65,7 @@ class TestDavisInteractiveSession(unittest.TestCase):
             for i in range(7):
                 assert session.next()
                 seq, scribbles, new_seq = session.get_scribbles()
-                assert seq == 'test-sequence'
+                assert seq == 'bear'
                 assert is_empty(scribbles)
                 if i % 5 == 0:
                     assert new_seq, i

@@ -8,6 +8,7 @@ from datetime import datetime
 
 from .. import logging
 from ..connector.fabric import ServerConnectionFabric
+from ..dataset import Davis
 from ..utils.scribbles import fuse_scribbles
 
 __all__ = ['DavisInteractiveSession']
@@ -138,7 +139,9 @@ class DavisInteractiveSession:
             if change_because_interaction:
                 logging.info('Maximum number of interaction have been reached.')
         if self.max_time and self.sample_start_time:
-            _, _, nb_objects = self.samples[self.sample_idx]
+            # _, _, nb_objects = self.samples[self.sample_idx]
+            seq, _ = self.samples[self.sample_idx]
+            nb_objects = Davis.dataset[seq]['num_objects']
             max_time = self.max_time * nb_objects
             change_because_timing = (c_time - self.sample_start_time) > max_time
             sample_change |= change_because_timing
@@ -155,7 +158,9 @@ class DavisInteractiveSession:
 
         end = self.sample_idx >= len(self.samples)
         if not end and sample_change:
-            seq, _, _ = self.samples[self.sample_idx]
+            print(self.samples[self.sample_idx])
+            seq, _ = self.samples[self.sample_idx]
+            # seq, _, _ = self.samples[self.sample_idx]
             logging.info('Start evaluation for sequence %s' % seq)
 
         # Save report on final version if the evaluation ends
@@ -197,7 +202,7 @@ class DavisInteractiveSession:
                 'You can not call get_scribbles twice without submitting the '
                 'masks first')
 
-        sequence, scribble_idx, _ = self.samples[self.sample_idx]
+        sequence, scribble_idx = self.samples[self.sample_idx]
         new_sequence = False
         if self.interaction_nb == 0 and self.sample_scribbles is None:
             self.sample_scribbles = self.connector.get_starting_scribble(
@@ -267,7 +272,7 @@ class DavisInteractiveSession:
             'The model took {:.3f} seconds to make a prediction'.format(timing))
 
         self.interaction_nb += 1
-        sequence, scribble_idx, _ = self.samples[self.sample_idx]
+        sequence, scribble_idx = self.samples[self.sample_idx]
 
         self.sample_last_scribble = self.connector.submit_masks(
             sequence, scribble_idx, pred_masks, timing, self.interaction_nb)
