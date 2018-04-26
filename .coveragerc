@@ -1,7 +1,6 @@
 [run]
 branch = True
 source = davisinteractive
-omit = *models*
 
 [report]
 exclude_lines =

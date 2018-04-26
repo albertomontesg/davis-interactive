@@ -113,3 +113,6 @@ examples/
 #Pycharm
 .idea/
 .DS_Store
+
+# Temporal for models
+davisinteractive/models/
