@@ -32,7 +32,8 @@ class DavisInteractiveSession:
             evaluate per sample.
         report_save_dir: String. Path to the directory where the report will
             be stored during the evaluation. By default is the current working
-            directory.
+            directory. A temporal file will be storing snapshots of the results
+            on this same directory with a suffix `.tmp`.
         progbar: Boolean. Wether to show a progbar to show the evolution
             of the evaluation. If `True`, `tqdm` Python package will be
             required.
