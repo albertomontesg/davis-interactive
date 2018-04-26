@@ -2,7 +2,7 @@ import numpy as np
 
 
 def combine_masks(masks, th=0.5, method='max_per_pixel'):
-    """ Combine mask for different objects
+    """ Combine mask for different objects.
 
     Different methods are the following:
 
@@ -14,10 +14,10 @@ def combine_masks(masks, th=0.5, method='max_per_pixel'):
             Therefore, `len(masks) == number_objects` and
             `len(masks[0]) == number_frames`. The masks should be Numpy Array.
         th: Float. Threshold to binarize the masks.
-        method: String. Method that specifies how the masks are fuse.
+        method: String. Method that specifies how the masks are fused.
 
     # Returns
-        list: Returns a list with all the results of the masks fused
+        list: Returns a list with all the results of the masks fused.
     """
     n_frames = len(masks[0])
     n_objects = len(masks)
