@@ -27,8 +27,8 @@ class InteractiveScribblesRobot(object):
             dilation and erosion. Default 16 pixels.
         min_nb_nodes: Integer. Number of nodes necessary to keep a connected
             graph and convert it into a scribble.
-        nb_points: Integer. Number of points to sample the the bezier curve
-            when convert the final paths into curves.
+        nb_points: Integer. Number of points to sample the bezier curve
+            when converting the final paths into curves.
     """
 
     def __init__(self,
@@ -198,20 +198,20 @@ class InteractiveScribblesRobot(object):
         return list(longest_path)
 
     def interact(self, sequence, pred_masks, gt_masks):
-        """ Interaction of the Scribbles robot given a prediction.
+        """ Interaction of the Scribble robot given a prediction.
         Given the sequence and a mask prediction, the robot will return a
-        scribble in the worst path.
+        scribble in the region that fails the most.
 
         # Arguments
-            sequence: String. Name of the sequence to interact with
+            sequence: String. Name of the sequence to interact with.
             pred_masks: Numpy Array. Array with the prediction masks. It must
-				be an integer array with shape (B x H x W) being B the number
+				be an integer array with shape (B x H x W), with B being the number
 				of frames of the sequence.
             gt_masks: Numpy Array. Array with the ground truth of the sequence.
-				It must have the same data type and shape as `pred_masks`
+				It must have the same data type and shape as `pred_masks`.
 
         # Returns
-            dict: Return a scribble on its default representation.
+            dict: Return a scribble (default representation).
         """
         robot_start = time.time()
 
