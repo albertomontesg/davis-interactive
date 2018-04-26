@@ -18,15 +18,15 @@ def batched_jaccard(y_true, y_pred, average_over_objects=True):
         y_true: Numpy Array. Array of shape (BxHxW) and type integer giving the
             ground truth of the object instance segmentation.
         y_pred: Numpy Array. Array of shape (BxHxW) and type integer giving the
-            prediction of the object instance segmentation.
-        average_over_objects: Boolean. Weather or not average the jaccard over
+            prediction of the object segmentation.
+        average_over_objects: Boolean. Weather or not to average the jaccard over
             all the objects in the sequence. Default True.
 
     # Returns
         ndarray: Returns an array of shape (B) with the average jaccard for
             all instances at each frame if `average_over_objects=True`. If
-            `average_over_objects=False` returns an array of shape (B x O)
-            being O the number of objects on `y_true`.
+            `average_over_objects=False` returns an array of shape (B x nObj)
+            with nObj being the number of objects on `y_true`.
     """
     y_true = np.asarray(y_true, dtype=np.int)
     y_pred = np.asarray(y_pred, dtype=np.int)
