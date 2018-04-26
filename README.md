@@ -16,7 +16,11 @@ You can find an example of how to use the package in the following repository:
 
 In the DAVIS **Main** Challenge track, the task consists on object segmentation in a *semi-supervised* manner, i.e. the given input is the ground truth mask of the first frame. In the DAVIS **Interactive** Challenge, in contrast, the user input is in form of scribbles, which can be drawn much faster by humans and thus is a more realistic type of input. The same objects as the ones of the **Main** track have been annotated with scribbles.
 
-<img src="docs/images/scribbles/dogs-jump-image.jpg" width="30%"/> <img src="docs/images/scribbles/dogs-jump-scribble01.jpg" width="30%"/> <img src="docs/images/scribbles/dogs-jump-scribble02.jpg" width="30%"/>
+<div style="white-space: nowrap;">
+
+<img src="docs/images/scribbles/dogs-jump-image.jpg" width="33.3%"/><img src="docs/images/scribbles/dogs-jump-scribble01.jpg" width="33.3%"/><img src="docs/images/scribbles/dogs-jump-scribble02.jpg" width="33.3%"/>
+
+</div>
 
 The interactive annotation and segmentation consist in an iterative loop which is going to be evaluated as follows:
 
