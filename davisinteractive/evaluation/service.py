@@ -45,9 +45,10 @@ class EvaluationService:
         self.sequences_scribble_idx = []
         for s in self.sequences:
             nb_scribbles = self.davis.dataset[s]['num_scribbles']
-            nb_objects = self.davis.dataset[s]['num_objects']
+            # nb_objects = self.davis.dataset[s]['num_objects']
             for i in range(1, nb_scribbles + 1):
-                self.sequences_scribble_idx.append((s, i, nb_objects))
+                # self.sequences_scribble_idx.append((s, i, nb_objects))
+                self.sequences_scribble_idx.append((s, i))
 
         # Check all the files are placed
         logging.verbose('Checking DAVIS dataset files', 1)
@@ -67,9 +68,7 @@ class EvaluationService:
             raise RuntimeError('Session not started')
         if sequence not in self.sequences:
             raise ValueError('Invalid sequence: %s' % sequence)
-        if (sequence, scribble_idx) not in [
-            (s, i) for s, i, _ in self.sequences_scribble_idx
-        ]:
+        if (sequence, scribble_idx) not in self.sequences_scribble_idx:
             raise ValueError('Invalid scribble index: {}'.format(scribble_idx))
 
         scribble = self.davis.load_scribble(sequence, scribble_idx)
