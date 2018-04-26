@@ -1,0 +1,12 @@
+@article{Caelles_arXiv_2018,
+  author = {Sergi Caelles and Alberto Montes and Kevis-Kokitsi Maninis and Yuhua Chen and Luc {Van Gool} and Federico Perazzi and Jordi Pont-Tuset},
+  title = {The 2018 DAVIS Challenge on Video Object Segmentation},
+  journal = {arXiv:1803.00557},
+  year = {2018}
+}
+@inproceedings{Perazzi2016,
+  author = {F. Perazzi and J. Pont-Tuset and B. McWilliams and L. {Van Gool} and M. Gross and A. Sorkine-Hornung},
+  title = {A Benchmark Dataset and Evaluation Methodology for Video Object Segmentation},
+  booktitle = {Computer Vision and Pattern Recognition},
+  year = {2016}
+}
