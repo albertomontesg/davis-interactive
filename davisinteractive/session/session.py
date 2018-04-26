@@ -14,7 +14,7 @@ __all__ = ['DavisInteractiveSession']
 
 
 class DavisInteractiveSession:
-    """ Class which allows to interface with the evaluation
+    """ Class which allows to interface with the evaluation.
 
     # Arguments
         host: String. Host of the evuation server. Only `localhost`
@@ -112,16 +112,16 @@ class DavisInteractiveSession:
         self.connector.close()
 
     def next(self):
-        """ Iterate to the next iteration/sample of the evaluation process
+        """ Iterate to the next iteration/sample of the evaluation process.
 
-        This function move the iteration to the next iteration or to the next
+        This function moves the iteration to the next iteration or to the next
         sample in case the maximum number of iterations or maximum time have
         been hit.
         This function can be used as control flow on user's code to know until
         which iteration the evuation is being performed.
 
         # Returns
-            bool: If the evaluation is still taking place.
+            bool: Indicates whether the evaluation is still taking place.
         """
 
         # Here start counter for this interaction, and keep track to move to
@@ -174,14 +174,13 @@ class DavisInteractiveSession:
     def get_scribbles(self, only_last=False):
         """ Ask for the next scribble
 
-        There is the possibility to ask for only the last scribble. By default
-        is returned all the scribbles obtained for the current sample being
-        evaluated.
+        There is the possibility to ask for only the last scribble. By default,
+        all scribbles obtained for the current sample are returned.
 
-        This method return information about the sequence of the sample being
-        evaluated, the scribbles and wether is a new sample. This information
-        might be useful for the client to perform any operation like loading a
-        model for the given new sequence.
+        This method returns information about the sequence of the sample being
+        evaluated, the scribbles and whether it is a new sample. This information
+        might be useful for the user to perform any operation like loading a
+        model for a new sequence.
 
         # Arguments
             only_last: Boolean.
@@ -189,8 +188,8 @@ class DavisInteractiveSession:
         # Returns
             (string, dict, bool): Returns the name of the sequence of the
                 current sample, the scribbles of the current sample and a
-                boolean indicating if it is the first iteration of the given
-                sample respectively.
+                boolean indicating whether it is the first iteration of the given
+                sample, respectively.
         """
         if self.running_model:
             raise RuntimeError(
@@ -242,18 +241,18 @@ class DavisInteractiveSession:
         `(string, dict, bool)`: Yields the name of the sequence of the
                 current sample, the scribbles of the current sample and a
                 boolean indicating if it is the first iteration of the given
-                sample respectively.
+                sample, respectively.
         """
         while self.next():
             yield self.get_scribbles(*args, **kwargs)
 
     def submit_masks(self, pred_masks):
-        """ Submit the predicted masks
+        """ Submit the predicted masks.
 
         # Arguments
-            pred_masks: Numpy Array. Numpy array with the predicted mask for
+            pred_masks: Numpy array with the predicted mask for
                 the current sample. The array must be of `dtype=np.int` and
-                have and image size equal to the 480p resolution of the DAVIS
+                of size equal to the 480p resolution of the DAVIS
                 dataset.
         """
         if not self.running_model:
