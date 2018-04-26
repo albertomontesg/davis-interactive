@@ -43,13 +43,13 @@ For more information about the class and its possible values please check [Davis
 
 ## Control Flow
 
-To make the framework as easy as possible and do not leave the control flow of the evaluation to the user, the session gives a method to know for how long the session has been running:  <!--- I DON'T GET THIS. IS THIS NEXT REFERRING TO THE TIME RUNNING? OR THE NEXT SENTENCE? -->
+In order to simplify the control flow for the user, the session provides a function to move to the following interaction/sequence:
 
 ```python
 while sess.next():
 ```
 
-Also this function is necessary to be called after each iteration as it is responsible to move the evaluation to the next iteration or sample if maximum time or maximum number of iterations have been hit.
+Once the timeout or the maximum number of iterations is reached, this functions will move the evaluation to a new sequence or the same sequence with a different initial scribble. Otherwise, it will keep the current sequence in order to continue with more interactions.
 
 ## Obtain Scribbles
 
