@@ -15,9 +15,9 @@ def batched_jaccard(y_true, y_pred, average_over_objects=True):
     $$
 
     # Arguments
-        y_true: Numpy Array. Array of shape (BxHxW) and type integer giving the
+        y_true: Numpy Array. Array of shape (B x H x W) and type integer giving the
             ground truth of the object instance segmentation.
-        y_pred: Numpy Array. Array of shape (BxHxW) and type integer giving the
+        y_pred: Numpy Array. Array of shape (B x H x W) and type integer giving the
             prediction of the object segmentation.
         average_over_objects: Boolean. Weather or not to average the jaccard over
             all the objects in the sequence. Default True.
