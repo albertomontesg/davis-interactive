@@ -27,7 +27,7 @@ class TestDavisInteractiveSession(unittest.TestCase):
 
     @patch.object(Davis, 'check_files', return_value=None)
     def test_subset(self, mock_davis):
-        davis_root = '/tmp'
+        davis_root = '/tmp/DAVIS'
 
         session = DavisInteractiveSession(subset='val', davis_root=davis_root)
         session.__enter__()
@@ -57,7 +57,7 @@ class TestDavisInteractiveSession(unittest.TestCase):
     def test_interactions_limit(self, mock_start_session,
                                 mock_get_starting_scribble, mock_get_report,
                                 mock_submit_masks, mock_close):
-        davis_root = '/tmp'
+        davis_root = '/tmp/DAVIS'
 
         with DavisInteractiveSession(
                 davis_root=davis_root,

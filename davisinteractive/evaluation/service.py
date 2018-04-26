@@ -44,8 +44,8 @@ class EvaluationService:
         self.sequences = self.davis.sets[subset]
         self.sequences_scribble_idx = []
         for s in self.sequences:
-            nb_scribbles = self.davis.dataset['sequences'][s]['num_scribbles']
-            nb_objects = self.davis.dataset['sequences'][s]['num_objects']
+            nb_scribbles = self.davis.dataset[s]['num_scribbles']
+            nb_objects = self.davis.dataset[s]['num_objects']
             for i in range(1, nb_scribbles + 1):
                 self.sequences_scribble_idx.append((s, i, nb_objects))
 
