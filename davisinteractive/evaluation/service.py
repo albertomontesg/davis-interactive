@@ -11,7 +11,7 @@ from ..robot import InteractiveScribblesRobot
 
 class EvaluationService:
 
-    VALID_SUBSETS = ['train', 'val', 'test-dev']
+    VALID_SUBSETS = ['train', 'val', 'trainval', 'test-dev']
     REPORT_COLUMNS = [
         'sequence', 'scribble_idx', 'interaction', 'object_id', 'frame',
         'jaccard', 'timming'
@@ -23,31 +23,28 @@ class EvaluationService:
         'nb_points': 1000
     }
 
-    def __init__(self, davis_root=None, robot_parameters=None):
+    def __init__(self,
+                 subset,
+                 davis_root=None,
+                 robot_parameters=None,
+                 max_t=None,
+                 max_i=None):
+        if subset not in Davis.sets:
+            raise ValueError('Subset must be a valid subset: {}'.format(
+                Davis.sets.keys()))
+
         self.davis = Davis(davis_root=davis_root)
-        self.session_started = False
 
         robot_parameters = robot_parameters or self.ROBOT_DEFAULT_PARAMETERS
         self.robot = InteractiveScribblesRobot(**robot_parameters)
-
-        self.sequences = None
-        self.sequences_scribble_idx = None
-        self.report = None
-
-    def start(self, subset):
-        if subset not in self.davis.sets:
-            raise ValueError('Subset must be a valid subset: {}'.format(
-                self.davis.sets.keys()))
 
         # Get the list of sequences to evaluate and also from all the scribbles
         # available
         self.sequences = self.davis.sets[subset]
         self.sequences_scribble_idx = []
         for s in self.sequences:
-            nb_scribbles = self.davis.dataset[s]['num_scribbles']
-            # nb_objects = self.davis.dataset[s]['num_objects']
+            nb_scribbles = Davis.dataset[s]['num_scribbles']
             for i in range(1, nb_scribbles + 1):
-                # self.sequences_scribble_idx.append((s, i, nb_objects))
                 self.sequences_scribble_idx.append((s, i))
 
         # Check all the files are placed
@@ -57,15 +54,16 @@ class EvaluationService:
         # Create empty report
         self.report = pd.DataFrame(columns=self.REPORT_COLUMNS)
 
-        self.session_started = True
-        max_t, max_i = None, None
+        # Parameters
+        self.max_t = max_t
+        self.max_i = max_i
 
-        logging.info('Starting evaluation session')
-        return self.sequences_scribble_idx, max_t, max_i
+    def get_samples(self):
 
-    def get_starting_scribble(self, sequence, scribble_idx):
-        if not self.session_started:
-            raise RuntimeError('Session not started')
+        logging.info('Getting samples')
+        return self.sequences_scribble_idx, self.max_t, self.max_i
+
+    def get_scribble(self, sequence, scribble_idx):
         if sequence not in self.sequences:
             raise ValueError('Invalid sequence: %s' % sequence)
         if (sequence, scribble_idx) not in self.sequences_scribble_idx:
@@ -75,8 +73,8 @@ class EvaluationService:
 
         return scribble
 
-    def submit_masks(self, sequence, scribble_idx, pred_masks, timming,
-                     interaction):
+    def post_predicted_masks(self, sequence, scribble_idx, pred_masks, timming,
+                             interaction):
         # Evaluate the submitted masks
         if len(self.report.loc[(self.report.sequence == sequence) &
                                (self.report.scribble_idx == scribble_idx) &
@@ -123,6 +121,3 @@ class EvaluationService:
 
     def get_report(self):
         return self.report
-
-    def close(self):
-        pass

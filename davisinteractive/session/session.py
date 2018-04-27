@@ -86,7 +86,7 @@ class DavisInteractiveSession:
 
     def __enter__(self):
         # Create connector
-        samples, max_t, max_i = self.connector.start_session(
+        samples, max_t, max_i = self.connector.get_samples(
             self.subset, davis_root=self.davis_root)
         if self.shuffle:
             logging.verbose('Shuffling samples', 1)
@@ -111,7 +111,7 @@ class DavisInteractiveSession:
         return self
 
     def __exit__(self, type_, value, traceback):
-        self.connector.close()
+        pass
 
     def next(self):
         """ Iterate to the next iteration/sample of the evaluation process.
@@ -204,7 +204,7 @@ class DavisInteractiveSession:
         sequence, scribble_idx = self.samples[self.sample_idx]
         new_sequence = False
         if self.interaction_nb == 0 and self.sample_scribbles is None:
-            self.sample_scribbles = self.connector.get_starting_scribble(
+            self.sample_scribbles = self.connector.get_scribble(
                 sequence, scribble_idx)
             self.sample_last_scribble = self.sample_scribbles
             new_sequence = True
@@ -273,7 +273,7 @@ class DavisInteractiveSession:
         self.interaction_nb += 1
         sequence, scribble_idx = self.samples[self.sample_idx]
 
-        self.sample_last_scribble = self.connector.submit_masks(
+        self.sample_last_scribble = self.connector.post_predicted_masks(
             sequence, scribble_idx, pred_masks, timing, self.interaction_nb)
         self.sample_scribbles = fuse_scribbles(self.sample_scribbles,
                                                self.sample_last_scribble)

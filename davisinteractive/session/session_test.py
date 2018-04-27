@@ -40,18 +40,16 @@ class TestDavisInteractiveSession(unittest.TestCase):
 
         assert mock_davis.call_count == 2
 
-    @patch.object(LocalConnector, 'close', return_value=None)
-    @patch.object(LocalConnector, 'submit_masks', return_value=EMPTY_SCRIBBLE)
-    @patch.object(LocalConnector, 'get_report', return_value=pd.DataFrame())
     @patch.object(
-        LocalConnector, 'get_starting_scribble', return_value=EMPTY_SCRIBBLE)
+        LocalConnector, 'post_predicted_masks', return_value=EMPTY_SCRIBBLE)
+    @patch.object(LocalConnector, 'get_report', return_value=pd.DataFrame())
+    @patch.object(LocalConnector, 'get_scribble', return_value=EMPTY_SCRIBBLE)
     @patch.object(
         LocalConnector,
-        'start_session',
+        'get_samples',
         return_value=([('bear', 2), ('bear', 1)], 5, None))
-    def test_interactions_limit(self, mock_start_session,
-                                mock_get_starting_scribble, mock_get_report,
-                                mock_submit_masks, mock_close):
+    def test_interactions_limit(self, mock_start_session, mock_get_scribble,
+                                mock_get_report, mock_submit_masks):
         davis_root = '/tmp/DAVIS'
 
         with DavisInteractiveSession(
@@ -72,8 +70,5 @@ class TestDavisInteractiveSession(unittest.TestCase):
 
                 session.submit_masks(None)
 
-            assert mock_close.call_count == 0
-
-        assert mock_close.call_count == 1
-        assert mock_get_starting_scribble.call_count == 2
+        assert mock_get_scribble.call_count == 2
         assert mock_submit_masks.call_count == 7
