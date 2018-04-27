@@ -7,7 +7,7 @@ python:
   - "3.6"
 cache: pip
 install:
-  - pip install codecov pytest pytest-cov
+  - pip install codecov pytest pytest-cov cython
   - pip install -e .
 script:
   - pytest --cov=./
