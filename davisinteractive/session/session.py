@@ -3,7 +3,6 @@ from __future__ import absolute_import, division
 import binascii
 import os
 import random
-import secrets
 import time
 from copy import deepcopy
 from datetime import datetime
@@ -65,7 +64,7 @@ class DavisInteractiveSession:
 
         # User and session key
         self.user_key = user_key
-        self.session_key = binascii.hexlify(secrets.token_bytes(32)).decode()
+        self.session_key = binascii.hexlify(os.urandom(32)).decode()
         self.connector = ServerConnectionFabric.get_connector(
             host, self.user_key, self.session_key)
 

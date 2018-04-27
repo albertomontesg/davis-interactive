@@ -34,7 +34,7 @@ class EvaluationService:
     VALID_SUBSETS = ['train', 'val', 'trainval', 'test-dev']
     REPORT_COLUMNS = [
         'session_id', 'sequence', 'scribble_idx', 'interaction', 'object_id',
-        'frame', 'jaccard', 'timming'
+        'frame', 'jaccard', 'timing'
     ]
     ROBOT_DEFAULT_PARAMETERS = {
         'kernel_size': .2,
@@ -109,7 +109,7 @@ class EvaluationService:
 
         return scribble
 
-    def post_predicted_masks(self, sequence, scribble_idx, pred_masks, timming,
+    def post_predicted_masks(self, sequence, scribble_idx, pred_masks, timing,
                              interaction, user_key, session_key):
         """ Post the predicted masks and return new scribble.
 
@@ -119,7 +119,7 @@ class EvaluationService:
             sequence: String. Sequence name of the predicted masks.
             scribble_idx: Integer. Scribble index of the sample evaluating.
             pred_masks: Numpy Array. Predicted masks for the given sequence.
-            timming: Float. Timing in seconds of this interaction.
+            timing: Float. Timing in seconds of this interaction.
             interaction: Integer. Interaction number.
             user_key: String. User identifier.
             session_key: String. Session identifier.
@@ -162,7 +162,7 @@ class EvaluationService:
         uploaded_result['sequence'] = [sequence] * nb
         uploaded_result['scribble_idx'] = [scribble_idx] * nb
         uploaded_result['interaction'] = [interaction] * nb
-        uploaded_result['timming'] = [timming] * nb
+        uploaded_result['timing'] = [timing] * nb
         uploaded_result['object_id'] = objects_idx.ravel().tolist()
         uploaded_result['frame'] = frames_idx.ravel().tolist()
         uploaded_result['jaccard'] = jaccard.ravel().tolist()
