@@ -284,6 +284,8 @@ class DavisInteractiveSession:
         """ Gives the current report of the evaluation
 
         # Returns
-            pd.DataFrame: Dataframe with the current evaluation results.
+            pd.DataFrame: Dataframe with the current evaluation results. This
+                DataFrame contains the same table as the store on
+                `report_save_dir`.
         """
         return self.connector.get_report()
