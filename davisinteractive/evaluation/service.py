@@ -111,6 +111,26 @@ class EvaluationService:
 
     def post_predicted_masks(self, sequence, scribble_idx, pred_masks, timming,
                              interaction, user_key, session_key):
+        """ Post the predicted masks and return new scribble.
+
+        When the predicted masks are given, the metrics are computed and stored.
+
+        # Arguments
+            sequence: String. Sequence name of the predicted masks.
+            scribble_idx: Integer. Scribble index of the sample evaluating.
+            pred_masks: Numpy Array. Predicted masks for the given sequence.
+            timming: Float. Timing in seconds of this interaction.
+            interaction: Integer. Interaction number.
+            user_key: String. User identifier.
+            session_key: String. Session identifier.
+
+        # Returns
+            Dictionary: Scribble returned by the scribble robot
+
+        # Raises
+            RuntimeError: When a previous interaction is missing, or the
+            interaction has already been submitted.
+        """
         # Evaluate the submitted masks
         if len(self.report.loc[(self.report.sequence == sequence) &
                                (self.report.scribble_idx == scribble_idx) &
@@ -156,5 +176,14 @@ class EvaluationService:
 
         return next_scribble
 
-    def get_report(self):
+    def get_report(self, user_key, session_key):
+        """ Get report for a session.
+
+        # Arguments
+            user_key: String. User identifier.
+            session_key: String. Session identifier.
+
+        # Returns
+            Report
+        """
         return self.report

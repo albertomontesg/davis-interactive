@@ -42,4 +42,4 @@ class LocalConnector(AbstractConnector):
             self.user_key, self.session_key)
 
     def get_report(self):
-        return self.service.get_report()
+        return self.service.get_report(self.user_key, self.session_key)
