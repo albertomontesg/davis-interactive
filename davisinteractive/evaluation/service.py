@@ -7,6 +7,7 @@ from .. import logging
 from ..dataset.davis import Davis
 from ..metrics import batched_jaccard
 from ..robot import InteractiveScribblesRobot
+from ..storage import LocalStorage
 
 
 class EvaluationService:
@@ -31,11 +32,6 @@ class EvaluationService:
             `DavisInteractiveSession` class.
     """
 
-    VALID_SUBSETS = ['train', 'val', 'trainval', 'test-dev']
-    REPORT_COLUMNS = [
-        'session_id', 'sequence', 'scribble_idx', 'interaction', 'object_id',
-        'frame', 'jaccard', 'timing'
-    ]
     ROBOT_DEFAULT_PARAMETERS = {
         'kernel_size': .2,
         'max_kernel_radius': 16,
@@ -45,6 +41,7 @@ class EvaluationService:
 
     def __init__(self,
                  subset,
+                 storage=None,
                  davis_root=None,
                  robot_parameters=None,
                  max_t=None,
@@ -71,8 +68,8 @@ class EvaluationService:
         logging.verbose('Checking DAVIS dataset files', 1)
         self.davis.check_files(self.sequences)
 
-        # Create empty report
-        self.report = pd.DataFrame(columns=self.REPORT_COLUMNS)
+        # Init storage
+        self.storage = storage or LocalStorage()
 
         # Parameters
         self.max_t = max_t
@@ -131,52 +128,30 @@ class EvaluationService:
             RuntimeError: When a previous interaction is missing, or the
             interaction has already been submitted.
         """
-        # Evaluate the submitted masks
-        if len(self.report.loc[(self.report.sequence == sequence) &
-                               (self.report.scribble_idx == scribble_idx) &
-                               (self.report.interaction == interaction)]) > 0:
-            raise RuntimeError(
-                'For {} and scribble {} already exist a result for interaction {}'.
-                format(sequence, scribble_idx, interaction))
-        if interaction > 1 and len(
-                self.report.loc[(self.report.sequence == sequence) &
-                                (self.report.scribble_idx == scribble_idx) &
-                                (self.report.interaction == interaction -
-                                 1)]) == 0:
-            raise RuntimeError(
-                'For {} and scribble {} does not exist a result for previous interaction {}'.
-                format(sequence, scribble_idx, interaction - 1))
+        # Load ground truth masks and compute jaccard metric
         gt_masks = self.davis.load_annotations(sequence)
         jaccard = batched_jaccard(
             gt_masks, pred_masks, average_over_objects=False)
         nb_frames, nb_objects = jaccard.shape
-        nb = nb_frames * nb_objects
 
         frames_idx = np.arange(nb_frames)
         objects_idx = np.arange(nb_objects)
 
         objects_idx, frames_idx = np.meshgrid(objects_idx, frames_idx)
 
-        uploaded_result = {k: None for k in self.REPORT_COLUMNS}
-        uploaded_result['session_id'] = [session_key] * nb
-        uploaded_result['sequence'] = [sequence] * nb
-        uploaded_result['scribble_idx'] = [scribble_idx] * nb
-        uploaded_result['interaction'] = [interaction] * nb
-        uploaded_result['timing'] = [timing] * nb
-        uploaded_result['object_id'] = objects_idx.ravel().tolist()
-        uploaded_result['frame'] = frames_idx.ravel().tolist()
-        uploaded_result['jaccard'] = jaccard.ravel().tolist()
-        uploaded_result = pd.DataFrame(
-            data=uploaded_result, columns=self.REPORT_COLUMNS)
-        self.report = pd.concat(
-            [self.report, uploaded_result], ignore_index=True)
+        # Save the results on storage
+        self.storage.store_interactions_results(
+            user_key, session_key, sequence, scribble_idx, interaction, timing,
+            objects_idx.ravel().tolist(),
+            frames_idx.ravel().tolist(),
+            jaccard.ravel().tolist())
 
         # Generate next scribble
         next_scribble = self.robot.interact(sequence, pred_masks, gt_masks)
 
         return next_scribble
 
-    def get_report(self, user_key, session_key):
+    def get_report(self, **kwargs):
         """ Get report for a session.
 
         # Arguments
@@ -186,4 +161,4 @@ class EvaluationService:
         # Returns
             Report
         """
-        return self.report
+        return self.storage.get_report(**kwargs)

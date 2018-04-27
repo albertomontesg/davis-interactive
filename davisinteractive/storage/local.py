@@ -3,6 +3,7 @@ from __future__ import absolute_import, division
 import numpy as np
 import pandas as pd
 
+from .. import logging
 from .abstract import AbstractStorage
 
 
@@ -19,6 +20,7 @@ class LocalStorage(AbstractStorage):
 
     def __init__(self):
         self.report = pd.DataFrame(columns=self.COLUMNS)
+        logging.verbose('Report DataFrame created')
 
     def store_interactions_results(self, user_id, session_id, sequence,
                                    scribble_idx, interaction, timing,
@@ -77,6 +79,7 @@ class LocalStorage(AbstractStorage):
         sample['jaccard'] = jaccard
         sample = pd.DataFrame(data=sample, columns=self.COLUMNS)
         self.report = pd.concat([self.report, sample], ignore_index=True)
+        logging.info('Successfully stored sample interaction entry')
 
         return True
 
