@@ -140,9 +140,7 @@ class TestScribbles2Points(unittest.TestCase):
                 'end_time': 1000
             }]],
             'sequence':
-            'test',
-            'annotated_frame':
-            1
+            'test'
         }
 
         X, Y = scribbles2points(scribbles_data)
@@ -163,9 +161,7 @@ class TestScribbles2Points(unittest.TestCase):
                 'end_time': 1000
             }]],
             'sequence':
-            'test',
-            'annotated_frame':
-            1
+            'test'
         }
 
         X, Y = scribbles2points(scribbles_data, output_resolution=(100, 100))
@@ -193,8 +189,6 @@ class TestFuseScribbles(unittest.TestCase):
             }]],
             'sequence':
             'test',
-            'annotated_frame':
-            1
         }
         scribble_2 = {
             'scribbles': [[{
@@ -205,8 +199,6 @@ class TestFuseScribbles(unittest.TestCase):
             }], []],
             'sequence':
             'test',
-            'annotated_frame':
-            1
         }
         scribble_result = {
             'scribbles': [[{
@@ -222,8 +214,6 @@ class TestFuseScribbles(unittest.TestCase):
             }]],
             'sequence':
             'test',
-            'annotated_frame':
-            1
         }
 
         assert scribble_result == fuse_scribbles(scribble_1, scribble_2)
@@ -238,8 +228,6 @@ class TestFuseScribbles(unittest.TestCase):
             }]],
             'sequence':
             'test',
-            'annotated_frame':
-            1
         }
         scribble_result = {
             'scribbles': [[], [{
@@ -255,8 +243,6 @@ class TestFuseScribbles(unittest.TestCase):
             }]],
             'sequence':
             'test',
-            'annotated_frame':
-            1
         }
 
         assert scribble_result == fuse_scribbles(scribble, scribble)
@@ -271,8 +257,6 @@ class TestFuseScribbles(unittest.TestCase):
             }]],
             'sequence':
             'xxxx',
-            'annotated_frame':
-            1
         }
         scribble_2 = {
             'scribbles': [[{
@@ -283,8 +267,6 @@ class TestFuseScribbles(unittest.TestCase):
             }], []],
             'sequence':
             'test',
-            'annotated_frame':
-            1
         }
         with pytest.raises(ValueError):
             fuse_scribbles(scribble_1, scribble_2)
@@ -311,8 +293,6 @@ class TestFuseScribbles(unittest.TestCase):
             }]],
             'sequence':
             'test',
-            'annotated_frame':
-            1
         }
         with pytest.raises(ValueError):
             fuse_scribbles(scribble_1, scribble_2)
@@ -330,17 +310,11 @@ class TestEmpytScribble(unittest.TestCase):
             }]],
             'sequence':
             'test',
-            'annotated_frame':
-            1
         }
         assert not is_empty(scribble)
 
     def test_empty(self):
-        scribble = {
-            'scribbles': [[] for _ in range(10)],
-            'sequence': 'test',
-            'annotated_frame': 1
-        }
+        scribble = {'scribbles': [[] for _ in range(10)], 'sequence': 'test'}
         assert is_empty(scribble)
 
 

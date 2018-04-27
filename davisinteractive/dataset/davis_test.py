@@ -23,13 +23,14 @@ FIXTURE_DIR = os.path.join(tempfile.mkdtemp(), 'DAVIS')
 class TestDavis(unittest.TestCase):
 
     def test_properties(self):
-        subsets = {'train': 60, 'val': 30, 'test-dev': 30}
+        subsets = {'train': 60, 'val': 30, 'test-dev': 30, 'trainval': 90}
 
         sequences = []
         for subset, count in subsets.items():
             assert subset in Davis.sets
             assert len(Davis.sets[subset]) == count
-            sequences += Davis.sets[subset]
+            if subset != 'trainval':
+                sequences += Davis.sets[subset]
 
         assert len(sequences) == 120
         assert len(Davis.dataset) == 120

@@ -1,5 +1,6 @@
 from __future__ import absolute_import, division
 
+import getpass
 import json
 import os
 import random
@@ -15,30 +16,31 @@ class LocalConnector(AbstractConnector):
     """ Proxy class to run the EvaluationService locally.
     """
 
-    VALID_SUBSETS = ['train', 'val']
+    VALID_SUBSETS = ['train', 'val', 'trainval']
 
-    def __init__(self):
+    def __init__(self, user_key, session_key):
         self.service = None
+        self.user_key = user_key or getpass.getuser()
+        self.session_key = session_key
 
-    def start_session(self, subset, davis_root=None):
+    def get_samples(self, subset, davis_root=None):
         if subset not in self.VALID_SUBSETS:
             raise ValueError(
                 'For local connector, `subset` must be a valid subset: {}'.
                 format(self.VALID_SUBSETS))
 
-        self.service = EvaluationService(davis_root=davis_root)
-        return self.service.start(subset)
+        self.service = EvaluationService(subset, davis_root=davis_root)
+        return self.service.get_samples()
 
-    def get_starting_scribble(self, sequence, scribble_idx):
-        return self.service.get_starting_scribble(sequence, scribble_idx)
+    def get_scribble(self, sequence, scribble_idx):
+        return self.service.get_scribble(sequence, scribble_idx)
 
-    def submit_masks(self, sequence, scribble_idx, pred_masks, timming,
-                     interaction):
-        return self.service.submit_masks(sequence, scribble_idx, pred_masks,
-                                         timming, interaction)
+    def post_predicted_masks(self, sequence, scribble_idx, pred_masks, timming,
+                             interaction):
+        return self.service.post_predicted_masks(
+            sequence, scribble_idx, pred_masks, timming, interaction,
+            self.user_key, self.session_key)
 
     def get_report(self):
-        return self.service.get_report()
-
-    def close(self):
-        self.service.close()
+        return self.service.get_report(
+            user_id=self.user_key, session_id=self.session_key)

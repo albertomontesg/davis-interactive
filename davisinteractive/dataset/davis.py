@@ -25,6 +25,7 @@ with Path(__file__).parent.joinpath('davis.json').open() as fp:
 _SETS = {s: [] for s in _DATASET['sets']}
 for s in _DATASET['sequences'].values():
     _SETS[s['set']].append(s['name'])
+_SETS['trainval'] = _SETS['train'] + _SETS['val']
 
 
 class Davis:

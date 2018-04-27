@@ -1,5 +1,6 @@
 from __future__ import absolute_import, division
 
+import binascii
 import os
 import random
 import time
@@ -20,6 +21,9 @@ class DavisInteractiveSession:
     # Arguments
         host: String. Host of the evuation server. Only `localhost`
             available for now.
+        user_key: String. User identifier (e.g. email). If the session is being
+            run in `localhost`, `user_key` does not need to be specified
+            (username will be used).
         davis_root: String. Path to the Davis dataset root path. Necessary
             for evaluation when `host='localhost'`.
         subset: String. Subset to evaluate. If `host='localhost'` subset
@@ -29,30 +33,23 @@ class DavisInteractiveSession:
         shuffle: Boolean. Shuffle the samples when evaluating.
         max_time: Integer. Number of seconds maximum to evaluate a single
             sample.
-        max_nb_interactions: Integer. Maximum number of interactions to
+        max_nb_interactins: Integer. Maximum number of interactions to
             evaluate per sample.
         report_save_dir: String. Path to the directory where the report will
             be stored during the evaluation. By default is the current working
             directory. A temporal file will be storing snapshots of the results
             on this same directory with a suffix `.tmp`.
-        progbar: Boolean. Wether to show a progbar to show the evolution
-            of the evaluation. If `True`, `tqdm` Python package will be
-            required.
     """
 
     def __init__(self,
                  host='localhost',
-                 key=None,
-                 connector=None,
+                 user_key=None,
                  davis_root=None,
                  subset='val',
                  shuffle=False,
                  max_time=None,
                  max_nb_interactions=5,
-                 report_save_dir=None,
-                 progbar=False):
-        # self.host = host
-        # self.key = key
+                 report_save_dir=None):
         self.davis_root = davis_root
 
         self.subset = subset
@@ -63,11 +60,13 @@ class DavisInteractiveSession:
             max_nb_interactions,
             16) if max_nb_interactions is not None else max_nb_interactions
 
-        self.progbar = progbar
         self.running_model = False
 
-        self.connector = connector or ServerConnectionFabric.get_connector(
-            host, key)
+        # User and session key
+        self.user_key = user_key
+        self.session_key = binascii.hexlify(os.urandom(32)).decode()
+        self.connector = ServerConnectionFabric.get_connector(
+            host, self.user_key, self.session_key)
 
         self.samples = None
         self.sample_idx = None
@@ -86,7 +85,7 @@ class DavisInteractiveSession:
 
     def __enter__(self):
         # Create connector
-        samples, max_t, max_i = self.connector.start_session(
+        samples, max_t, max_i = self.connector.get_samples(
             self.subset, davis_root=self.davis_root)
         if self.shuffle:
             logging.verbose('Shuffling samples', 1)
@@ -95,10 +94,6 @@ class DavisInteractiveSession:
 
         logging.info('Started session with {} samples'.format(
             len(self.samples)))
-
-        if self.progbar:
-            from tqdm import tqdm
-            self.progbar = tqdm(self.samples, desc='Evaluating')
 
         self.max_time = max_t or self.max_time
         self.max_nb_interactions = max_i or self.max_nb_interactions
@@ -111,7 +106,7 @@ class DavisInteractiveSession:
         return self
 
     def __exit__(self, type_, value, traceback):
-        self.connector.close()
+        pass
 
     def next(self):
         """ Iterate to the next iteration/sample of the evaluation process.
@@ -164,7 +159,7 @@ class DavisInteractiveSession:
 
         # Save report on final version if the evaluation ends
         if end:
-            df = self._get_report()
+            df = self.get_report()
             report_filename = os.path.join(self.report_save_dir,
                                            '%s.csv' % self.report_name)
             df.to_csv(report_filename)
@@ -204,7 +199,7 @@ class DavisInteractiveSession:
         sequence, scribble_idx = self.samples[self.sample_idx]
         new_sequence = False
         if self.interaction_nb == 0 and self.sample_scribbles is None:
-            self.sample_scribbles = self.connector.get_starting_scribble(
+            self.sample_scribbles = self.connector.get_scribble(
                 sequence, scribble_idx)
             self.sample_last_scribble = self.sample_scribbles
             new_sequence = True
@@ -273,22 +268,24 @@ class DavisInteractiveSession:
         self.interaction_nb += 1
         sequence, scribble_idx = self.samples[self.sample_idx]
 
-        self.sample_last_scribble = self.connector.submit_masks(
+        self.sample_last_scribble = self.connector.post_predicted_masks(
             sequence, scribble_idx, pred_masks, timing, self.interaction_nb)
         self.sample_scribbles = fuse_scribbles(self.sample_scribbles,
                                                self.sample_last_scribble)
 
-        df = self._get_report()
+        df = self.get_report()
         tmp_report_filename = os.path.join(self.report_save_dir,
                                            '%s.tmp.csv' % self.report_name)
         df.to_csv(tmp_report_filename)
 
         self.running_model = False
 
-    def _get_report(self):
+    def get_report(self):
         """ Gives the current report of the evaluation
 
         # Returns
-            pd.DataFrame: Dataframe with the current evaluation results.
+            pd.DataFrame: Dataframe with the current evaluation results. This
+                DataFrame contains the same table as the store on
+                `report_save_dir`.
         """
         return self.connector.get_report()
