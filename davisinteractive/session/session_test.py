@@ -3,6 +3,7 @@ from __future__ import absolute_import, division
 import json
 import os
 import tempfile
+import time
 import unittest
 from functools import wraps
 
@@ -278,5 +279,42 @@ class TestDavisInteractiveSession(unittest.TestCase):
                 count += 1
 
             assert count == 4
+
+        assert mock_davis.call_count == 0
+
+    @dataset('train', bear={'num_frames': 2, 'num_scribbles': 1})
+    @patch.object(Davis, '_download_scribbles', return_value=None)
+    def test_integration_single_timeout(self, mock_davis):
+        dataset_dir = Path(__file__).parent.joinpath('test_data', 'DAVIS')
+
+        with DavisInteractiveSession(
+                davis_root=dataset_dir,
+                subset='train',
+                max_nb_interactions=4,
+                max_time=1,
+                report_save_dir=tempfile.mkdtemp()) as session:
+            count = 0
+
+            while session.next():
+                seq, scribble, new_seq = session.get_scribbles(only_last=True)
+                assert new_seq == (count == 0)
+                assert seq == 'bear'
+                if count == 0:
+                    with dataset_dir.joinpath('Scribbles', 'bear',
+                                              '001.json').open() as fp:
+                        sc = json.load(fp)
+                        assert sc == scribble
+                assert not is_empty(scribble)
+
+                # Simulate model predicting masks
+                pred_masks = np.zeros((2, 480, 854))
+
+                time.sleep(1.2)
+
+                session.submit_masks(pred_masks)
+
+                count += 1
+
+            assert count == 1
 
         assert mock_davis.call_count == 0
