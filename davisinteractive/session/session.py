@@ -1,7 +1,9 @@
 from __future__ import absolute_import, division
 
+import binascii
 import os
 import random
+import secrets
 import time
 from copy import deepcopy
 from datetime import datetime
@@ -20,6 +22,9 @@ class DavisInteractiveSession:
     # Arguments
         host: String. Host of the evuation server. Only `localhost`
             available for now.
+        user_key: String. User identifier (e.g. email). If the session is being
+            run in `localhost`, `user_key` does not need to be specified
+            (username will be used).
         davis_root: String. Path to the Davis dataset root path. Necessary
             for evaluation when `host='localhost'`.
         subset: String. Subset to evaluate. If `host='localhost'` subset
@@ -39,16 +44,13 @@ class DavisInteractiveSession:
 
     def __init__(self,
                  host='localhost',
-                 key=None,
-                 connector=None,
+                 user_key=None,
                  davis_root=None,
                  subset='val',
                  shuffle=False,
                  max_time=None,
                  max_nb_interactions=5,
                  report_save_dir=None):
-        # self.host = host
-        # self.key = key
         self.davis_root = davis_root
 
         self.subset = subset
@@ -61,8 +63,11 @@ class DavisInteractiveSession:
 
         self.running_model = False
 
-        self.connector = connector or ServerConnectionFabric.get_connector(
-            host, key)
+        # User and session key
+        self.user_key = user_key
+        self.session_key = binascii.hexlify(secrets.token_bytes(32)).decode()
+        self.connector = ServerConnectionFabric.get_connector(
+            host, self.user_key, self.session_key)
 
         self.samples = None
         self.sample_idx = None

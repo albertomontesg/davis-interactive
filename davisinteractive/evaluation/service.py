@@ -33,8 +33,8 @@ class EvaluationService:
 
     VALID_SUBSETS = ['train', 'val', 'trainval', 'test-dev']
     REPORT_COLUMNS = [
-        'sequence', 'scribble_idx', 'interaction', 'object_id', 'frame',
-        'jaccard', 'timming'
+        'session_id', 'sequence', 'scribble_idx', 'interaction', 'object_id',
+        'frame', 'jaccard', 'timming'
     ]
     ROBOT_DEFAULT_PARAMETERS = {
         'kernel_size': .2,
@@ -110,7 +110,7 @@ class EvaluationService:
         return scribble
 
     def post_predicted_masks(self, sequence, scribble_idx, pred_masks, timming,
-                             interaction):
+                             interaction, user_key, session_key):
         # Evaluate the submitted masks
         if len(self.report.loc[(self.report.sequence == sequence) &
                                (self.report.scribble_idx == scribble_idx) &
@@ -138,6 +138,7 @@ class EvaluationService:
         objects_idx, frames_idx = np.meshgrid(objects_idx, frames_idx)
 
         uploaded_result = {k: None for k in self.REPORT_COLUMNS}
+        uploaded_result['session_id'] = [session_key] * nb
         uploaded_result['sequence'] = [sequence] * nb
         uploaded_result['scribble_idx'] = [scribble_idx] * nb
         uploaded_result['interaction'] = [interaction] * nb

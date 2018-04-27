@@ -8,9 +8,9 @@ from .local import LocalConnector
 class ServerConnectionFabric:
 
     @staticmethod
-    def get_connector(host, key):
+    def get_connector(host, user_key, session_key):
         if host == 'localhost':
             logging.info('Created connector to localhost service')
-            return LocalConnector()
+            return LocalConnector(user_key=user_key, session_key=session_key)
         else:
             raise NotImplementedError('Remote connection not implemented')

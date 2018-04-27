@@ -1,5 +1,6 @@
 from __future__ import absolute_import, division
 
+import getpass
 import json
 import os
 import random
@@ -17,8 +18,10 @@ class LocalConnector(AbstractConnector):
 
     VALID_SUBSETS = ['train', 'val', 'trainval']
 
-    def __init__(self):
+    def __init__(self, user_key, session_key):
         self.service = None
+        self.user_key = user_key or getpass.getuser()
+        self.session_key = session_key
 
     def get_samples(self, subset, davis_root=None):
         if subset not in self.VALID_SUBSETS:
@@ -35,7 +38,8 @@ class LocalConnector(AbstractConnector):
     def post_predicted_masks(self, sequence, scribble_idx, pred_masks, timming,
                              interaction):
         return self.service.post_predicted_masks(
-            sequence, scribble_idx, pred_masks, timming, interaction)
+            sequence, scribble_idx, pred_masks, timming, interaction,
+            self.user_key, self.session_key)
 
     def get_report(self):
         return self.service.get_report()
