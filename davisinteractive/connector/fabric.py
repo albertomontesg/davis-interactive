@@ -3,6 +3,7 @@ from __future__ import absolute_import, division
 from absl import logging
 
 from .local import LocalConnector
+from .remote import RemoteConnector
 
 
 class ServerConnectionFabric:

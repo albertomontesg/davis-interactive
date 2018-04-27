@@ -3,7 +3,7 @@ from __future__ import absolute_import, division
 from .abstract import AbstractConnector
 
 
-class RemoteConnector(AbstractConnector):
+class RemoteConnector(AbstractConnector):  # pragma: no cover
 
     def get_samples(self, subset, davis_root=None):
         raise NotImplementedError('This is an abstract class')
