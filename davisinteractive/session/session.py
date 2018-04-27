@@ -35,9 +35,6 @@ class DavisInteractiveSession:
             be stored during the evaluation. By default is the current working
             directory. A temporal file will be storing snapshots of the results
             on this same directory with a suffix `.tmp`.
-        progbar: Boolean. Wether to show a progbar to show the evolution
-            of the evaluation. If `True`, `tqdm` Python package will be
-            required.
     """
 
     def __init__(self,
@@ -49,8 +46,7 @@ class DavisInteractiveSession:
                  shuffle=False,
                  max_time=None,
                  max_nb_interactions=5,
-                 report_save_dir=None,
-                 progbar=False):
+                 report_save_dir=None):
         # self.host = host
         # self.key = key
         self.davis_root = davis_root
@@ -63,7 +59,6 @@ class DavisInteractiveSession:
             max_nb_interactions,
             16) if max_nb_interactions is not None else max_nb_interactions
 
-        self.progbar = progbar
         self.running_model = False
 
         self.connector = connector or ServerConnectionFabric.get_connector(
@@ -95,10 +90,6 @@ class DavisInteractiveSession:
 
         logging.info('Started session with {} samples'.format(
             len(self.samples)))
-
-        if self.progbar:
-            from tqdm import tqdm
-            self.progbar = tqdm(self.samples, desc='Evaluating')
 
         self.max_time = max_t or self.max_time
         self.max_nb_interactions = max_i or self.max_nb_interactions
