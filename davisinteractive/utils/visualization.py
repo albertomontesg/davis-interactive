@@ -66,3 +66,50 @@ def plot_scribble(ax, scribble, frame, output_size=None, **kwargs):
         ax.plot(*path.T, color=color, **kwargs)
 
     return ax
+
+
+def overlay_mask(im, ann, alpha=0.5, colors=None, contour_thickness=None):
+    """ Overlay mask over image.
+
+    This function allows you to overlay a mask over an image with some
+    transparency.
+
+    # Arguments
+        im: Numpy Array. Array with the image. The shape must be (H, W, 3) and
+            the pixels must be represented as `np.uint8` data type.
+        ann: Numpy Array. Array with the mask. The shape must be (H, W) and the
+            values must be intergers
+        alpha: Float. Proportion of alpha to apply at the overlaid mask.
+        colors: Numpy Array. Optional custom colormap. It must have shape (N, 3)
+            being N the maximum number of colors to represent.
+        contour_thickness: Integer. Thickness of each object index contour draw
+            over the overlay. This function requires to have installed the
+            package `opencv-python`.
+
+    # Returns
+        Numpy Array: Image of the overlay with shape (H, W, 3) and data type
+            `np.uint8`.
+    """
+    im, ann = np.asarray(im, dtype=np.uint8), np.asarray(ann, dtype=np.int)
+    if im.shape[:-1] != ann.shape:
+        raise ValueError('First two dimensions of `im` and `ann` must match')
+    if im.shape[-1] != 3:
+        raise ValueError('im must have three channels at the 3 dimension')
+
+    colors = colors or _pascal_color_map()
+    colors = np.asarray(colors, dtype=np.uint8)
+
+    mask = colors[ann]
+    fg = im * alpha + (1 - alpha) * mask
+
+    img = im.copy()
+    img[ann > 0] = fg[ann > 0]
+
+    if contour_thickness:  # pragma: no cover
+        import cv2
+        for obj_id in np.unique(ann[ann > 0]):
+            contours = cv2.findContours((ann == obj_id).astype(
+                np.uint8), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)[-2:]
+            cv2.drawContours(img, contours[0], -1, colors[obj_id].tolist(),
+                             contour_thickness)
+    return img
