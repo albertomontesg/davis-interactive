@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 
 from davisinteractive.utils.visualization import (_pascal_color_map,
-                                                  plot_scribble)
+                                                  overlay_mask, plot_scribble)
 
 import matplotlib  # isort:skip
 matplotlib.use('Agg')
@@ -77,3 +77,64 @@ class TestPlotScribble(unittest.TestCase):
 
         with pytest.raises(ValueError):
             plot_scribble(ax, scribble, 10)
+
+
+class TestOverlay(unittest.TestCase):
+
+    def test_shape_mismatch(self):
+        im = np.random.randint(0, 255, (100, 200, 3), dtype=np.uint8)
+        ann = np.zeros((100, 201))
+
+        with pytest.raises(ValueError):
+            overlay_mask(im, ann)
+
+    def test_wrong_channel_dimensions(self):
+        im = np.random.randint(0, 255, (100, 200, 4), dtype=np.uint8)
+        ann = np.zeros((100, 200))
+
+        with pytest.raises(ValueError):
+            overlay_mask(im, ann)
+
+    def test_empty_mask(self):
+        im = np.random.randint(0, 255, (100, 200, 3), dtype=np.uint8)
+        ann = np.zeros((100, 200))
+
+        img = overlay_mask(im, ann)
+
+        assert img.shape == im.shape
+        assert img.dtype == im.dtype
+        assert np.all(img == im)
+
+    def test_full_mask(self):
+        im = np.random.randint(0, 255, (100, 200, 3), dtype=np.uint8)
+        ann = np.ones((100, 200))
+
+        img = overlay_mask(im, ann, alpha=1.)
+
+        assert img.shape == im.shape
+        assert img.dtype == im.dtype
+        assert np.all(img == im)
+
+        img = overlay_mask(im, ann, alpha=0.)
+
+        assert img.shape == im.shape
+        assert img.dtype == im.dtype
+        assert np.all(img == [128, 0, 0])
+
+        img = overlay_mask(im, ann, alpha=0., colors=[[45, 43, 76], [1, 2, 3]])
+
+        assert img.shape == im.shape
+        assert img.dtype == im.dtype
+        assert np.all(img == [1, 2, 3])
+
+    def test_mask(self):
+        im = np.random.randint(0, 255, (100, 200, 3), dtype=np.uint8)
+        ann = np.zeros((100, 200))
+        ann[50:70, 50:150] = 1
+
+        img = overlay_mask(im, ann, alpha=.5)
+
+        assert img.shape == im.shape
+        assert img.dtype == im.dtype
+        assert np.all(img[ann == 0] == im[ann == 0])
+        assert not np.all(img[ann != 0] == im[ann != 0])
