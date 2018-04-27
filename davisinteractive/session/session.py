@@ -33,7 +33,7 @@ class DavisInteractiveSession:
         shuffle: Boolean. Shuffle the samples when evaluating.
         max_time: Integer. Number of seconds maximum to evaluate a single
             sample.
-        max_nb_interactions: Integer. Maximum number of interactions to
+        max_nb_interactins: Integer. Maximum number of interactions to
             evaluate per sample.
         report_save_dir: String. Path to the directory where the report will
             be stored during the evaluation. By default is the current working
@@ -159,7 +159,7 @@ class DavisInteractiveSession:
 
         # Save report on final version if the evaluation ends
         if end:
-            df = self._get_report()
+            df = self.get_report()
             report_filename = os.path.join(self.report_save_dir,
                                            '%s.csv' % self.report_name)
             df.to_csv(report_filename)
@@ -273,14 +273,14 @@ class DavisInteractiveSession:
         self.sample_scribbles = fuse_scribbles(self.sample_scribbles,
                                                self.sample_last_scribble)
 
-        df = self._get_report()
+        df = self.get_report()
         tmp_report_filename = os.path.join(self.report_save_dir,
                                            '%s.tmp.csv' % self.report_name)
         df.to_csv(tmp_report_filename)
 
         self.running_model = False
 
-    def _get_report(self):
+    def get_report(self):
         """ Gives the current report of the evaluation
 
         # Returns
