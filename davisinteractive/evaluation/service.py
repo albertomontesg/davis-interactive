@@ -10,6 +10,26 @@ from ..robot import InteractiveScribblesRobot
 
 
 class EvaluationService:
+    """ Class responsible of the evaluation.
+
+    This class is responsible of giving the samples to run the evaluation,
+    to give the asked scribbles and to evaluate the interaction with the robot
+    once the masks are submitted.
+
+    # Arguments
+        subset: String. Subset to evaluate. Possible values are `train`, `val`,
+            'trainval' and `test-dev`.
+        davis_root: String or Path. Path to the DAVIS dataset root directory,
+            where the scribbles and the masks are stored.
+        robot_parameters: Dictionary. Dictionary of parameters to initialize
+            the scribbles robot.
+        max_t: Integer. Number of seconds maximum to evaluate a single sample.
+            This value will overwrite the specified from the user at
+            `DavisInteractiveSession` class.
+        max_i: Integer. Maximum number of interactions to evaluate per sample.
+            This value will overwrite the specified from the user at
+            `DavisInteractiveSession` class.
+    """
 
     VALID_SUBSETS = ['train', 'val', 'trainval', 'test-dev']
     REPORT_COLUMNS = [
@@ -59,11 +79,27 @@ class EvaluationService:
         self.max_i = max_i
 
     def get_samples(self):
+        """ Get the list of samples.
+
+        # Returns
+            List of Tuples: List of pairs where the first element is the
+                sequence name and the second is the scribble index to evaluate.
+        """
 
         logging.info('Getting samples')
         return self.sequences_scribble_idx, self.max_t, self.max_i
 
     def get_scribble(self, sequence, scribble_idx):
+        """ Get a scribble.
+
+        # Arguments
+            sequence: String. Sequence name of the scribble.
+            scribble_idx: Integer. Index of the scribble to get.
+
+        # Raises
+            ValueError: when the sequence is invalid or the scribble index is
+                out of range.
+        """
         if sequence not in self.sequences:
             raise ValueError('Invalid sequence: %s' % sequence)
         if (sequence, scribble_idx) not in self.sequences_scribble_idx:
