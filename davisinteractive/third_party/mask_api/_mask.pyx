@@ -1,5 +1,5 @@
 # distutils: language = c
-# distutils: sources = davisinteractive/third_party/maskApi.c
+# distutils: sources = davisinteractive/third_party/mask_api/maskApi.c
 
 #**************************************************************************
 # Microsoft COCO Toolbox.      version 2.0

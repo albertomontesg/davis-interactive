@@ -4,12 +4,14 @@ from setuptools import Extension, setup
 
 ext_modules = [
     Extension(
-        'davisinteractive.third_party._mask',
+        'davisinteractive.third_party.mask_api._mask',
         sources=[
-            'davisinteractive/third_party/maskApi.c',
-            'davisinteractive/third_party/_mask.pyx'
+            'davisinteractive/third_party/mask_api/maskApi.c',
+            'davisinteractive/third_party/mask_api/_mask.pyx'
         ],
-        include_dirs=[np.get_include(), 'davisinteractive/third_party'],
+        include_dirs=[
+            np.get_include(), 'davisinteractive/third_party/mask_api'
+        ],
         extra_compile_args=['-Wno-cpp', '-Wno-unused-function', '-std=c99'],
     )
 ]

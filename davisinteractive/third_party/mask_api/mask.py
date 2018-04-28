@@ -2,7 +2,11 @@
 """
 import numpy as np
 
-import davisinteractive.third_party._mask as _mask
+from davisinteractive.third_party.mask_api import _mask
+
+__all__ = [
+    'encode_mask', 'decode_mask', 'encode_batch_masks', 'decode_batch_masks'
+]
 
 
 def encode_mask(mask):

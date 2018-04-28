@@ -6,7 +6,7 @@ import numpy as np
 from PIL import Image
 
 from davisinteractive.common import Path
-from davisinteractive.third_party import mask as mask_api
+from davisinteractive.third_party import mask_api
 
 
 class TestSingleMaskEncoding(unittest.TestCase):
