@@ -8,6 +8,9 @@ To install the package you can run the following command on your terminal:
 
 ```bash
 # Python 3 strongly recommended
+# Install numpy and Cython as are required to build our package
+pip install numpy Cython
+# Install the package
 pip install davisinteractive
 ```
 
