@@ -1,6 +1,7 @@
 [run]
 branch = True
 source = davisinteractive
+omit = setup.py
 
 [report]
 exclude_lines =

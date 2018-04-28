@@ -290,7 +290,7 @@ class TestDavisInteractiveSession(unittest.TestCase):
         with DavisInteractiveSession(
                 davis_root=dataset_dir,
                 subset='train',
-                max_nb_interactions=4,
+                max_nb_interactions=None,
                 max_time=1,
                 report_save_dir=tempfile.mkdtemp()) as session:
             count = 0
@@ -299,11 +299,10 @@ class TestDavisInteractiveSession(unittest.TestCase):
                 seq, scribble, new_seq = session.get_scribbles(only_last=True)
                 assert new_seq == (count == 0)
                 assert seq == 'bear'
-                if count == 0:
-                    with dataset_dir.joinpath('Scribbles', 'bear',
-                                              '001.json').open() as fp:
-                        sc = json.load(fp)
-                        assert sc == scribble
+                with dataset_dir.joinpath('Scribbles', 'bear',
+                                          '001.json').open() as fp:
+                    sc = json.load(fp)
+                    assert sc == scribble
                 assert not is_empty(scribble)
 
                 # Simulate model predicting masks
@@ -317,4 +316,40 @@ class TestDavisInteractiveSession(unittest.TestCase):
 
             assert count == 1
 
+        assert mock_davis.call_count == 0
+
+    @dataset('train', bear={'num_frames': 2, 'num_scribbles': 1})
+    @patch.object(Davis, '_download_scribbles', return_value=None)
+    def test_report_folder_creation(self, mock_davis):
+        dataset_dir = Path(__file__).parent.joinpath('test_data', 'DAVIS')
+        tmp_dir = Path(tempfile.mkdtemp()) / 'test'
+        assert not tmp_dir.exists()
+
+        session = DavisInteractiveSession(
+            davis_root=dataset_dir, subset='train', report_save_dir=tmp_dir)
+        assert tmp_dir.exists()
+        assert mock_davis.call_count == 0
+
+    @dataset(
+        'train',
+        bear={
+            'num_frames': 2,
+            'num_scribbles': 2
+        },
+        tennis={
+            'num_frames': 2,
+            'num_scribbles': 1
+        })
+    @patch.object(Davis, '_download_scribbles', return_value=None)
+    def test_shuffle(self, mock_davis):
+        dataset_dir = Path(__file__).parent.joinpath('test_data', 'DAVIS')
+
+        with DavisInteractiveSession(
+                davis_root=dataset_dir,
+                subset='train',
+                shuffle=True,
+                report_save_dir=tempfile.mkdtemp()) as session:
+            assert ('bear', 1) in session.samples
+            assert ('bear', 2) in session.samples
+            assert ('tennis', 1) in session.samples
         assert mock_davis.call_count == 0
