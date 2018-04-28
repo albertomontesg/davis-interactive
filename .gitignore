@@ -104,15 +104,12 @@ docs/site/
 # pytest
 .pytest_cache
 
-# example files
-examples/
-
 # Pylint
 .pylintrc
 
-#Pycharm
+# PyCharm
 .idea/
 .DS_Store
 
-# Temporal for models
-davisinteractive/models/
+# Generated C code
+_mask.c
