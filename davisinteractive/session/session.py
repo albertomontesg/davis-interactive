@@ -8,6 +8,7 @@ from copy import deepcopy
 from datetime import datetime
 
 from .. import logging
+from ..common import Path
 from ..connector.fabric import ServerConnectionFabric
 from ..dataset import Davis
 from ..utils.scribbles import fuse_scribbles
@@ -77,9 +78,10 @@ class DavisInteractiveSession:
         self.interaction_start_time = None
 
         self.report_save_dir = report_save_dir or os.getcwd()
+        self.report_save_dir = Path(self.report_save_dir)
         # Crete the directory if does not exists
-        if not os.path.exists(self.report_save_dir):
-            os.makedirs(self.report_save_dir)
+        if not self.report_save_dir.exists():
+            self.report_save_dir.mkdir(parents=True)
         self.report_name = 'result_%s' % datetime.now().strftime(
             '%Y%m%d_%H%M%S')
 
@@ -160,13 +162,13 @@ class DavisInteractiveSession:
         # Save report on final version if the evaluation ends
         if end:
             df = self.get_report()
-            report_filename = os.path.join(self.report_save_dir,
-                                           '%s.csv' % self.report_name)
+            report_filename = self.report_save_dir.joinpath(
+                '%s.csv' % self.report_name)
             df.to_csv(report_filename)
             # Remove the temporal file
-            tmp_report_filename = os.path.join(self.report_save_dir,
-                                               '%s.tmp.csv' % self.report_name)
-            os.remove(tmp_report_filename)
+            tmp_report_filename = self.report_save_dir.joinpath(
+                '%s.tmp.csv' % self.report_name)
+            tmp_report_filename.unlink()
 
         return not end
 
@@ -274,8 +276,8 @@ class DavisInteractiveSession:
                                                self.sample_last_scribble)
 
         df = self.get_report()
-        tmp_report_filename = os.path.join(self.report_save_dir,
-                                           '%s.tmp.csv' % self.report_name)
+        tmp_report_filename = self.report_save_dir.joinpath(
+            '%s.tmp.csv' % self.report_name)
         df.to_csv(tmp_report_filename)
 
         self.running_model = False

@@ -146,10 +146,6 @@ class Davis:
                 scribble_file = seq_scribbles_path / '{:03d}.json'.format(i)
                 if not scribble_file.exists():
                     self._download_scribbles()
-                    if not scribble_file.exists():
-                        raise FileNotFoundError(
-                            ('Scribble file not found for sequence '
-                             '{} and scribble {}').format(seq, i))
 
             # Check annotations files required for the evaluation
             nb_frames = self.dataset[seq]['num_frames']

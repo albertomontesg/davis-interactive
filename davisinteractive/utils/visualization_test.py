@@ -75,6 +75,8 @@ class TestPlotScribble(unittest.TestCase):
         _, ax = plt.subplots(1)
         plot_scribble(ax, scribble, 1, output_size=(100, 200))
 
+        plot_scribble(ax, scribble, 1)
+
         with pytest.raises(ValueError):
             plot_scribble(ax, scribble, 10)
 
