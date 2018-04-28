@@ -1,104 +1,106 @@
-__author__ = 'tsungyi'
+""" Interface for manipulating masks stored in RLE format.
+"""
+import numpy as np
 
 import davisinteractive.third_party._mask as _mask
 
-# Interface for manipulating masks stored in RLE format.
-#
-# RLE is a simple yet efficient format for storing binary masks. RLE
-# first divides a vector (or vectorized image) into a series of piecewise
-# constant regions and then for each piece simply stores the length of
-# that piece. For example, given M=[0 0 1 1 1 0 1] the RLE counts would
-# be [2 3 1 1], or for M=[1 1 1 1 1 1 0] the counts would be [0 6 1]
-# (note that the odd counts are always the numbers of zeros). Instead of
-# storing the counts directly, additional compression is achieved with a
-# variable bitrate representation based on a common scheme called LEB128.
-#
-# Compression is greatest given large piecewise constant regions.
-# Specifically, the size of the RLE is proportional to the number of
-# *boundaries* in M (or for an image the number of boundaries in the y
-# direction). Assuming fairly simple shapes, the RLE representation is
-# O(sqrt(n)) where n is number of pixels in the object. Hence space usage
-# is substantially lower, especially for large simple objects (large n).
-#
-# Many common operations on masks can be computed directly using the RLE
-# (without need for decoding). This includes computations such as area,
-# union, intersection, etc. All of these operations are linear in the
-# size of the RLE, in other words they are O(sqrt(n)) where n is the area
-# of the object. Computing these operations on the original mask is O(n).
-# Thus, using the RLE can result in substantial computational savings.
-#
-# The following API functions are defined:
-#  encode         - Encode binary masks using RLE.
-#  decode         - Decode binary masks encoded via RLE.
-#  merge          - Compute union or intersection of encoded masks.
-#  iou            - Compute intersection over union between masks.
-#  area           - Compute area of encoded masks.
-#  toBbox         - Get bounding boxes surrounding encoded masks.
-#  frPyObjects    - Convert polygon, bbox, and uncompressed RLE to encoded RLE mask.
-#
-# Usage:
-#  Rs     = encode( masks )
-#  masks  = decode( Rs )
-#  R      = merge( Rs, intersect=false )
-#  o      = iou( dt, gt, iscrowd )
-#  a      = area( Rs )
-#  bbs    = toBbox( Rs )
-#  Rs     = frPyObjects( [pyObjects], h, w )
-#
-# In the API the following formats are used:
-#  Rs      - [dict] Run-length encoding of binary masks
-#  R       - dict Run-length encoding of binary mask
-#  masks   - [hxwxn] Binary mask(s) (must have type np.ndarray(dtype=uint8) in column-major order)
-#  iscrowd - [nx1] list of np.ndarray. 1 indicates corresponding gt image has crowd region to ignore
-#  bbs     - [nx4] Bounding box(es) stored as [x y w h]
-#  poly    - Polygon stored as [[x1 y1 x2 y2...],[x1 y1 ...],...] (2D list)
-#  dt,gt   - May be either bounding boxes or encoded masks
-# Both poly and bbs are 0-indexed (bbox=[0 0 1 1] encloses first pixel).
-#
-# Finally, a note about the intersection over union (iou) computation.
-# The standard iou of a ground truth (gt) and detected (dt) object is
-#  iou(gt,dt) = area(intersect(gt,dt)) / area(union(gt,dt))
-# For "crowd" regions, we use a modified criteria. If a gt object is
-# marked as "iscrowd", we allow a dt to match any subregion of the gt.
-# Choosing gt' in the crowd gt that best matches the dt can be done using
-# gt'=intersect(dt,gt). Since by definition union(gt',dt)=dt, computing
-#  iou(gt,dt,iscrowd) = iou(gt',dt) = area(intersect(gt,dt)) / area(dt)
-# For crowd gt regions we use this modified criteria above for the iou.
-#
-# To compile run "python setup.py build_ext --inplace"
-# Please do not contact us for help with compiling.
-#
-# Microsoft COCO Toolbox.      version 2.0
-# Data, paper, and tutorials available at:  http://mscoco.org/
-# Code written by Piotr Dollar and Tsung-Yi Lin, 2015.
-# Licensed under the Simplified BSD License [see coco/license.txt]
 
-iou = _mask.iou
-merge = _mask.merge
-frPyObjects = _mask.frPyObjects
+def encode_mask(mask):
+    """ Encode a mask.
+
+    It accepts multiple indexes on the mask. The mask for every index will be
+    encoded in a different RLE.
+
+    # Arguments
+        bimask: Numpy Array. Mask array with the index of every pixel. The shape
+            must be (H, W) and all the values are supposed to be integers.
+
+    # Return
+        Dictionary: Dictionary with the RLE of the mask.
+    """
+    mask = mask.astype(np.int)
+    assert mask.ndim == 2
+    h, w = mask.shape
+
+    obj_ids = np.unique(mask[mask > 0])
+    obj_ids = obj_ids.reshape(1, 1, -1)
+
+    binmask = mask.reshape(h, w, 1) == obj_ids
+    binmask = np.asfortranarray(binmask).astype(np.uint8)
+
+    rle_objs = _mask.encode(binmask)
+    encoding = {'size': [h, w], 'objects': []}
+    for i, obj_id in enumerate(obj_ids.ravel()):
+        encoding['objects'].append({
+            'object_id': obj_id,
+            'counts': rle_objs[i]['counts'].decode()
+        })
+
+    return encoding
 
 
-def encode(bimask):
-    if len(bimask.shape) == 3:
-        return _mask.encode(bimask)
-    elif len(bimask.shape) == 2:
-        h, w = bimask.shape
-        return _mask.encode(bimask.reshape((h, w, 1), order='F'))[0]
+def decode_mask(encoding):
+    """ Decode a mask.
+
+    Decode a multi index mask and return its mask as a Numpy Array.
+
+    # Arguments
+        encoding: Dictionary. Mask encoded object.
+
+    # Returns
+        Numpy Array: Mask decoded with shape (H, W).
+    """
+    h, w = encoding['size']
+    obj_ids = [o['object_id'] for o in encoding['objects']]
+    rle_objs = [{
+        'size': [h, w],
+        'counts': o['counts'].encode()
+    } for o in encoding['objects']]
+    binmask = _mask.decode(rle_objs)
+    obj_ids = np.asarray(obj_ids, dtype=binmask.dtype).reshape(1, 1, -1)
+    mask = (binmask * obj_ids).max(axis=2)
+
+    return mask
 
 
-def decode(rleObjs):
-    if isinstance(rleObjs, list):
-        return _mask.decode(rleObjs)
-    return _mask.decode([rleObjs])[:, :, 0]
+def encode_batch_masks(masks):
+    """ Encode a batch of masks.
+
+    It accepts multiple indexes on the mask. The mask for every index will be
+    encoded in a different RLE.
+
+    # Arguments
+        bimask: Numpy Array. Mask array with the index of every pixel. The shape
+            must be (B, H, W) and all the values are supposed to be integers.
+
+    # Return
+        Dictionary: Dictionary with the RLE of the mask.
+    """
+    assert masks.ndim == 3
+    b, h, w = masks.shape
+    encoding = {'size': [b, h, w], 'frames': []}
+    for i in range(b):
+        enc = encode_mask(masks[i])
+        encoding['frames'].append(enc['objects'])
+
+    return encoding
 
 
-def area(rleObjs):
-    if isinstance(rleObjs, list):
-        return _mask.area(rleObjs)
-    return _mask.area([rleObjs])[0]
+def decode_batch_masks(encoding):
+    """ Decode a batch of mask.
 
+    Decode a multi index mask and return its mask as a Numpy Array.
 
-def toBbox(rleObjs):
-    if isinstance(rleObjs, list):
-        return _mask.toBbox(rleObjs)
-    return _mask.toBbox([rleObjs])[0]
+    # Arguments
+        encoding: Dictionary. Mask encoded object.
+
+    # Returns
+        Numpy Array: Mask decoded with shape (B, H, W).
+    """
+    b, h, w = encoding['size']
+    frames_obj = [{'size': [h, w], 'objects': o} for o in encoding['frames']]
+    masks = [decode_mask(obj) for obj in frames_obj]
+    masks = np.stack(masks, axis=0)
+    assert masks.shape == (b, h, w)
+
+    return masks
