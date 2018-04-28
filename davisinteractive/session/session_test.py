@@ -110,13 +110,18 @@ class TestDavisInteractiveSession(unittest.TestCase):
     def test_integration_single(self, mock_davis):
         dataset_dir = Path(__file__).parent.joinpath('test_data', 'DAVIS')
 
+        tmp_dir = Path(tempfile.mkdtemp())
+
         with DavisInteractiveSession(
                 davis_root=dataset_dir,
                 subset='train',
                 max_nb_interactions=5,
-                report_save_dir=tempfile.mkdtemp(),
+                report_save_dir=tmp_dir,
                 max_time=None) as session:
             count = 0
+
+            temp_csv = tmp_dir / ("%s.tmp.csv" % session.report_name)
+            final_csv = tmp_dir / ("%s.csv" % session.report_name)
 
             while session.next():
                 seq, scribble, new_seq = session.get_scribbles()
@@ -136,7 +141,18 @@ class TestDavisInteractiveSession(unittest.TestCase):
 
                 count += 1
 
+                assert not final_csv.exists()
+                assert temp_csv.exists()
+
+                df = pd.read_csv(temp_csv, index_col=0)
+                assert df.shape == (count * 2, 8)
+                assert df.sequence.unique() == ['bear']
+                assert np.all(
+                    df.interaction.unique() == [i + 1 for i in range(count)])
+
             assert count == 5
+            assert final_csv.exists()
+            assert not temp_csv.exists()
 
         assert mock_davis.call_count == 0
 
