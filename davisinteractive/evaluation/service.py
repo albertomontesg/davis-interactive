@@ -130,12 +130,17 @@ class EvaluationService:
         """
         # Load ground truth masks and compute jaccard metric
         gt_masks = self.davis.load_annotations(sequence)
+        nb_objects = Davis.dataset[sequence]['num_objects']
+
         jaccard = batched_jaccard(
-            gt_masks, pred_masks, average_over_objects=False)
-        nb_frames, nb_objects = jaccard.shape
+            gt_masks,
+            pred_masks,
+            average_over_objects=False,
+            nb_objects=nb_objects)
+        nb_frames, _ = jaccard.shape
 
         frames_idx = np.arange(nb_frames)
-        objects_idx = np.arange(nb_objects)
+        objects_idx = np.arange(nb_objects) + 1
 
         objects_idx, frames_idx = np.meshgrid(objects_idx, frames_idx)
 
@@ -147,7 +152,8 @@ class EvaluationService:
             jaccard.ravel().tolist())
 
         # Generate next scribble
-        next_scribble = self.robot.interact(sequence, pred_masks, gt_masks)
+        next_scribble = self.robot.interact(
+            sequence, pred_masks, gt_masks, nb_objects=nb_objects)
 
         return next_scribble
 

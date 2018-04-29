@@ -6,6 +6,7 @@ import networkx as nx
 import numpy as np
 from scipy.ndimage import binary_dilation, binary_erosion
 from scipy.special import comb
+from skimage.filters import rank
 from skimage.morphology import dilation, disk, erosion, medial_axis
 from sklearn.neighbors import radius_neighbors_graph
 
@@ -59,11 +60,11 @@ class InteractiveScribblesRobot(object):
         Returns:
             skel: Numpy Array. Skeleton mask
         """
-        mask = np.asarray(mask)
+        mask = np.asarray(mask, dtype=np.uint8)
         side = np.sqrt(np.sum(mask > 0))
 
         # Remove small objects and small holes
-        mask_ = mask.copy().astype(np.uint8)
+        mask_ = mask
         # kernel_size = int(self.kernel_size * side)
         kernel_radius = self.kernel_size * side * .5
         kernel_radius = min(kernel_radius, self.max_kernel_radius)
@@ -73,9 +74,11 @@ class InteractiveScribblesRobot(object):
         compute = True
         while kernel_radius > 1. and compute:
             kernel = disk(kernel_radius)
+            mask_ = rank.minimum(mask.copy(), kernel)
+            mask_ = rank.maximum(mask_, kernel)
             # mask_ = erosion(mask.copy().astype(np.uint8), kernel)
-            mask_ = binary_erosion(mask.copy(), kernel)
-            mask_ = binary_dilation(mask_, kernel)
+            # mask_ = binary_erosion(mask.copy(), kernel)
+            # mask_ = binary_dilation(mask_, kernel)
             # mask_ = dilation(mask_, kernel)
             compute = False
             if mask_.astype(np.bool).sum() == 0:
@@ -197,7 +200,7 @@ class InteractiveScribblesRobot(object):
 
         return list(longest_path)
 
-    def interact(self, sequence, pred_masks, gt_masks):
+    def interact(self, sequence, pred_masks, gt_masks, nb_objects=None):
         """ Interaction of the Scribble robot given a prediction.
         Given the sequence and a mask prediction, the robot will return a
         scribble in the region that fails the most.
@@ -218,19 +221,23 @@ class InteractiveScribblesRobot(object):
         predictions = np.asarray(pred_masks, dtype=np.int)
         annotations = np.asarray(gt_masks, dtype=np.int)
 
+        nb_frames = len(annotations)
+        if nb_objects is None:
+            obj_ids = np.unique(annotations)
+            obj_ids = obj_ids[(obj_ids > 0) & (obj_ids < 255)]
+            nb_objects = len(obj_ids)
+        else:
+            obj_ids = [i + 1 for i in range(nb_objects)]
         # Infer height and width of the sequence
         h, w = annotations.shape[1:3]
         img_shape = np.asarray([w, h], dtype=np.float)
 
-        jac = batched_jaccard(annotations, predictions)
+        jac = batched_jaccard(annotations, predictions, nb_objects=nb_objects)
         worst_frame = jac.argmin()
         pred, gt = predictions[worst_frame], annotations[worst_frame]
         logging.verbose(
             'For sequence {} the worst frames is #{} with Jaccard: {:.3f}'.
             format(sequence, worst_frame, jac.min()), 2)
-
-        nb_frames = len(annotations)
-        obj_ids = np.unique(annotations[annotations < 255])
 
         scribbles = [[] for _ in range(nb_frames)]
 
