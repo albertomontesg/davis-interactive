@@ -77,5 +77,5 @@ class RemoteConnector(AbstractConnector):  # pragma: no cover
         headers = {'User-Key': self.user_key, 'Session-Key': self.session_key}
         r = self.session.get(
             os.path.join(self.host, self.GET_REPORT_URL), headers=headers)
-        df = pd.read_json(r.json())
+        df = pd.DataFrame.from_dict(r.json())
         return df

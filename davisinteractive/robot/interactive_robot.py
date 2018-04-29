@@ -63,7 +63,6 @@ class InteractiveScribblesRobot(object):
         mask = np.asarray(mask, dtype=np.uint8)
         side = np.sqrt(np.sum(mask > 0))
 
-        # Remove small objects and small holes
         mask_ = mask
         # kernel_size = int(self.kernel_size * side)
         kernel_radius = self.kernel_size * side * .5
@@ -76,10 +75,6 @@ class InteractiveScribblesRobot(object):
             kernel = disk(kernel_radius)
             mask_ = rank.minimum(mask.copy(), kernel)
             mask_ = rank.maximum(mask_, kernel)
-            # mask_ = erosion(mask.copy().astype(np.uint8), kernel)
-            # mask_ = binary_erosion(mask.copy(), kernel)
-            # mask_ = binary_dilation(mask_, kernel)
-            # mask_ = dilation(mask_, kernel)
             compute = False
             if mask_.astype(np.bool).sum() == 0:
                 compute = True
