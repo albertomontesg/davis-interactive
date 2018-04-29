@@ -65,8 +65,9 @@ class EvaluationService:
                 self.sequences_scribble_idx.append((s, i))
 
         # Check all the files are placed
-        logging.verbose('Checking DAVIS dataset files', 1)
-        self.davis.check_files(self.sequences)
+        if subset != 'test-dev':
+            logging.verbose('Checking DAVIS dataset files', 1)
+            self.davis.check_files(self.sequences)
 
         # Init storage
         self.storage = storage or LocalStorage()

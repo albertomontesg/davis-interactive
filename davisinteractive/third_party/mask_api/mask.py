@@ -36,7 +36,7 @@ def encode_mask(mask):
     encoding = {'size': [h, w], 'objects': []}
     for i, obj_id in enumerate(obj_ids.ravel()):
         encoding['objects'].append({
-            'object_id': obj_id,
+            'object_id': int(obj_id),
             'counts': rle_objs[i]['counts'].decode()
         })
 

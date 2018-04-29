@@ -300,7 +300,7 @@ class InteractiveScribblesRobot(object):
                 p /= img_shape
                 path_data = {
                     'path': p.tolist(),
-                    'object_id': obj_id,
+                    'object_id': int(obj_id),
                     'start_time': start_time,
                     'end_time': end_time
                 }
