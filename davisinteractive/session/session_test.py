@@ -149,6 +149,7 @@ class TestDavisInteractiveSession(unittest.TestCase):
                 assert df.sequence.unique() == ['bear']
                 assert np.all(
                     df.interaction.unique() == [i + 1 for i in range(count)])
+                assert np.all(df.object_id.unique() == [1])
 
             assert count == 5
             assert final_csv.exists()
