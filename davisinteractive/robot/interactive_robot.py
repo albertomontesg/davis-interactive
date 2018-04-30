@@ -195,7 +195,12 @@ class InteractiveScribblesRobot(object):
 
         return list(longest_path)
 
-    def interact(self, sequence, pred_masks, gt_masks, nb_objects=None):
+    def interact(self,
+                 sequence,
+                 pred_masks,
+                 gt_masks,
+                 nb_objects=None,
+                 frame=None):
         """ Interaction of the Scribble robot given a prediction.
         Given the sequence and a mask prediction, the robot will return a
         scribble in the region that fails the most.
@@ -210,6 +215,8 @@ class InteractiveScribblesRobot(object):
             nb_objects: Integer. Number of objects in the ground truth mask. If
                 `None` the value will be infered from `y_true`. Setting this
                 value will speed up the computation.
+            frame: Integer. Frame to generate the scribble. If not given, the
+                worst frame given by the jaccard will be used.
 
         # Returns
             dict: Return a scribble (default representation).
@@ -230,12 +237,16 @@ class InteractiveScribblesRobot(object):
         h, w = annotations.shape[1:3]
         img_shape = np.asarray([w, h], dtype=np.float)
 
-        jac = batched_jaccard(annotations, predictions, nb_objects=nb_objects)
-        worst_frame = jac.argmin()
+        if frame is None:
+            jac = batched_jaccard(
+                annotations, predictions, nb_objects=nb_objects)
+            worst_frame = jac.argmin()
+            logging.verbose(
+                'For sequence {} the worst frames is #{} with Jaccard: {:.3f}'.
+                format(sequence, worst_frame, jac.min()), 2)
+        else:
+            worst_frame = frame
         pred, gt = predictions[worst_frame], annotations[worst_frame]
-        logging.verbose(
-            'For sequence {} the worst frames is #{} with Jaccard: {:.3f}'.
-            format(sequence, worst_frame, jac.min()), 2)
 
         scribbles = [[] for _ in range(nb_frames)]
 

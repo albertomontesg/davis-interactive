@@ -5,7 +5,6 @@ import random
 
 import pandas as pd
 import requests
-from six.moves.urllib.parse import urlparse
 
 from ..dataset import Davis
 from ..third_party import mask_api
@@ -17,6 +16,8 @@ class RemoteConnector(AbstractConnector):  # pragma: no cover
     """
 
     VALID_SUBSETS = ['test-dev']
+
+    HEALTHCHECK_URL = 'api/healthcheck'
     GET_SAMPLES_URL = 'api/dataset/samples'
     GET_SCRIBBLE_URL = 'api/dataset/scribbles/{sequence}/{scribble_idx:03d}'
     POST_PREDICTED_MASKS_URL = 'api/evaluation/interaction'
@@ -25,16 +26,24 @@ class RemoteConnector(AbstractConnector):  # pragma: no cover
     def __init__(self, user_key, session_key, host):
         self.user_key = user_key
         self.session_key = session_key
-        o = urlparse(host)
-        self.host = "{}://{}".format(o.scheme, o.netloc)
+        self.host = host
+        self.headers = {
+            'User-Key': self.user_key,
+            'Session-Key': self.session_key
+        }
+
         if user_key is None or session_key is None:
             raise ValueError('user_key and session_key must be specified')
+        r = requests.get(os.path.join(self.host, self.HEALTHCHECK_URL))
+        if r.status_code != 200:
+            raise NameError('Server {} not found'.format(self.host))
 
     def get_samples(self, subset, davis_root=None):
         if subset not in self.VALID_SUBSETS:
             raise ValueError('subset must be a valid one: {}'.format(
                 self.VALID_SUBSETS))
-        r = requests.get(os.path.join(self.host, self.GET_SAMPLES_URL))
+        r = requests.get(
+            os.path.join(self.host, self.GET_SAMPLES_URL), headers=self.headers)
         assert r.status_code == 200
         response = r.json()
 
@@ -47,7 +56,8 @@ class RemoteConnector(AbstractConnector):  # pragma: no cover
         r = requests.get(
             os.path.join(self.host,
                          self.GET_SCRIBBLE_URL.format(
-                             sequence=sequence, scribble_idx=scribble_idx)))
+                             sequence=sequence, scribble_idx=scribble_idx)),
+            headers=self.headers)
         assert r.status_code == 200
         scribble = r.json()
         return scribble
@@ -66,18 +76,16 @@ class RemoteConnector(AbstractConnector):  # pragma: no cover
             'interaction': interaction,
         }
 
-        headers = {'User-Key': self.user_key, 'Session-Key': self.session_key}
         r = requests.post(
             os.path.join(self.host, self.POST_PREDICTED_MASKS_URL),
             json=body,
-            headers=headers)
+            headers=self.headers)
         assert r.status_code == 200
         response = r.json()
         return response
 
     def get_report(self):
-        headers = {'User-Key': self.user_key, 'Session-Key': self.session_key}
         r = requests.get(
-            os.path.join(self.host, self.GET_REPORT_URL), headers=headers)
+            os.path.join(self.host, self.GET_REPORT_URL), headers=self.headers)
         df = pd.DataFrame.from_dict(r.json())
         return df

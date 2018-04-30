@@ -153,8 +153,13 @@ class EvaluationService:
             jaccard.ravel().tolist())
 
         # Generate next scribble
+        worst_frame = jaccard.mean(axis=1).argmin()
         next_scribble = self.robot.interact(
-            sequence, pred_masks, gt_masks, nb_objects=nb_objects)
+            sequence,
+            pred_masks,
+            gt_masks,
+            nb_objects=nb_objects,
+            frame=worst_frame)
 
         return next_scribble
 
