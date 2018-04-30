@@ -7,6 +7,7 @@ import pandas as pd
 import requests
 from six.moves.urllib.parse import urlparse
 
+from ..dataset import Davis
 from ..third_party import mask_api
 from .abstract import AbstractConnector
 
@@ -28,13 +29,12 @@ class RemoteConnector(AbstractConnector):  # pragma: no cover
         self.host = "{}://{}".format(o.scheme, o.netloc)
         if user_key is None or session_key is None:
             raise ValueError('user_key and session_key must be specified')
-        self.session = requests.Session()
 
     def get_samples(self, subset, davis_root=None):
         if subset not in self.VALID_SUBSETS:
             raise ValueError('subset must be a valid one: {}'.format(
                 self.VALID_SUBSETS))
-        r = self.session.get(os.path.join(self.host, self.GET_SAMPLES_URL))
+        r = requests.get(os.path.join(self.host, self.GET_SAMPLES_URL))
         assert r.status_code == 200
         response = r.json()
 
@@ -44,7 +44,7 @@ class RemoteConnector(AbstractConnector):  # pragma: no cover
         return samples, max_t, max_i
 
     def get_scribble(self, sequence, scribble_idx):
-        r = self.session.get(
+        r = requests.get(
             os.path.join(self.host,
                          self.GET_SCRIBBLE_URL.format(
                              sequence=sequence, scribble_idx=scribble_idx)))
@@ -54,7 +54,9 @@ class RemoteConnector(AbstractConnector):  # pragma: no cover
 
     def post_predicted_masks(self, sequence, scribble_idx, pred_masks, timing,
                              interaction):
-        pred_masks_enc = mask_api.encode_batch_masks(pred_masks)
+        nb_objects = Davis.dataset[sequence]['num_objects']
+        pred_masks_enc = mask_api.encode_batch_masks(
+            pred_masks, nb_objects=nb_objects)
 
         body = {
             'sequence': sequence,
@@ -65,7 +67,7 @@ class RemoteConnector(AbstractConnector):  # pragma: no cover
         }
 
         headers = {'User-Key': self.user_key, 'Session-Key': self.session_key}
-        r = self.session.post(
+        r = requests.post(
             os.path.join(self.host, self.POST_PREDICTED_MASKS_URL),
             json=body,
             headers=headers)
@@ -75,7 +77,7 @@ class RemoteConnector(AbstractConnector):  # pragma: no cover
 
     def get_report(self):
         headers = {'User-Key': self.user_key, 'Session-Key': self.session_key}
-        r = self.session.get(
+        r = requests.get(
             os.path.join(self.host, self.GET_REPORT_URL), headers=headers)
         df = pd.DataFrame.from_dict(r.json())
         return df

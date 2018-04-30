@@ -207,6 +207,9 @@ class InteractiveScribblesRobot(object):
 				of frames of the sequence.
             gt_masks: Numpy Array. Array with the ground truth of the sequence.
 				It must have the same data type and shape as `pred_masks`.
+            nb_objects: Integer. Number of objects in the ground truth mask. If
+                `None` the value will be infered from `y_true`. Setting this
+                value will speed up the computation.
 
         # Returns
             dict: Return a scribble (default representation).
