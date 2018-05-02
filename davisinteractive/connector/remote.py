@@ -6,6 +6,7 @@ import random
 import pandas as pd
 import requests
 
+from .. import logging
 from ..dataset import Davis
 from ..third_party import mask_api
 from .abstract import AbstractConnector
@@ -35,7 +36,7 @@ class RemoteConnector(AbstractConnector):  # pragma: no cover
         if user_key is None or session_key is None:
             raise ValueError('user_key and session_key must be specified')
         r = requests.get(os.path.join(self.host, self.HEALTHCHECK_URL))
-        if r.status_code != 200:
+        if self._handle_response(r):
             raise NameError('Server {} not found'.format(self.host))
 
     def get_samples(self, subset, davis_root=None):
@@ -44,7 +45,7 @@ class RemoteConnector(AbstractConnector):  # pragma: no cover
                 self.VALID_SUBSETS))
         r = requests.get(
             os.path.join(self.host, self.GET_SAMPLES_URL), headers=self.headers)
-        assert r.status_code == 200
+        self._handle_response(r, raise_error=True)
         response = r.json()
 
         samples, max_t, max_i = response
@@ -58,7 +59,7 @@ class RemoteConnector(AbstractConnector):  # pragma: no cover
                          self.GET_SCRIBBLE_URL.format(
                              sequence=sequence, scribble_idx=scribble_idx)),
             headers=self.headers)
-        assert r.status_code == 200
+        self._handle_response(r, raise_error=True)
         scribble = r.json()
         return scribble
 
@@ -80,12 +81,33 @@ class RemoteConnector(AbstractConnector):  # pragma: no cover
             os.path.join(self.host, self.POST_PREDICTED_MASKS_URL),
             json=body,
             headers=self.headers)
-        assert r.status_code == 200
+        self._handle_response(r)
         response = r.json()
         return response
 
     def get_report(self):
         r = requests.get(
             os.path.join(self.host, self.GET_REPORT_URL), headers=self.headers)
+        self._handle_response(r)
         df = pd.DataFrame.from_dict(r.json())
         return df
+
+    def _handle_response(self, response, raise_error=False):
+        """ Checks the status code of the response and log the error if any.
+        """
+        if response.status_code >= 400 and response.status_code < 500:
+            logging.error('Remote server error')
+            e_body = response.json()
+            error_name, error_msg = e_body['error'], e_body['message']
+            logging.error('{}: {}'.format(error_name, error_msg))
+            if raise_error:
+                # Reconstruct error
+                error_class = eval(error_name)
+                error = error_class(*error_msg)
+                raise error
+            return True
+        elif response.status_code == 500:
+            logging.error('Uknown Error')
+            logging.fatal(response.json())
+            return True
+        return False
