@@ -81,14 +81,14 @@ class RemoteConnector(AbstractConnector):  # pragma: no cover
             os.path.join(self.host, self.POST_PREDICTED_MASKS_URL),
             json=body,
             headers=self.headers)
-        self._handle_response(r)
+        self._handle_response(r, raise_error=True)
         response = r.json()
         return response
 
     def get_report(self):
         r = requests.get(
             os.path.join(self.host, self.GET_REPORT_URL), headers=self.headers)
-        self._handle_response(r)
+        self._handle_response(r, raise_error=True)
         df = pd.DataFrame.from_dict(r.json())
         return df
 
