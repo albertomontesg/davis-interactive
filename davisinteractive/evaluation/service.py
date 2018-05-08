@@ -65,8 +65,9 @@ class EvaluationService:
                 self.sequences_scribble_idx.append((s, i))
 
         # Check all the files are placed
-        logging.verbose('Checking DAVIS dataset files', 1)
-        self.davis.check_files(self.sequences)
+        if subset != 'test-dev':
+            logging.verbose('Checking DAVIS dataset files', 1)
+            self.davis.check_files(self.sequences)
 
         # Init storage
         self.storage = storage or LocalStorage()
@@ -74,6 +75,17 @@ class EvaluationService:
         # Parameters
         self.max_t = max_t
         self.max_i = max_i
+
+        # Num entries
+        self.num_entries = 0
+        for seq in self.sequences:
+            nb_scribbles = Davis.dataset[seq]['num_scribbles']
+            nb_frames = Davis.dataset[seq]['num_frames']
+            nb_objects = Davis.dataset[seq]['num_objects']
+            self.num_entries += nb_scribbles * nb_frames * nb_objects
+
+        if self.max_i is not None:
+            self.num_entries *= self.max_i
 
     def get_samples(self):
         """ Get the list of samples.
@@ -152,8 +164,13 @@ class EvaluationService:
             jaccard.ravel().tolist())
 
         # Generate next scribble
+        worst_frame = jaccard.mean(axis=1).argmin()
         next_scribble = self.robot.interact(
-            sequence, pred_masks, gt_masks, nb_objects=nb_objects)
+            sequence,
+            pred_masks,
+            gt_masks,
+            nb_objects=nb_objects,
+            frame=worst_frame)
 
         return next_scribble
 

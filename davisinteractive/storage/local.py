@@ -13,11 +13,6 @@ class LocalStorage(AbstractStorage):
     This class encapsulates the storage of the results into a pandas DataFrame.
     """
 
-    COLUMNS = [
-        'session_id', 'sequence', 'scribble_idx', 'interaction', 'object_id',
-        'frame', 'jaccard', 'timing'
-    ]
-
     def __init__(self):
         self.report = pd.DataFrame(columns=self.COLUMNS)
         logging.verbose('Report DataFrame created')

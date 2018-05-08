@@ -63,7 +63,6 @@ class InteractiveScribblesRobot(object):
         mask = np.asarray(mask, dtype=np.uint8)
         side = np.sqrt(np.sum(mask > 0))
 
-        # Remove small objects and small holes
         mask_ = mask
         # kernel_size = int(self.kernel_size * side)
         kernel_radius = self.kernel_size * side * .5
@@ -76,10 +75,6 @@ class InteractiveScribblesRobot(object):
             kernel = disk(kernel_radius)
             mask_ = rank.minimum(mask.copy(), kernel)
             mask_ = rank.maximum(mask_, kernel)
-            # mask_ = erosion(mask.copy().astype(np.uint8), kernel)
-            # mask_ = binary_erosion(mask.copy(), kernel)
-            # mask_ = binary_dilation(mask_, kernel)
-            # mask_ = dilation(mask_, kernel)
             compute = False
             if mask_.astype(np.bool).sum() == 0:
                 compute = True
@@ -200,7 +195,12 @@ class InteractiveScribblesRobot(object):
 
         return list(longest_path)
 
-    def interact(self, sequence, pred_masks, gt_masks, nb_objects=None):
+    def interact(self,
+                 sequence,
+                 pred_masks,
+                 gt_masks,
+                 nb_objects=None,
+                 frame=None):
         """ Interaction of the Scribble robot given a prediction.
         Given the sequence and a mask prediction, the robot will return a
         scribble in the region that fails the most.
@@ -212,6 +212,11 @@ class InteractiveScribblesRobot(object):
 				of frames of the sequence.
             gt_masks: Numpy Array. Array with the ground truth of the sequence.
 				It must have the same data type and shape as `pred_masks`.
+            nb_objects: Integer. Number of objects in the ground truth mask. If
+                `None` the value will be infered from `y_true`. Setting this
+                value will speed up the computation.
+            frame: Integer. Frame to generate the scribble. If not given, the
+                worst frame given by the jaccard will be used.
 
         # Returns
             dict: Return a scribble (default representation).
@@ -232,12 +237,16 @@ class InteractiveScribblesRobot(object):
         h, w = annotations.shape[1:3]
         img_shape = np.asarray([w, h], dtype=np.float)
 
-        jac = batched_jaccard(annotations, predictions, nb_objects=nb_objects)
-        worst_frame = jac.argmin()
+        if frame is None:
+            jac = batched_jaccard(
+                annotations, predictions, nb_objects=nb_objects)
+            worst_frame = jac.argmin()
+            logging.verbose(
+                'For sequence {} the worst frames is #{} with Jaccard: {:.3f}'.
+                format(sequence, worst_frame, jac.min()), 2)
+        else:
+            worst_frame = frame
         pred, gt = predictions[worst_frame], annotations[worst_frame]
-        logging.verbose(
-            'For sequence {} the worst frames is #{} with Jaccard: {:.3f}'.
-            format(sequence, worst_frame, jac.min()), 2)
 
         scribbles = [[] for _ in range(nb_frames)]
 
@@ -300,7 +309,7 @@ class InteractiveScribblesRobot(object):
                 p /= img_shape
                 path_data = {
                     'path': p.tolist(),
-                    'object_id': obj_id,
+                    'object_id': int(obj_id),
                     'start_time': start_time,
                     'end_time': end_time
                 }

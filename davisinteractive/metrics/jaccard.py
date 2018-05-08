@@ -22,8 +22,8 @@ def batched_jaccard(y_true, y_pred, average_over_objects=True, nb_objects=None):
         average_over_objects: Boolean. Weather or not to average the jaccard over
             all the objects in the sequence. Default True.
         nb_objects: Integer. Number of objects in the ground truth mask. If
-        `None` the value will be infered from `y_true`. Setting this value will
-        speed up the computation.
+            `None` the value will be infered from `y_true`. Setting this value
+            will speed up the computation.
 
     # Returns
         ndarray: Returns an array of shape (B) with the average jaccard for

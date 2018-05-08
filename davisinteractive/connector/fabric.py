@@ -13,5 +13,5 @@ class ServerConnectionFabric:
         if host == 'localhost':
             logging.info('Created connector to localhost service')
             return LocalConnector(user_key=user_key, session_key=session_key)
-        else:
-            raise NotImplementedError('Remote connection not implemented')
+        return RemoteConnector(
+            user_key=user_key, session_key=session_key, host=host)

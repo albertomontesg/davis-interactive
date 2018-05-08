@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 
+import json
 import unittest
 
 import numpy as np
@@ -46,6 +47,16 @@ class TestMultiMaskEncoding(unittest.TestCase):
 
     def test(self):
         encoded_object = mask_api.encode_batch_masks(self.test_masks)
+        decoded_masks = mask_api.decode_batch_masks(encoded_object)
+
+        assert self.test_masks.dtype == decoded_masks.dtype
+        assert self.test_masks.shape == decoded_masks.shape
+        assert np.all(self.test_masks == decoded_masks)
+
+    def test_json_encoding(self):
+        encoded_object = mask_api.encode_batch_masks(self.test_masks)
+        json_encoded_object = json.JSONEncoder().encode(encoded_object)
+        encoded_object = json.JSONDecoder().decode(json_encoded_object)
         decoded_masks = mask_api.decode_batch_masks(encoded_object)
 
         assert self.test_masks.dtype == decoded_masks.dtype

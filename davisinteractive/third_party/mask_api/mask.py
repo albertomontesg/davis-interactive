@@ -9,7 +9,7 @@ __all__ = [
 ]
 
 
-def encode_mask(mask):
+def encode_mask(mask, nb_objects=None):
     """ Encode a mask.
 
     It accepts multiple indexes on the mask. The mask for every index will be
@@ -18,6 +18,8 @@ def encode_mask(mask):
     # Arguments
         bimask: Numpy Array. Mask array with the index of every pixel. The shape
             must be (H, W) and all the values are supposed to be integers.
+        nb_objects: Integer. Number of objects in the mask. If not given the
+            value will be infered. If given, the computation will be faster.
 
     # Return
         Dictionary: Dictionary with the RLE of the mask.
@@ -26,7 +28,10 @@ def encode_mask(mask):
     assert mask.ndim == 2
     h, w = mask.shape
 
-    obj_ids = np.unique(mask[mask > 0])
+    if nb_objects is None:
+        obj_ids = np.unique(mask[mask > 0])
+    else:
+        obj_ids = np.arange(nb_objects, dtype=np.uint8) + 1
     obj_ids = obj_ids.reshape(1, 1, -1)
 
     binmask = mask.reshape(h, w, 1) == obj_ids
@@ -36,7 +41,7 @@ def encode_mask(mask):
     encoding = {'size': [h, w], 'objects': []}
     for i, obj_id in enumerate(obj_ids.ravel()):
         encoding['objects'].append({
-            'object_id': obj_id,
+            'object_id': int(obj_id),
             'counts': rle_objs[i]['counts'].decode()
         })
 
@@ -67,7 +72,7 @@ def decode_mask(encoding):
     return mask
 
 
-def encode_batch_masks(masks):
+def encode_batch_masks(masks, nb_objects=None):
     """ Encode a batch of masks.
 
     It accepts multiple indexes on the mask. The mask for every index will be
@@ -76,6 +81,8 @@ def encode_batch_masks(masks):
     # Arguments
         bimask: Numpy Array. Mask array with the index of every pixel. The shape
             must be (B, H, W) and all the values are supposed to be integers.
+        nb_objects: Integer. Number of objects in the mask. If not given the
+            value will be infered. If given, the computation will be faster.
 
     # Return
         Dictionary: Dictionary with the RLE of the mask.
@@ -84,7 +91,7 @@ def encode_batch_masks(masks):
     b, h, w = masks.shape
     encoding = {'size': [b, h, w], 'frames': []}
     for i in range(b):
-        enc = encode_mask(masks[i])
+        enc = encode_mask(masks[i], nb_objects=nb_objects)
         encoding['frames'].append(enc['objects'])
 
     return encoding

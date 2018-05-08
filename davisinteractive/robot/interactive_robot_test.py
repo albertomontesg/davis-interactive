@@ -1,5 +1,6 @@
 from __future__ import absolute_import, division
 
+import json
 import unittest
 
 import networkx as nx
@@ -99,3 +100,14 @@ class TestInteractiveScribblesRobot(unittest.TestCase):
             x, y = path[:, 0], path[:, 1]
             assert np.all((x >= .2) & (x <= .4))
             assert np.all((y >= 1 / 3) & (y <= 2 / 3))
+
+    def test_scribble_json_serializer(self):
+        nb_frames, h, w = 10, 300, 500
+        gt_empty = np.zeros((nb_frames, h, w), dtype=np.int)
+        pred_empty = gt_empty.copy()
+        gt_empty[5, 100:200, 100:200] = 1
+
+        robot = InteractiveScribblesRobot()
+
+        scribble = robot.interact('test', pred_empty, gt_empty)
+        json.JSONEncoder().encode(scribble)
