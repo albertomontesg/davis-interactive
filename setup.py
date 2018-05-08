@@ -31,5 +31,5 @@ setup(
         'pathlib2;python_version<"3.5"',
         'six>=1.10.0',
     ],
-    test_require=['mock;python_version<"3.0"'],
+    # test_require=['mock;python_version<"3.0"'],
     ext_modules=cythonize(ext_modules))

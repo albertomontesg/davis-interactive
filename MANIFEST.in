@@ -1,0 +1,8 @@
+global-include *.json *.py *.pyx *.c *.h
+recursive_include davisinteractive *.py *.pyx *.json *.c
+include MANIFEST.in
+include README.md
+
+prune */__pycache__
+
+global-exclude *~ *.swp  *.pyc *.pyo *.bak
