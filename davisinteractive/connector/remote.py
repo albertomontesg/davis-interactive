@@ -97,6 +97,9 @@ class RemoteConnector(AbstractConnector):  # pragma: no cover
         """
         if response.status_code >= 400 and response.status_code < 500:
             logging.error('Remote server error')
+            e_body = response.text
+            logging.error(response.status_code)
+            logging.error(response.text)
             e_body = response.json()
             error_name, error_msg = e_body.get('error', ''), e_body.get(
                 'message', '')
