@@ -98,13 +98,16 @@ class RemoteConnector(AbstractConnector):  # pragma: no cover
         if response.status_code >= 400 and response.status_code < 500:
             logging.error('Remote server error')
             e_body = response.json()
-            error_name, error_msg = e_body['error'], e_body['message']
+            error_name, error_msg = e_body.get('error', ''), e_body.get(
+                'message', '')
             logging.error('{}: {}'.format(error_name, error_msg))
-            if raise_error:
+            if raise_error and response.status_code == 400:
                 # Reconstruct error
                 error_class = eval(error_name)
                 error = error_class(*error_msg)
                 raise error
+            elif raise_error:
+                raise Exception(error_name)
             return True
         elif response.status_code == 500:
             logging.error('Uknown Error')
