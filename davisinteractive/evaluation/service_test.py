@@ -1,6 +1,7 @@
 import unittest
 
 import pandas as pd
+
 from davisinteractive.common import Path, patch
 from davisinteractive.dataset import Davis
 from davisinteractive.evaluation import EvaluationService
@@ -62,3 +63,21 @@ class TestEvaluationService(unittest.TestCase):
         assert scribble['sequence'] == 'bear'
         assert not is_empty(scribble)
         assert annotated_frames(scribble) == [39]
+
+    @patch.object(Davis, 'check_files', return_value=True)
+    def test_exceptions(self, _):
+        dataset_dir = Path(__file__).parent.parent.joinpath(
+            'dataset', 'test_data', 'DAVIS')
+
+        service = EvaluationService('train', max_i=1, davis_root=dataset_dir)
+        service.get_samples()
+
+        with self.assertRaises(ValueError):
+            service.post_predicted_masks('bear', 1, None, 0, 2, None, None)
+        with self.assertRaises(ValueError):
+            service.post_predicted_masks('bear', 1, None, 0, 0, None, None)
+        with self.assertRaises(ValueError):
+            service.post_predicted_masks('novalidsequence', 1, None, 0, 1, None,
+                                         None)
+        with self.assertRaises(ValueError):
+            service.post_predicted_masks('bear', 4, None, 0, 1, None, None)

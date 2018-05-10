@@ -138,8 +138,22 @@ class EvaluationService:
 
         # Raises
             RuntimeError: When a previous interaction is missing, or the
-            interaction has already been submitted.
+                interaction has already been submitted.
+            ValueError: When interaction is higher than the maximum number of
+                interactions in the evaluation.
         """
+        if self.max_i and interaction > self.max_i:
+            raise ValueError(
+                'Interaction {} is higher than'.format(interaction) +
+                ' the maximum number of interactions {}'.format(self.max_i))
+        if interaction < 1:
+            raise ValueError(
+                'Interaction value invalid. Should be higher than 0.')
+        if (sequence, scribble_idx) not in self.sequences_scribble_idx:
+            raise ValueError(
+                'Sequence: {} and scribble index: {} invalid'.format(
+                    sequence, scribble_idx))
+
         # Load ground truth masks and compute jaccard metric
         gt_masks = self.davis.load_annotations(sequence)
         nb_objects = Davis.dataset[sequence]['num_objects']
