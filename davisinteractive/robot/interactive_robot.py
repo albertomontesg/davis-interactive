@@ -257,7 +257,7 @@ class InteractiveScribblesRobot(object):
             start_time = time.time()
             error_mask = (gt == obj_id) & (pred != obj_id)
             if error_mask.sum() == 0:
-                logging.warn(
+                logging.info(
                     'Error mask of object ID {} is empty. Skip object ID.'.
                     format(obj_id))
                 continue
@@ -318,6 +318,7 @@ class InteractiveScribblesRobot(object):
         scribbles_data = {'scribbles': scribbles, 'sequence': sequence}
 
         t = time.time() - robot_start
-        logging.info(
-            'The robot took {:.3f} s to generate all the scribbles'.format(t))
+        logging.info(('The robot took {:.3f} s to generate all the '
+                      'scribbles for {} objects. Sequence {}.').format(
+                          t, nb_objects, sequence))
         return scribbles_data

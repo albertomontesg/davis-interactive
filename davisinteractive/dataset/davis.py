@@ -178,9 +178,8 @@ class Davis:
         assert scribble_data['sequence'] == sequence
 
         logging.verbose(
-            'Loaded scribble for sequence {} and scribble_idx {}'.format(
-                sequence, scribble_idx), 1)
-        logging.verbose(scribble_file, 2)
+            'Loaded scribble for sequence {} and scribble_idx {} at {}'.format(
+                sequence, scribble_idx, scribble_file), 2)
 
         return scribble_data
 
@@ -212,9 +211,9 @@ class Davis:
             assert mask.shape == tuple(img_size[::-1])
             annotations[f] = mask
 
-        logging.verbose('Loaded annotations for sequence %s' % sequence, 1)
-        logging.verbose('at path: %s' % root_path, 2)
-        logging.verbose('Annotations shape: {}'.format(annotations.shape), 2)
+        logging.verbose(
+            'Loaded annotations for sequence {} at path {} with shape {}'.
+            format(sequence, root_path, annotations.shape), 2)
 
         return annotations
 
@@ -247,8 +246,8 @@ class Davis:
             assert img.shape[-1] == 3
             images[f] = img
 
-        logging.verbose('Loaded images for sequence %s' % sequence, 1)
-        logging.verbose('at path: %s' % root_path, 2)
-        logging.verbose('Annotations shape: {}'.format(images.shape), 2)
+        logging.verbose(
+            'Loaded images for sequence {} at path {} with shape {}'.format(
+                sequence, root_path, images.shape), 2)
 
         return images
