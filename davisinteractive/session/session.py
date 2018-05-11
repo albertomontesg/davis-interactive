@@ -169,6 +169,11 @@ class DavisInteractiveSession:
             tmp_report_filename = self.report_save_dir.joinpath(
                 '%s.tmp.csv' % self.report_name)
             tmp_report_filename.unlink()
+        else:
+            df = self.get_report()
+            tmp_report_filename = self.report_save_dir.joinpath(
+                '%s.tmp.csv' % self.report_name)
+            df.to_csv(tmp_report_filename)
 
         return not end
 
@@ -267,12 +272,14 @@ class DavisInteractiveSession:
 
         seq, _ = self.samples[self.sample_idx]
         nb_objects = Davis.dataset[seq]['num_objects']
-        max_t = self.max_time * nb_objects
-        if (time_end - self.sample_start_time) > max_t:
-            logging.warning(
-                ("This submission has been done after the timeout which "
-                 "was {}s. This submission won't be evaluated").format(max_t))
-            return
+        if self.max_time:
+            max_t = self.max_time * nb_objects
+            if (time_end - self.sample_start_time) > max_t:
+                logging.warning(
+                    ("This submission has been done after the timeout which "
+                     "was {}s. This submission won't be evaluated"
+                    ).format(max_t))
+                return
 
         timing = time_end - self.interaction_start_time
         self.interaction_start_time = None
@@ -285,11 +292,6 @@ class DavisInteractiveSession:
             sequence, scribble_idx, pred_masks, timing, self.interaction_nb)
         self.sample_scribbles = fuse_scribbles(self.sample_scribbles,
                                                self.sample_last_scribble)
-
-        df = self.get_report()
-        tmp_report_filename = self.report_save_dir.joinpath(
-            '%s.tmp.csv' % self.report_name)
-        df.to_csv(tmp_report_filename)
 
     def get_report(self):
         """ Gives the current report of the evaluation

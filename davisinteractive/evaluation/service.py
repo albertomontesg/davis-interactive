@@ -87,7 +87,7 @@ class EvaluationService:
             self.num_entries += nb_scribbles * nb_frames * nb_objects
             self.total_nb_objects += nb_objects
         self.avg_nb_objects = self.total_nb_objects / len(self.sequences)
-        self.global_timeout = self.avg_nb_objects * self.max_t
+        # self.global_timeout = self.avg_nb_objects * self.max_t
         self.time_threshold = time_threshold or 60  # seconds
 
         if self.max_i is not None:
