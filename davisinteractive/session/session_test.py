@@ -124,6 +124,12 @@ class TestDavisInteractiveSession(unittest.TestCase):
             final_csv = tmp_dir / ("%s.csv" % session.report_name)
 
             while session.next():
+                assert not final_csv.exists()
+                assert temp_csv.exists()
+
+                df = pd.read_csv(temp_csv, index_col=0)
+                assert df.shape == (count * 2, 8)
+
                 seq, scribble, new_seq = session.get_scribbles()
                 assert new_seq == (count == 0)
                 assert seq == 'bear'
@@ -139,18 +145,13 @@ class TestDavisInteractiveSession(unittest.TestCase):
 
                 session.submit_masks(pred_masks)
 
+                if count > 0:
+                    assert df.sequence.unique() == ['bear']
+                    assert np.all(df.interaction.unique() ==
+                                  [i + 1 for i in range(count)])
+                    assert np.all(df.object_id.unique() == [1])
+
                 count += 1
-
-                assert not final_csv.exists()
-                assert temp_csv.exists()
-
-                df = pd.read_csv(temp_csv, index_col=0)
-                assert df.shape == (count * 2, 8)
-                assert df.sequence.unique() == ['bear']
-                assert np.all(
-                    df.interaction.unique() == [i + 1 for i in range(count)])
-                assert np.all(df.object_id.unique() == [1])
-
             assert count == 5
             assert final_csv.exists()
             assert not temp_csv.exists()

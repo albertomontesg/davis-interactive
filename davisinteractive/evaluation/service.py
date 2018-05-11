@@ -45,7 +45,8 @@ class EvaluationService:
                  davis_root=None,
                  robot_parameters=None,
                  max_t=None,
-                 max_i=None):
+                 max_i=None,
+                 time_threshold=None):
         if subset not in Davis.sets:
             raise ValueError('Subset must be a valid subset: {}'.format(
                 Davis.sets.keys()))
@@ -78,11 +79,16 @@ class EvaluationService:
 
         # Num entries
         self.num_entries = 0
+        self.total_nb_objects = 0
         for seq in self.sequences:
             nb_scribbles = Davis.dataset[seq]['num_scribbles']
             nb_frames = Davis.dataset[seq]['num_frames']
             nb_objects = Davis.dataset[seq]['num_objects']
             self.num_entries += nb_scribbles * nb_frames * nb_objects
+            self.total_nb_objects += nb_objects
+        self.avg_nb_objects = self.total_nb_objects / len(self.sequences)
+        # self.global_timeout = self.avg_nb_objects * self.max_t
+        self.time_threshold = time_threshold or 60  # seconds
 
         if self.max_i is not None:
             self.num_entries *= self.max_i
@@ -138,8 +144,22 @@ class EvaluationService:
 
         # Raises
             RuntimeError: When a previous interaction is missing, or the
-            interaction has already been submitted.
+                interaction has already been submitted.
+            ValueError: When interaction is higher than the maximum number of
+                interactions in the evaluation.
         """
+        if self.max_i and interaction > self.max_i:
+            raise ValueError(
+                'Interaction {} is higher than'.format(interaction) +
+                ' the maximum number of interactions {}'.format(self.max_i))
+        if interaction < 1:
+            raise ValueError(
+                'Interaction value invalid. Should be higher than 0.')
+        if (sequence, scribble_idx) not in self.sequences_scribble_idx:
+            raise ValueError(
+                'Sequence: {} and scribble index: {} invalid'.format(
+                    sequence, scribble_idx))
+
         # Load ground truth masks and compute jaccard metric
         gt_masks = self.davis.load_annotations(sequence)
         nb_objects = Davis.dataset[sequence]['num_objects']
@@ -185,3 +205,79 @@ class EvaluationService:
             Report
         """
         return self.storage.get_report(**kwargs)
+
+    def summarize_report(self, df):
+        """ Given a report it will reconstruct the missing entries and compute
+        a summarization of it.
+
+        # Arguments
+            df: Pandas DataFrame. The report to summarize.
+
+        # Returns
+            Dictionary: with different scores computed and the curve values
+        """
+        df = df.groupby(
+            ['interaction', 'sequence', 'scribble_idx', 'object_id']).mean()
+        if 'frame' in df:
+            df = df.drop(columns='frame')
+
+        dfr = self._reconstruct_report(df)
+        df_average = dfr.groupby(['interaction']).mean()
+        df_average['timing'] = df_average['timing'].cumsum()
+        df_average.loc[0] = [0, 0]
+        df_average = df_average.sort_index()
+
+        time = df_average['timing'].values
+        jaccard = df_average['jaccard'].values
+
+        jaccard_th = np.interp(self.time_threshold, time, jaccard)
+        auc = np.trapz(jaccard, x=time) / time.max()
+
+        return {
+            'auc': auc,
+            'jaccard_at_threshold': {
+                'threshold': self.time_threshold,
+                'jaccard': jaccard_th
+            },
+            'curve': {
+                'time': time.tolist(),
+                'jaccard': jaccard.tolist()
+            }
+        }
+
+    def _reconstruct_report(self, df):
+        """ Reconstruct the report with missing entries.
+
+        In case the timeout has been reached and some interactions have not been
+        evaluated, the reconstruction ensure to have a result for every
+        interaction putting the jaccard of the previous evaluated interaction
+        with a timing cost of 0.
+        """
+        index = []
+        for i in range(self.max_i):
+            for seq in self.sequences:
+                nb_scribbles = Davis.dataset[seq]['num_scribbles']
+                nb_objects = Davis.dataset[seq]['num_objects']
+                for j in range(nb_scribbles):
+                    for k in range(nb_objects):
+                        index.append((i + 1, seq, j + 1, k))
+
+        index = pd.MultiIndex.from_tuples(
+            index,
+            names=['interaction', 'sequence', 'scribble_idx', 'object_id'])
+        df = df.reindex(index)
+
+        for seq in self.sequences:
+            nb_scribbles = Davis.dataset[seq]['num_scribbles']
+            nb_objects = Davis.dataset[seq]['num_objects']
+
+            for scribble_idx in range(1, nb_scribbles + 1):
+                prev_result = np.zeros((nb_objects, 2), dtype=np.float)
+                for it in range(1, self.max_i + 1):
+                    result_iter = df.loc[it, seq, scribble_idx, :]
+                    if np.any(pd.isna(result_iter)):
+                        prev_result[:, -1] = 0
+                        df.loc[it, seq, scribble_idx, :] = prev_result
+                    else:
+                        prev_result = result_iter.values
+        return df
