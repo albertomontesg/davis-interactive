@@ -216,8 +216,13 @@ class EvaluationService:
         # Returns
             Dictionary: with different scores computed and the curve values
         """
-        df = df.groupby(
-            ['interaction', 'sequence', 'scribble_idx', 'object_id']).mean()
+        if len(df) == 0:
+            df = df.set_index(
+                ['interaction', 'sequence', 'scribble_idx', 'object_id'])
+        else:
+            df = df.groupby(
+                ['interaction', 'sequence', 'scribble_idx',
+                 'object_id']).mean()
         if 'frame' in df:
             df = df.drop(columns='frame')
         if 'session_id' in df:
@@ -260,6 +265,8 @@ class EvaluationService:
         """
         index = []
         max_i = self.max_i or df.reset_index()['interaction'].max()
+        if np.isnan(max_i):
+            max_i = 1
         for i in range(max_i):
             for seq in self.sequences:
                 nb_scribbles = Davis.dataset[seq]['num_scribbles']

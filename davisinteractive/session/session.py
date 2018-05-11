@@ -86,6 +86,8 @@ class DavisInteractiveSession:
         self.report_name = 'result_%s' % datetime.now().strftime(
             '%Y%m%d_%H%M%S')
 
+        self.global_summary = {}
+
     def __enter__(self):
         # Create connector
         samples, max_t, max_i = self.connector.get_samples(
@@ -162,6 +164,7 @@ class DavisInteractiveSession:
 
         # Save report on final version if the evaluation ends
         if end:
+            self.global_summary = self.connector.post_finish()
             df = self.get_report()
             report_filename = self.report_save_dir.joinpath(
                 '%s.csv' % self.report_name)
@@ -316,4 +319,4 @@ class DavisInteractiveSession:
         """
         if self.running:
             logging.warning('The session seems to be still running.')
-        return self.connector.get_global_summary()
+        return self.global_summary

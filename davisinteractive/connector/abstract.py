@@ -16,5 +16,5 @@ class AbstractConnector:
     def get_report(self):
         raise NotImplementedError('This is an abstract class')
 
-    def get_global_summary(self):
+    def post_finish(self):
         raise NotImplementedError('This is an abstract class')

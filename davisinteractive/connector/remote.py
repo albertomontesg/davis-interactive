@@ -23,7 +23,7 @@ class RemoteConnector(AbstractConnector):  # pragma: no cover
     GET_SCRIBBLE_URL = 'api/dataset/scribbles/{sequence}/{scribble_idx:03d}'
     POST_PREDICTED_MASKS_URL = 'api/evaluation/interaction'
     GET_REPORT_URL = 'api/evaluation/report'
-    GET_GLOBAL_SUMMARY = 'api/evaluation/summary'
+    POST_FINISH = '/api/evaluation/finish'
 
     def __init__(self, user_key, session_key, host):
         self.user_key = user_key
@@ -93,9 +93,10 @@ class RemoteConnector(AbstractConnector):  # pragma: no cover
         df = pd.DataFrame.from_dict(r.json())
         return df
 
-    def get_global_summary(self):
-        r = requests.get(
-            os.path.join(self.host, self.GET_GLOBAL_SUMMARY),
+    def post_finish(self):
+        r = requests.post(
+            os.path.join(self.host, self.POST_FINISH),
+            json={},
             headers=self.headers)
         self._handle_response(r, raise_error=True)
         summary = r.json()

@@ -45,7 +45,7 @@ class LocalConnector(AbstractConnector):
         return self.service.get_report(
             user_id=self.user_key, session_id=self.session_key)
 
-    def get_global_summary(self):
+    def post_finish(self):
         report = self.service.get_report(
             user_id=self.user_key, session_id=self.session_key)
         summary = self.service.summarize_report(report)
