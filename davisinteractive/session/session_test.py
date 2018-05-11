@@ -258,6 +258,15 @@ class TestDavisInteractiveSession(unittest.TestCase):
         assert df.shape == (2 * 4 * 2 * 1 + 4 * 2 * 2, 8)
         assert np.all(df.jaccard == 0.)
 
+        summary = session.get_global_summary()
+        self.assertTrue('auc' in summary)
+        self.assertTrue('jaccard_at_threshold' in summary)
+        self.assertEqual(summary['jaccard_at_threshold']['threshold'], 60)
+        self.assertTrue('curve' in summary)
+        curve = summary['curve']
+        self.assertEqual(len(curve['jaccard']), 5)
+        self.assertEqual(len(curve['time']), 5)
+
     @dataset('train', bear={'num_frames': 2, 'num_scribbles': 1})
     @patch.object(Davis, '_download_scribbles', return_value=None)
     def test_integration_single_only_last(self, mock_davis):

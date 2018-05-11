@@ -23,6 +23,7 @@ class RemoteConnector(AbstractConnector):  # pragma: no cover
     GET_SCRIBBLE_URL = 'api/dataset/scribbles/{sequence}/{scribble_idx:03d}'
     POST_PREDICTED_MASKS_URL = 'api/evaluation/interaction'
     GET_REPORT_URL = 'api/evaluation/report'
+    POST_FINISH = '/api/evaluation/finish'
 
     def __init__(self, user_key, session_key, host):
         self.user_key = user_key
@@ -91,6 +92,16 @@ class RemoteConnector(AbstractConnector):  # pragma: no cover
         self._handle_response(r, raise_error=True)
         df = pd.DataFrame.from_dict(r.json())
         return df
+
+    def post_finish(self):
+        r = requests.post(
+            os.path.join(self.host, self.POST_FINISH),
+            json={},
+            headers=self.headers)
+        self._handle_response(r, raise_error=True)
+        summary = r.json()
+        summary['session_key'] = self.session_key
+        return summary
 
     def _handle_response(self, response, raise_error=False):
         """ Checks the status code of the response and log the error if any.
