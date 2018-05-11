@@ -220,6 +220,8 @@ class EvaluationService:
             ['interaction', 'sequence', 'scribble_idx', 'object_id']).mean()
         if 'frame' in df:
             df = df.drop(columns='frame')
+        if 'session_id' in df:
+            df = df.drop(columns='session_id')
 
         dfr = self._reconstruct_report(df)
         df_average = dfr.groupby(['interaction']).mean()
@@ -231,7 +233,10 @@ class EvaluationService:
         jaccard = df_average['jaccard'].values
 
         jaccard_th = np.interp(self.time_threshold, time, jaccard)
-        auc = np.trapz(jaccard, x=time) / time.max()
+        if time.max() == 0.:
+            auc = 0.
+        else:
+            auc = np.trapz(jaccard, x=time) / time.max()
 
         return {
             'auc': auc,
@@ -254,7 +259,8 @@ class EvaluationService:
         with a timing cost of 0.
         """
         index = []
-        for i in range(self.max_i):
+        max_i = self.max_i or df.reset_index()['interaction'].max()
+        for i in range(max_i):
             for seq in self.sequences:
                 nb_scribbles = Davis.dataset[seq]['num_scribbles']
                 nb_objects = Davis.dataset[seq]['num_objects']
@@ -273,7 +279,7 @@ class EvaluationService:
 
             for scribble_idx in range(1, nb_scribbles + 1):
                 prev_result = np.zeros((nb_objects, 2), dtype=np.float)
-                for it in range(1, self.max_i + 1):
+                for it in range(1, max_i + 1):
                     result_iter = df.loc[it, seq, scribble_idx, :]
                     if np.any(pd.isna(result_iter)):
                         prev_result[:, -1] = 0

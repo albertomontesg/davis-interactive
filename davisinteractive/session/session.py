@@ -62,6 +62,7 @@ class DavisInteractiveSession:
             16) if max_nb_interactions is not None else max_nb_interactions
 
         self.running_model = False
+        self.running = True
 
         # User and session key
         self.user_key = user_key
@@ -169,6 +170,7 @@ class DavisInteractiveSession:
             tmp_report_filename = self.report_save_dir.joinpath(
                 '%s.tmp.csv' % self.report_name)
             tmp_report_filename.unlink()
+            self.running = False
         else:
             df = self.get_report()
             tmp_report_filename = self.report_save_dir.joinpath(
@@ -302,3 +304,16 @@ class DavisInteractiveSession:
                 `report_save_dir`.
         """
         return self.connector.get_report()
+
+    def get_global_summary(self):
+        """ Giver a summary for all the evaluation session.
+
+        In the case the session is running against the remote server, when
+        calling this function, the current session will be marked as completed.
+
+        # Returns
+            Dictionary: Dictionary of parameters that summarize all the session.
+        """
+        if self.running:
+            logging.warning('The session seems to be still running.')
+        return self.connector.get_global_summary()
