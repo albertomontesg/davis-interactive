@@ -273,7 +273,7 @@ class EvaluationService:
                 nb_objects = Davis.dataset[seq]['num_objects']
                 for j in range(nb_scribbles):
                     for k in range(nb_objects):
-                        index.append((i + 1, seq, j + 1, k))
+                        index.append((i + 1, seq, j + 1, k + 1))
 
         index = pd.MultiIndex.from_tuples(
             index,
