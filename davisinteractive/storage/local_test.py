@@ -56,8 +56,8 @@ class TestLocalStorage(unittest.TestCase):
             timing, objects_idx, frames, jaccard)
 
     def test_annotated_frames(self):
-        sequence = 'blackswan'
-        nb_frames = 50
+        sequence = 'bmx-trees'
+        nb_frames = 80
 
         jaccard = np.linspace(0., 1., nb_frames)
 
