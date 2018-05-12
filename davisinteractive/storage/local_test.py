@@ -1,5 +1,6 @@
 import unittest
 
+import numpy as np
 import pytest
 
 from davisinteractive.storage import LocalStorage
@@ -53,3 +54,34 @@ class TestLocalStorage(unittest.TestCase):
         assert storage.store_interactions_results(
             user_id, session_id, sequence, scribble_idx, interaction + 1,
             timing, objects_idx, frames, jaccard)
+
+    def test_annotated_frames(self):
+        sequence = 'blackswan'
+        nb_frames = 50
+
+        jaccard = np.linspace(0., 1., nb_frames)
+
+        storage = LocalStorage()
+        next_frame = storage.get_and_store_frame_to_annotate(
+            sequence, 1, jaccard)
+        self.assertEqual(next_frame, 0)
+
+        next_frame = storage.get_and_store_frame_to_annotate(
+            sequence, 2, jaccard)
+        self.assertEqual(next_frame, 0)
+
+        next_frame = storage.get_and_store_frame_to_annotate(
+            sequence, 1, jaccard)
+        self.assertEqual(next_frame, 1)
+
+        next_frame = storage.get_and_store_frame_to_annotate(
+            sequence, 1, jaccard)
+        self.assertEqual(next_frame, 2)
+
+        next_frame = storage.get_and_store_frame_to_annotate(
+            sequence, 2, jaccard)
+        self.assertEqual(next_frame, 1)
+
+        next_frame = storage.get_and_store_frame_to_annotate(
+            sequence, 3, jaccard)
+        self.assertEqual(next_frame, 0)
