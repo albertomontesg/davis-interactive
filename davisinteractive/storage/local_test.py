@@ -63,25 +63,25 @@ class TestLocalStorage(unittest.TestCase):
 
         storage = LocalStorage()
         next_frame = storage.get_and_store_frame_to_annotate(
-            sequence, 1, jaccard)
+            '', sequence, 1, jaccard)
         self.assertEqual(next_frame, 0)
 
         next_frame = storage.get_and_store_frame_to_annotate(
-            sequence, 2, jaccard)
+            '', sequence, 2, jaccard)
         self.assertEqual(next_frame, 0)
 
         next_frame = storage.get_and_store_frame_to_annotate(
-            sequence, 1, jaccard)
+            '', sequence, 1, jaccard)
         self.assertEqual(next_frame, 1)
 
         next_frame = storage.get_and_store_frame_to_annotate(
-            sequence, 1, jaccard)
+            '', sequence, 1, jaccard)
         self.assertEqual(next_frame, 2)
 
         next_frame = storage.get_and_store_frame_to_annotate(
-            sequence, 2, jaccard)
+            '', sequence, 2, jaccard)
         self.assertEqual(next_frame, 1)
 
         next_frame = storage.get_and_store_frame_to_annotate(
-            sequence, 3, jaccard)
+            '', sequence, 3, jaccard)
         self.assertEqual(next_frame, 0)

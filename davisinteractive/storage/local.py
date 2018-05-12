@@ -95,7 +95,8 @@ class LocalStorage(AbstractStorage):
         df = df.loc[df['session_id'] == session_id].reset_index(drop=True)
         return df
 
-    def get_and_store_frame_to_annotate(self, sequence, scribble_idx, jaccard):
+    def get_and_store_frame_to_annotate(self, session_id, sequence,
+                                        scribble_idx, jaccard):
         """ Get and store the frame to generate the scribble.
 
         This function will check all the previous generated scribbles frames
@@ -103,6 +104,7 @@ class LocalStorage(AbstractStorage):
         a scribble.
 
         # Arguments
+            session_id: String. Ignored.
             sequence: String. Sequence name.
             scribble_idx: Integer. Scribble index of the sample.
             jaccard: Numpy Array. Array with computed jaccard values. Must
