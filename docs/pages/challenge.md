@@ -66,4 +66,4 @@ Given this curve, two parameters will be extracted to rank the user's models in 
 
 * $AUC$: Area under the curve. The area under the previous curve will be computed and normalized by the total time the model took to evaluate.
 
-* $\mathcal{J}_{60s}$: Jaccard at 60 seconds. This metric will be computing the interpolation of the previous curve evaluating at 60 seconds. This will encourage the users to implement and test fast methods capable of giving good predictions in a short time.
+* $\mathcal{J}_{60s}$: Jaccard at 60 seconds. This metric will be computed performing a interpolation of the previous curve at 60 seconds. This will encourage the users to implement and test fast models capable of giving good predictions in a short time.

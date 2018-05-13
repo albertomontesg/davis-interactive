@@ -7,7 +7,7 @@ from davisinteractive.session import DavisInteractiveSession
 
 model = SegmentationModel() # Your segmentation model
 
-with DavisInteractiveSession(host='localhost', davis_root='path/to/davis') as sess:
+with DavisInteractiveSession(host='localhost', davis_root='path/to/DAVIS') as sess:
     while sess.next():
         # Get the current iteration's scribbles
         sequence, scribbles, _ = sess.get_scribbles()
@@ -16,8 +16,11 @@ with DavisInteractiveSession(host='localhost', davis_root='path/to/davis') as se
         # Submit your prediction
         sess.submit_masks(pred_masks)
         
-	# Get the result
-    report = sess.get_report() 
+	# Get the DataFrame report
+    report = sess.get_report()
+    
+    # Get the global summary
+    summary = sess.get_global_summary(save_file='summary.json')
 ```
 
 Let us explain every component in detail to give a better understanding about how they work. 
@@ -26,7 +29,6 @@ Let us explain every component in detail to give a better understanding about ho
 
 A session is a sequence of samples (a DAVIS sequence plus an initial scribble annotated by a human).
 Every sample is going to be evaluated interactively for a number of iterations (in a defined time window).
-<!--- The whole evaluation will consist in the selected dataset of DAVIS sequences with all the annotated scribbles available. -->
 In order to be more realistic, we provide 3 manually annotated scribbles per sequence. Submitted methods will be evaluated starting from all 3 scribbles for each sequence, and the results will be averaged.
 
 The first step is to create a session to evaluate:
@@ -35,9 +37,11 @@ The first step is to create a session to evaluate:
 with DavisInteractiveSession(host='localhost', davis_root='path/to/davis') as sess:
 ```
 
-This instructs the server where to perform the evaluation (`localhost` or (soon) `remote`), as well as the path of the DAVIS dataset files. 
-In case of development and local testing  (`host='localhost'` - the only option available for now), 
-parameters such as the maximum number of interactions per object, the maximum interaction time per object, as well as the dataset split used, can be tuned. 
+This instructs the server where to perform the evaluation (`localhost` or remote), as well as the path of the DAVIS dataset files. 
+In case of development and local testing  (`host='localhost'`), 
+parameters such as the maximum number of interactions per sample, the maximum interaction time per object, as well as the dataset split used, can be tuned. 
+
+In case of evaluation for the Challenge and remote testing (`host='https://server.davischallenge.org'`) and the `user_key` parameter should be specified to the given user key. For more information about the user key and how to register to the Challenge, please check [Challenge Section](/challenge/#remote). In this case, the maximum number of interactions and the maximum interaction time will be set by the remote server so any value given to the `DavisInteractiveSession` class will be ignored.
 
 For more information about the class and its possible values please check [DavisInteractiveSession](/docs/session).
 
@@ -93,3 +97,5 @@ sess.submit_masks(pred_masks)
 ## Final Result
 
 Once the session has finished a report can be asked using the `get_report` method. This method returns a Pandas DataFrame where every row is the evaluation of every sequence, iteration and frame; as well as the timing of every iteration. From this report, information of the performance against processing time can be extracted for comparison among interactive methods.
+
+For a global summary with the values and the evaluation curve, use the `get_global_summary` method. This method returns a dictionary with all the metrics and values used to evaluate and compare models. For more information about how the evaluation works, please go to the [Challenge Section](/challenge/#evaluation).
