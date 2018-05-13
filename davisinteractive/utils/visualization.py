@@ -1,6 +1,7 @@
 from __future__ import absolute_import, division
 
 import numpy as np
+from PIL import ImageDraw
 
 
 def _pascal_color_map(N=256, normalized=False):
@@ -66,6 +67,47 @@ def plot_scribble(ax, scribble, frame, output_size=None, **kwargs):
         ax.plot(*path.T, color=color, **kwargs)
 
     return ax
+
+
+def draw_scribble(img, scribble, frame, output_size=None, width=5):
+    """ Draw scribbles into a PIL Image.
+
+    # Arguments
+        img: PIL Image. Image where to draw the scribbles.
+        scribbles: Scribble. Scribble to plot.
+        frame: Integer. Frame of the scribble to plot.
+        output_size: Tuple. Image size to scale the scribble points `(H, W)`.
+        width: Integer. Width of the drawed lines.
+
+    # Returns
+        PIL Image. Returns the original image `img` with the scribble draw on
+            it.
+    """
+    scribbles = scribble['scribbles']
+    if frame >= len(scribbles):
+        raise ValueError('Frame value not valid')
+
+    cmap = _pascal_color_map(normalized=False)
+
+    frame_scribbles = scribbles[frame]
+
+    draw = ImageDraw.Draw(img)
+
+    for line in frame_scribbles:
+        path, obj_id = line['path'], line['object_id']
+        path = np.asarray(path, dtype=np.float32)
+        color = cmap[obj_id]
+
+        if output_size:
+            img_size = np.asarray(output_size, dtype=np.float32)
+            img_size -= 1
+            path *= img_size
+        path = path.ravel().tolist()
+        draw.line(path, fill=tuple(color), width=width)
+
+    del draw
+
+    return img
 
 
 def overlay_mask(im, ann, alpha=0.5, colors=None, contour_thickness=None):

@@ -13,6 +13,7 @@ copyright: 'Copyright &copy; 2018 Alberto Montes'
 # This tree needs to be the same as in pydocmd.yml
 pages:
   - Home: index.md
+  - Challenge: challenge.md
   - User Guide:
       - Installation: user_guide/installation.md
       - Usage: user_guide/usage.md
@@ -79,6 +80,10 @@ markdown_extensions:
   - pymdownx.tasklist:
       custom_checkbox: true
   - pymdownx.tilde
+
+google_analytics:
+  - '$GOOGLE_ANALYTICS'
+  - 'auto'
 
 # Customization
 extra:
