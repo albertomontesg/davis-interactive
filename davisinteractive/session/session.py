@@ -1,6 +1,7 @@
 from __future__ import absolute_import, division
 
 import binascii
+import json
 import os
 import random
 import time
@@ -190,9 +191,9 @@ class DavisInteractiveSession:
         all scribbles obtained for the current sample are returned.
 
         This method returns information about the sequence of the sample being
-        evaluated, the scribbles and whether it is a new sample. This information
-        might be useful for the user to perform any operation like loading a
-        model for a new sequence.
+        evaluated, the scribbles and whether it is a new sample. This
+        information might be useful for the user to perform any operation like
+        loading a model for a new sequence.
 
         # Arguments
             only_last: Boolean.
@@ -200,8 +201,8 @@ class DavisInteractiveSession:
         # Returns
             (string, dict, bool): Returns the name of the sequence of the
                 current sample, the scribbles of the current sample and a
-                boolean indicating whether it is the first iteration of the given
-                sample, respectively.
+                boolean indicating whether it is the first iteration of the
+                given sample, respectively.
         """
         if self.running_model:
             raise RuntimeError(
@@ -308,15 +309,23 @@ class DavisInteractiveSession:
         """
         return self.connector.get_report()
 
-    def get_global_summary(self):
+    def get_global_summary(self, save_file=None):
         """ Gives a summary from the current session.
 
         In the case the session is running against the remote server, when
         calling this function, the current session will be marked as completed.
+
+        # Arguments
+            save_file: String or Path. Path to store the global summary of the
+                session. By default does not save it.
 
         # Returns
             Dictionary: Dictionary of parameters that summarize all the session.
         """
         if self.running:
             logging.warning('The session seems to be still running.')
+
+        if save_file:
+            with open(save_file, 'w') as fp:
+                json.dump(self.global_summary, fp)
         return self.global_summary

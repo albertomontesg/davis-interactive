@@ -258,7 +258,9 @@ class TestDavisInteractiveSession(unittest.TestCase):
         assert df.shape == (2 * 4 * 2 * 1 + 4 * 2 * 2, 8)
         assert np.all(df.jaccard == 0.)
 
+        global_summary_file = os.path.join(tempfile.mkdtemp(), 'summary.json')
         summary = session.get_global_summary()
+        self.assertFalse(os.path.exists(global_summary_file))
         self.assertTrue('auc' in summary)
         self.assertTrue('jaccard_at_threshold' in summary)
         self.assertEqual(summary['jaccard_at_threshold']['threshold'], 60)
@@ -266,6 +268,9 @@ class TestDavisInteractiveSession(unittest.TestCase):
         curve = summary['curve']
         self.assertEqual(len(curve['jaccard']), 5)
         self.assertEqual(len(curve['time']), 5)
+
+        summary = session.get_global_summary(save_file=global_summary_file)
+        self.assertTrue(os.path.exists(global_summary_file))
 
     @dataset('train', blackswan={'num_frames': 6, 'num_scribbles': 1})
     @patch.object(Davis, '_download_scribbles', return_value=None)
