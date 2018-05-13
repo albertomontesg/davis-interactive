@@ -37,6 +37,8 @@ class EvaluationService:
         max_i: Integer. Maximum number of interactions to evaluate per sample.
             This value will overwrite the specified from the user at
             `DavisInteractiveSession` class.
+        time_threshold: Integer. Time in seconds to use it as threshold to
+            compute the jaccard and compare the evaluation of different methods.
     """
 
     def __init__(self,
