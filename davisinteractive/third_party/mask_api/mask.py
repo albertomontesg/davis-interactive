@@ -1,4 +1,11 @@
 """ Interface for manipulating masks stored in RLE format.
+
+This code interfaces with the implementation of the COCOAPI to encode and
+decode binary masks. Original code is available
+[here](https://github.com/cocodataset/cocoapi).
+
+Copyright (c) 2014, Piotr Dollar and Tsung-Yi Lin
+All rights reserved.
 """
 import numpy as np
 
@@ -85,7 +92,7 @@ def encode_batch_masks(masks, nb_objects=None):
             value will be infered. If given, the computation will be faster.
 
     # Return
-        Dictionary: Dictionary with the RLE of the mask.
+        Dictionary: Dictionary with the RLE of the masks.
     """
     assert masks.ndim == 3
     b, h, w = masks.shape

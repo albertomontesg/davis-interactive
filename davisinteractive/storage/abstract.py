@@ -16,3 +16,6 @@ class AbstractStorage:
 
     def get_report(self, user_id=None, session_id=None):
         raise NotImplementedError('This is an abstract class')
+
+    def get_and_store_frame_to_annotate(self, sequence, scribble_idx, jaccard):
+        raise NotImplementedError('This is an abstract class')

@@ -9,6 +9,13 @@ from ..metrics import batched_jaccard
 from ..robot import InteractiveScribblesRobot
 from ..storage import LocalStorage
 
+ROBOT_DEFAULT_PARAMETERS = {
+    'kernel_size': .2,
+    'max_kernel_radius': 16,
+    'min_nb_nodes': 4,
+    'nb_points': 1000
+}
+
 
 class EvaluationService:
     """ Class responsible of the evaluation.
@@ -30,14 +37,9 @@ class EvaluationService:
         max_i: Integer. Maximum number of interactions to evaluate per sample.
             This value will overwrite the specified from the user at
             `DavisInteractiveSession` class.
+        time_threshold: Integer. Time in seconds to use it as threshold to
+            compute the jaccard and compare the evaluation of different methods.
     """
-
-    ROBOT_DEFAULT_PARAMETERS = {
-        'kernel_size': .2,
-        'max_kernel_radius': 16,
-        'min_nb_nodes': 4,
-        'nb_points': 1000
-    }
 
     def __init__(self,
                  subset,
@@ -53,7 +55,7 @@ class EvaluationService:
 
         self.davis = Davis(davis_root=davis_root)
 
-        robot_parameters = robot_parameters or self.ROBOT_DEFAULT_PARAMETERS
+        robot_parameters = robot_parameters or ROBOT_DEFAULT_PARAMETERS
         self.robot = InteractiveScribblesRobot(**robot_parameters)
 
         # Get the list of sequences to evaluate and also from all the scribbles
@@ -184,7 +186,8 @@ class EvaluationService:
             jaccard.ravel().tolist())
 
         # Generate next scribble
-        worst_frame = jaccard.mean(axis=1).argmin()
+        worst_frame = self.storage.get_and_store_frame_to_annotate(
+            session_key, sequence, scribble_idx, jaccard.mean(axis=1))
         next_scribble = self.robot.interact(
             sequence,
             pred_masks,
@@ -202,7 +205,7 @@ class EvaluationService:
             session_key: String. Session identifier.
 
         # Returns
-            Report
+            Pandas DataFrame: Report.
         """
         return self.storage.get_report(**kwargs)
 

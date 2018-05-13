@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 
 from .. import logging
+from ..dataset import Davis
 from .abstract import AbstractStorage
 
 
@@ -16,6 +17,9 @@ class LocalStorage(AbstractStorage):
     def __init__(self):
         self.report = pd.DataFrame(columns=self.COLUMNS)
         logging.verbose('Report DataFrame created')
+        self.annotated_frames = pd.DataFrame(
+            columns=['sequence', 'scribble_idx', 'frame'])
+        logging.verbose('Annotated frames created')
 
     def store_interactions_results(self, user_id, session_id, sequence,
                                    scribble_idx, interaction, timing,
@@ -90,3 +94,49 @@ class LocalStorage(AbstractStorage):
         df = self.report
         df = df.loc[df['session_id'] == session_id].reset_index(drop=True)
         return df
+
+    def get_and_store_frame_to_annotate(self, session_id, sequence,
+                                        scribble_idx, jaccard):
+        """ Get and store the frame to generate the scribble.
+
+        This function will check all the previous generated scribbles frames
+        and return the frame with lower jaccard that the robot hasn't generated
+        a scribble.
+
+        # Arguments
+            session_id: String. Ignored.
+            sequence: String. Sequence name.
+            scribble_idx: Integer. Scribble index of the sample.
+            jaccard: Numpy Array. Array with computed jaccard values. Must
+                have the same length as the number of frames of the sequence.
+
+        # Returns
+            Integer. Index of the frame to generate the next scribble.
+        """
+        df = self.annotated_frames.copy()
+        prev_frames = df.loc[(df['sequence'] == sequence) &
+                             (df['scribble_idx'] == scribble_idx)][
+                                 'frame'].values
+
+        jaccard = np.asarray(jaccard, dtype=np.float).ravel()
+        nb_frames = Davis.dataset[sequence]['num_frames']
+        if jaccard.shape[0] != nb_frames:
+            raise ValueError(
+                ('jaccard shape does not match the number of frames in {}'
+                ).format(sequence))
+
+        jac_idx = jaccard.argsort()
+        i = 0
+        while i < nb_frames and jac_idx[i] in prev_frames:
+            i += 1
+
+        if i == nb_frames:  # All the frames have been annotated
+            return jaccard.argmin()
+
+        frame_to_annotate = jac_idx[i]
+        new_row = pd.DataFrame(
+            [[sequence, scribble_idx, frame_to_annotate]],
+            columns=['sequence', 'scribble_idx', 'frame'])
+        self.annotated_frames = pd.concat(
+            [self.annotated_frames, new_row], ignore_index=True)
+        return frame_to_annotate

@@ -267,7 +267,7 @@ class TestDavisInteractiveSession(unittest.TestCase):
         self.assertEqual(len(curve['jaccard']), 5)
         self.assertEqual(len(curve['time']), 5)
 
-    @dataset('train', bear={'num_frames': 2, 'num_scribbles': 1})
+    @dataset('train', blackswan={'num_frames': 6, 'num_scribbles': 1})
     @patch.object(Davis, '_download_scribbles', return_value=None)
     def test_integration_single_only_last(self, mock_davis):
         dataset_dir = Path(__file__).parent.joinpath('test_data', 'DAVIS')
@@ -280,26 +280,26 @@ class TestDavisInteractiveSession(unittest.TestCase):
                 max_time=None) as session:
             count = 0
 
-            scribble_iter = None
+            annotated_frames_list = []
 
             while session.next():
                 seq, scribble, new_seq = session.get_scribbles(only_last=True)
                 assert new_seq == (count == 0)
-                assert seq == 'bear'
+                assert seq == 'blackswan'
                 if count == 0:
-                    with dataset_dir.joinpath('Scribbles', 'bear',
+                    with dataset_dir.joinpath('Scribbles', 'blackswan',
                                               '001.json').open() as fp:
                         sc = json.load(fp)
                         assert sc == scribble
-                elif count == 1:
-                    scribble_iter = scribble
                 else:
-                    assert annotated_frames(scribble) == annotated_frames(
-                        scribble_iter)
+                    assert len(annotated_frames(scribble)) == 1
+                    a_fr = annotated_frames(scribble)[0]
+                    assert a_fr not in annotated_frames_list
+                    annotated_frames_list.append(a_fr)
                 assert not is_empty(scribble)
 
                 # Simulate model predicting masks
-                pred_masks = np.zeros((2, 480, 854))
+                pred_masks = np.zeros((6, 480, 854))
 
                 session.submit_masks(pred_masks)
 
