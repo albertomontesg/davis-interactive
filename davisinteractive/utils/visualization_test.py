@@ -4,9 +4,10 @@ import unittest
 
 import numpy as np
 import pytest
+from PIL import Image
 
-from davisinteractive.utils.visualization import (_pascal_color_map,
-                                                  overlay_mask, plot_scribble)
+from davisinteractive.utils.visualization import (
+    _pascal_color_map, draw_scribble, overlay_mask, plot_scribble)
 
 import matplotlib  # isort:skip
 matplotlib.use('Agg')
@@ -79,6 +80,46 @@ class TestPlotScribble(unittest.TestCase):
 
         with pytest.raises(ValueError):
             plot_scribble(ax, scribble, 10)
+
+
+class TestDrawScribble(unittest.TestCase):
+
+    def test_draw(self):
+        scribble = {
+            'scribbles': [[], [{
+                'path': [[0, 0], [0, 0.1]],
+                'object_id': 1,
+                'start_time': 0,
+                'end_time': 1000
+            }, {
+                'path': [[0, 0], [0, 0.1]],
+                'object_id': 1,
+                'start_time': 0,
+                'end_time': 1000
+            }], [], [], [{
+                'path': [[0, 0], [0, 0.1]],
+                'object_id': 2,
+                'start_time': 0,
+                'end_time': 1000
+            }, {
+                'path': [[0, 0], [0, 0.1]],
+                'object_id': 3,
+                'start_time': 0,
+                'end_time': 1000
+            }], [{
+                'path': [[0, 0], [0, 0.1]],
+                'object_id': 2,
+                'start_time': 0,
+                'end_time': 1000
+            }], []],
+            'sequence':
+            'test',
+        }
+        img = Image.fromarray(np.zeros((480, 854, 3), dtype=np.uint8))
+        img_draw = draw_scribble(img, scribble, 1)
+
+        img_draw = draw_scribble(img, scribble, 0)
+        self.assertEqual(img_draw, img)
 
 
 class TestOverlay(unittest.TestCase):
