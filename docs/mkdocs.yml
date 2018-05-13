@@ -22,6 +22,8 @@ pages:
           - session: docs/session.md
       - Dataset:
           - dataset.davis: docs/dataset.davis.md
+      - Evaluation:
+          - evaluation.service: docs/evaluation.service.md
       - Robot:
           - robot.interactive_robot: docs/robot.md
       - Metrics:
@@ -31,6 +33,8 @@ pages:
           - utils.scribbles: docs/utils.scribbles.md
           - utils.mask: docs/utils.mask.md
           - utils.visualization: docs/utils.visualization.md
+      - Third Party:
+          - third_party.mask_api: docs/third_party/mask_api.md
   - License: license.md
 
 # Theme

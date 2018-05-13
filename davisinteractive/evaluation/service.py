@@ -9,6 +9,13 @@ from ..metrics import batched_jaccard
 from ..robot import InteractiveScribblesRobot
 from ..storage import LocalStorage
 
+ROBOT_DEFAULT_PARAMETERS = {
+    'kernel_size': .2,
+    'max_kernel_radius': 16,
+    'min_nb_nodes': 4,
+    'nb_points': 1000
+}
+
 
 class EvaluationService:
     """ Class responsible of the evaluation.
@@ -32,13 +39,6 @@ class EvaluationService:
             `DavisInteractiveSession` class.
     """
 
-    ROBOT_DEFAULT_PARAMETERS = {
-        'kernel_size': .2,
-        'max_kernel_radius': 16,
-        'min_nb_nodes': 4,
-        'nb_points': 1000
-    }
-
     def __init__(self,
                  subset,
                  storage=None,
@@ -53,7 +53,7 @@ class EvaluationService:
 
         self.davis = Davis(davis_root=davis_root)
 
-        robot_parameters = robot_parameters or self.ROBOT_DEFAULT_PARAMETERS
+        robot_parameters = robot_parameters or ROBOT_DEFAULT_PARAMETERS
         self.robot = InteractiveScribblesRobot(**robot_parameters)
 
         # Get the list of sequences to evaluate and also from all the scribbles
@@ -203,7 +203,7 @@ class EvaluationService:
             session_key: String. Session identifier.
 
         # Returns
-            Report
+            Pandas DataFrame: Report.
         """
         return self.storage.get_report(**kwargs)
 

@@ -309,7 +309,7 @@ class DavisInteractiveSession:
         return self.connector.get_report()
 
     def get_global_summary(self):
-        """ Giver a summary for all the evaluation session.
+        """ Gives a summary from the current session.
 
         In the case the session is running against the remote server, when
         calling this function, the current session will be marked as completed.

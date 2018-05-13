@@ -29,6 +29,10 @@ generate:
       - davisinteractive.utils.mask+
   - docs/utils.visualization.md:
       - davisinteractive.utils.visualization+
+  - docs/third_party/mask_api.md:
+      - davisinteractive.third_party.mask_api.mask+
+  - docs/evaluation.service.md:
+      - davisinteractive.evaluation.EvaluationService++
 
 # MkDocs pages configuration. The `<<` operator is sugar added by pydocmd
 # that allows you to use an external Markdown file (eg. your project's README)

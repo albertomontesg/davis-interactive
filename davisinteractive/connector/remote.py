@@ -23,7 +23,7 @@ class RemoteConnector(AbstractConnector):  # pragma: no cover
     GET_SCRIBBLE_URL = 'api/dataset/scribbles/{sequence}/{scribble_idx:03d}'
     POST_PREDICTED_MASKS_URL = 'api/evaluation/interaction'
     GET_REPORT_URL = 'api/evaluation/report'
-    POST_FINISH = '/api/evaluation/finish'
+    POST_FINISH = 'api/evaluation/finish'
 
     def __init__(self, user_key, session_key, host):
         self.user_key = user_key

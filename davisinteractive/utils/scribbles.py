@@ -151,6 +151,7 @@ def annotated_frames(scribbles_data):
 
     # Arguments
         scribbles_data (dict): Scribble in the default format.
+
     # Returns
         list: Number of the frames that contain at least one scribble.
     """
@@ -165,6 +166,7 @@ def annotated_frames_object(scribbles_data, object_id):
     # Arguments
         scribbles_data (dict): Scribble in the default format.
         object_id (int): Id of the object of interest.
+
     # Returns
         dict: Number of the frames that contain at least one scribble.
     """
