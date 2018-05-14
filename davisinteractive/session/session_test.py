@@ -266,8 +266,8 @@ class TestDavisInteractiveSession(unittest.TestCase):
         self.assertEqual(summary['jaccard_at_threshold']['threshold'], 60)
         self.assertTrue('curve' in summary)
         curve = summary['curve']
-        self.assertEqual(len(curve['jaccard']), 5)
-        self.assertEqual(len(curve['time']), 5)
+        self.assertEqual(len(curve['jaccard']), 6)
+        self.assertEqual(len(curve['time']), 6)
 
         summary = session.get_global_summary(save_file=global_summary_file)
         self.assertTrue(os.path.exists(global_summary_file))

@@ -240,6 +240,16 @@ class EvaluationService:
         time = df_average['timing'].values
         jaccard = df_average['jaccard'].values
 
+        if self.max_t:
+            global_timeout = self.avg_nb_objects * self.max_t
+        else:
+            max_interactions = self.max_i or df.reset_index(
+            )['interaction'].max()
+            global_timeout = max_interactions * df['timing'].max()
+
+        time = np.concatenate((time, [global_timeout]))
+        jaccard = np.concatenate((jaccard, jaccard[-1:]))
+
         jaccard_th = np.interp(self.time_threshold, time, jaccard)
         if time.max() == 0.:
             auc = 0.
