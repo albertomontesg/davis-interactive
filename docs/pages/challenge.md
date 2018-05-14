@@ -1,12 +1,12 @@
 # DAVIS Challenge 2018 Interactive Track
 
-In this section we are going to explain in more detail how the Interactive Track of the DAVIS 2018 Challenge works. The technical challenges behind this track make us be cautious about this first edition, so we launch in beta mode. We will make our best to make it work, but we cannot guarantee it 100%.
+In this section we are going to explain in more detail how the Interactive Track of the DAVIS 2018 Challenge works. The technical challenges behind this track make us be cautious about this first edition, so we launch it in beta mode.
 
 ## Dataset
 
-The dataset used in this Interactive Challenge is made of video sequences with user annotated scribbles. The video sequences are the same as the DAVIS 2017 as well as the data split. The annotated scribbles have been performed by humans letting them decide which frame annotate. Once they knew which frame was the best to perform the annotations, they draw scribbles over the foreground objects appearing at the sequence.
+The Interactive Track is built on the DAVIS 2017 dataset. Video sequences, annotated objects, as well as data splits are the same as the ones in the Semi-Supervised track, and the sequences have been manually annotated with scribbles. The annotators were instructed to label all objects of a sequence in a representative frame (not necessarily the first frame of the sequence as in the Semi-Supervised track).
 
-For every sequence of the DAVIS 2017 dataset, there is available 3 different scribbles annotated for different users. On the next figure you can see an example of three different user annotations on the same sequence `dogs-jump`. Note that the annotations are performed on different frames as the user chose the more conveninet for him.
+For every sequence of DAVIS 2017 there are 3 different sets of scribbles, annotated by different users. The figure below illustrates an example of three different user annotations on the same sequence `dogs-jump`. Note that annotations were performed on different frames, chosen by the respective users.
 
 <div style="white-space: nowrap;">
 
@@ -16,16 +16,16 @@ For every sequence of the DAVIS 2017 dataset, there is available 3 different scr
 
 ## Workflow
 
-The aim of this challenge is to evaluate interactive models that can provide quality segmentation masks given scribbles annotations. We decided to use scribbles as it presents a more realistic scenario as the scribbles are more easy and fast to annotate than full segmentation masks.
+The aim of this challenge is to evaluate interactive models that can provide high quality segmentation masks, using scribbles and multiple interactions. Scribbles are a realistic form of supervision when it comes to video object segmentation, as they can be obtained much faster than full segmentation masks.
 
-The workflow to evaluate this interactive models is as follows. A set of samples is will be given to the user and this sample will be made of one video sequence in the dataset and one human annotated scribble at the beginning. 
+The workflow to evaluate these interactive models is as follows. A video sequence and a set of scribbles are given to the user. 
 
 !!! note
-	As there are 3 annotation per each sequence, the same sequence will be evaluated multiple times in different samples.
+	Since there are 3 annotations per each sequence, the same sequence will be evaluated multiple times, starting from different annotated scribbles.
 
-With this starting scribble the user must run its model to perform a prediction of the masks for the whole sequence. The time taken to perform this prediction will be measured and used to evaluate the model. Once the user has made the prediction and submited to the framework, a new scribble for this sample will be returned simulating a real human interaction. This returned annotation will be an additional scribble performed on the frame where the prediction obtained worst Jaccard score. This annotations are performed by an automated robot which tries to simulate human annotations.
+The user must run their model to perform a prediction of the masks for the entire sequence, starting from the given scribble. As timing is important, the time taken to perform this prediction is measured. Once the user has made the prediction and submited their results, a new set of scribbles for this sequence will be returned, simulating human interaction. The returned annotation is an additional set of scribbles on the frame where the prediction failed the most (i.e. worst Jaccard score). These annotations are performed automatically, simulating human behaviour.
 
-In the following images you can see an example about how the robot works. On the left there is a prediction performed by the user model on the worst frame, and on the right image, you can observe the generated scribbles by the robot. The robot focus on the zones where there has been an error in prediction and try to give a feedback as a human would do.
+The following images show an example. The method makes a prediction, given the scribbles from the previous iteration(s) (left). Once the results are submitted, there are evaluated, and an additional set of scribbles is generated (right). The robot focuses on the zones where the error in prediction is the highest and tries to give feedback, as a human would do.
 
 <div style="white-space: nowrap;">
 
@@ -33,14 +33,14 @@ In the following images you can see an example about how the robot works. On the
 
 </div>
 
-The additional annotation given to the user should be used again by its model to perform a new prediction of the masks. This procedure will be repeated until a maximum number of interactions or until a timeout is hit. The timeout is proportional to the number of objects in the sequence.
+The additional annotation given to the user should be used again by its model to perform a new prediction of the masks. This procedure will be repeated until a maximum number of interactions or a timeout is reached. The timeout is proportional to the number of objects in the sequence.
 
 !!! example
-	If the maximum number of interactions is set to 8, and the timeout to perform this interaction is 240s, this gives us an average maximum time of 30 seconds per interaction. But as the timeout is proportional to the number of objects in the sequence, in the sequence `blackswan` the timeout will be 30s per interaction while for the `salsa` sequence will be 300s per interaction (it has 10 objects). This behaviour is to be fair with models that the prediction computation is proportional to the number of objects in the sequence.
+	If the maximum number of interactions is set to 8, and the timeout to perform all interactions is 240s, this leads to a maximum time of 30 seconds per interaction. However, the timeout is proportional to the number of objects in the sequence. Thus the timeout for a sequence with a single object (eg. `blackswan`) will be 30s per interaction, while for a sequence with 10 objects (eg. `salsa`) the limit is set to 300s. This behaviour favours models for which the prediction time is proportional to the number of objects in the sequence.
 
 ### Local
 
-This framework provides the possibility to evaluate locally your models. Locally can only be evaluated the `train` and `val` subsets and the evaluation results won't be used to rank at the challenge.
+This framework also provides the possibility to evaluate the methods locally. Local evaluation is possible only for the `train` and `val` subsets.
 
 ### Remote
 
