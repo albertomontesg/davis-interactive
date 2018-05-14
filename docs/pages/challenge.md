@@ -44,17 +44,17 @@ This framework also provides the possibility to evaluate the methods locally. Lo
 
 ### Remote
 
-In order to submit results to the Interactive Challenge, the frameworks allows to evaluate models agains a remote server. For remote evaluation, only the `test-dev` subset will be available and the results will be used to rank the user's models.
+In order to submit results to the Interactive Challenge, the frameworks allows to evaluate models agains a remote server. For remote evaluation, only the `test-dev` subset will be available and the results will be used for ranking in the challenge.
 
-In order to run participate into the challenge a previous registration is required. To register, go to https://server.davischallenge.org and fill the form with your information. Then a mail will be sent to the provided email with a user key required to do the remote evaluation. This key should be put in your code in order to identify every user.
+In order to participate to the challenge a registration is required. To register, please go to https://server.davischallenge.org and fill in the form with your information. A mail will be sent to the provided email with a user key required for the remote evaluation. This key should be put in your code in order to identify every user.
 
 In addition, when the evaluation session is finished and a global sumary of the session is generated, a session ID will be given to the user. This session ID will allow the user identify its run and match them in the leaderboard.
 
 ## Evaluation
 
-The main metric used to evaluate the predicted masks is the Jaccard similarity. Also the timing of the user's model when predicting the masks is taken into account. The evaluation samples will be the evaluation of the Jaccard for every sample and object of the dataset for each interaction. We are aware that some models may hit the timeout and don't reach the maximum number of interactions. In this case, for every sample with missing interactions, the evaluation of this missed interactions will be the same as the last interaction performed with 0 time cost.
+The main metric used to evaluate the predicted masks is the Jaccard similarity. The time that each method takes to make a prediction is also taken into account. The average jaccard for all objects and for all starting scribbles will be reported in every interaction.  We are aware that some models may hit the timeout and not reach the maximum number of interactions. In this case, for every sample with missing interactions, the evaluation of these particular interactions will be the same as the last interaction performed with 0 time cost.
 
-With all this values, for every interaction the average jaccard and average timing will be computed and generate a curve of Jaccard vs Accumulated Time. On the following example you can see an example of how the curve can look like:
+In the end, a curve showing Jaccard as a function of Accumulated Time will be generated. In the following example you can see an example of how the curve looks like for a baseline method [Scribble-OSVOS](https://github.com/kmaninis/Scribble-OSVOS):
 
 <div style="white-space: nowrap;">
 
@@ -64,6 +64,6 @@ With all this values, for every interaction the average jaccard and average timi
 
 Given this curve, two parameters will be extracted to rank the user's models in order to compare them:
 
-* $AUC$: Area under the curve. The area under the previous curve will be computed and normalized by the total time the model took to evaluate.
+* $AUC$: Area under the curve. The area under the previous curve will be computed and normalized by the total available time.
 
 * $\mathcal{J}_{60s}$: Jaccard at 60 seconds. This metric will be computed performing a interpolation of the previous curve at 60 seconds. This will encourage the users to implement and test fast models capable of giving good predictions in a short time.
