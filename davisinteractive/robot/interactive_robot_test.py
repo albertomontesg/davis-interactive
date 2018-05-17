@@ -111,3 +111,25 @@ class TestInteractiveScribblesRobot(unittest.TestCase):
 
         scribble = robot.interact('test', pred_empty, gt_empty)
         json.JSONEncoder().encode(scribble)
+
+    def test_interaction_false_positive(self):
+        nb_frames, h, w = 10, 300, 500
+        gt_empty = np.zeros((nb_frames, h, w), dtype=np.int)
+        pred_empty = np.ones((nb_frames, h, w), dtype=np.int)
+        gt_empty[5, 100:200, 100:200] = 1
+
+        robot = InteractiveScribblesRobot()
+
+        scribble = robot.interact('test', pred_empty, gt_empty)
+        assert not is_empty(scribble)
+        assert annotated_frames(scribble) == [0]
+        assert len(scribble['scribbles']) == nb_frames
+
+        lines = scribble['scribbles'][5]
+
+        for l in lines:
+            assert l['object_id'] == 1
+            path = np.asarray(l['path'])
+            x, y = path[:, 0], path[:, 1]
+            assert np.all((x >= .2) & (x <= .4))
+            assert np.all((y >= 1 / 3) & (y <= 2 / 3))
