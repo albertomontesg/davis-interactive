@@ -231,8 +231,8 @@ class InteractiveScribblesRobot(object):
             obj_ids = np.unique(annotations)
             obj_ids = obj_ids[(obj_ids > 0) & (obj_ids < 255)]
             nb_objects = len(obj_ids)
-        else:
-            obj_ids = [i + 1 for i in range(nb_objects)]
+
+        obj_ids = [i for i in range(nb_objects + 1)]
         # Infer height and width of the sequence
         h, w = annotations.shape[1:3]
         img_shape = np.asarray([w, h], dtype=np.float)

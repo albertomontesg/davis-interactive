@@ -80,7 +80,7 @@ def draw_scribble(img, scribble, frame, output_size=None, width=5):
         width: Integer. Width of the drawed lines.
 
     # Returns
-        PIL Image. Returns the original image `img` with the scribble draw on
+        PIL Image: Returns the original image `img` with the scribble draw on
             it.
     """
     scribbles = scribble['scribbles']
