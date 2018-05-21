@@ -125,11 +125,33 @@ class TestInteractiveScribblesRobot(unittest.TestCase):
         assert annotated_frames(scribble) == [0]
         assert len(scribble['scribbles']) == nb_frames
 
-        lines = scribble['scribbles'][5]
+        lines = scribble['scribbles'][0]
 
         for l in lines:
-            assert l['object_id'] == 1
+            assert l['object_id'] == 0
             path = np.asarray(l['path'])
             x, y = path[:, 0], path[:, 1]
-            assert np.all((x >= .2) & (x <= .4))
-            assert np.all((y >= 1 / 3) & (y <= 2 / 3))
+            assert np.all((x >= 0) & (x <= 1))
+            assert np.all((y >= 0) & (y <= 1))
+
+    def test_interaction_false_positive_single_frame(self):
+        nb_frames, h, w = 1, 300, 500
+        gt_empty = np.zeros((nb_frames, h, w), dtype=np.int)
+        pred_empty = np.ones((nb_frames, h, w), dtype=np.int)
+        gt_empty[0, 100:200, 100:200] = 1
+
+        robot = InteractiveScribblesRobot()
+
+        scribble = robot.interact('test', pred_empty, gt_empty)
+        assert not is_empty(scribble)
+        assert annotated_frames(scribble) == [0]
+        assert len(scribble['scribbles']) == nb_frames
+
+        lines = scribble['scribbles'][0]
+
+        for l in lines:
+            assert l['object_id'] == 0
+            path = np.asarray(l['path'])
+            x, y = path[:, 0], path[:, 1]
+            inside = (x >= .2) & (x <= .4) & (y >= 1 / 3) & (y <= 2 / 3)
+            assert not np.any(inside)
