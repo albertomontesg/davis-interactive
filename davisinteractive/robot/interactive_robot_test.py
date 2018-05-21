@@ -126,6 +126,7 @@ class TestInteractiveScribblesRobot(unittest.TestCase):
         assert len(scribble['scribbles']) == nb_frames
 
         lines = scribble['scribbles'][0]
+        assert lines
 
         for l in lines:
             assert l['object_id'] == 0
@@ -148,6 +149,7 @@ class TestInteractiveScribblesRobot(unittest.TestCase):
         assert len(scribble['scribbles']) == nb_frames
 
         lines = scribble['scribbles'][0]
+        assert lines
 
         for l in lines:
             assert l['object_id'] == 0
