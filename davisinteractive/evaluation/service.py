@@ -248,8 +248,6 @@ class EvaluationService:
 
         time = df_time['timing'].values
         jaccard = df_average['jaccard'].values
-        print(time)
-        print(jaccard)
 
         if self.max_t:
             global_timeout = self.avg_nb_objects * self.max_t
