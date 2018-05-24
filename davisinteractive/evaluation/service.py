@@ -237,8 +237,19 @@ class EvaluationService:
         df_average.loc[0] = [0, 0]
         df_average = df_average.sort_index()
 
-        time = df_average['timing'].values
+        df_time = dfr.reset_index().groupby(
+            ['sequence', 'scribble_idx', 'interaction']).agg({
+                'timing': 'mean',
+            })
+        df_time = df_time.groupby('interaction').mean()
+        df_time['timing'] = df_time['timing'].cumsum()
+        df_time.loc[0] = [0]
+        df_time = df_time.sort_index()
+
+        time = df_time['timing'].values
         jaccard = df_average['jaccard'].values
+        print(time)
+        print(jaccard)
 
         if self.max_t:
             global_timeout = self.avg_nb_objects * self.max_t
