@@ -41,6 +41,9 @@ This instructs the server where to perform the evaluation (`localhost` or remote
 In case of development and local testing  (`host='localhost'`), 
 parameters such as the maximum number of interactions per sample, the maximum interaction time per object, as well as the dataset split used, can be tuned. 
 
+!!! failure
+    The remote evaluation server for the Challenge is unavailable until the next edition.
+
 In case of evaluation for the Challenge and remote testing (`host='https://server.davischallenge.org'`) and the `user_key` parameter should be specified to the given user key. For more information about the user key and how to register to the Challenge, please check [Challenge Section](/challenge/#remote). In this case, the maximum number of interactions and the maximum interaction time will be set by the remote server so any value given to the `DavisInteractiveSession` class will be ignored.
 
 For more information about the class and its possible values please check [DavisInteractiveSession](/docs/session).
