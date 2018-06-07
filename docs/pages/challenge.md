@@ -44,6 +44,9 @@ This framework also provides the possibility to evaluate the methods locally. Lo
 
 ### Remote
 
+!!! failure
+    The remote evaluation server for the Challenge is unavailable until the next edition.
+
 In order to submit results to the Interactive Challenge, the frameworks allows to evaluate models agains a remote server. For remote evaluation, only the `test-dev` subset will be available and the results will be used for ranking in the challenge.
 
 In order to participate to the challenge a registration is required. To register, please go to https://server.davischallenge.org and fill in the form with your information. A mail will be sent to the provided email with a user key required for the remote evaluation. This key should be put in your code in order to identify every user.
