@@ -1,12 +1,12 @@
-# DAVIS Challenge 2018 Interactive Track
+# DAVIS Challenge Interactive Track
 
-In this section we are going to explain in more detail how the Interactive Track of the DAVIS 2018 Challenge works. The technical challenges behind this track make us be cautious about this first edition, so we launch it in beta mode.
+In this section we are going to explain in more detail how the Interactive Track of the DAVIS Challenge works. Find more information in this [publication](https://arxiv.org/abs/1803.00557).
 
 ## Dataset
 
-The Interactive Track is built on the DAVIS 2017 dataset. Video sequences, annotated objects, as well as data splits are the same as the ones in the Semi-Supervised track, and the sequences have been manually annotated with scribbles. The annotators were instructed to label all objects of a sequence in a representative frame (not necessarily the first frame of the sequence as in the Semi-Supervised track).
+The interactive track is built on the DAVIS 2017 dataset. The video sequences in the `train`, `val` and `test-dev` subsets have been manually annotated with scribbles. The annotators were instructed to label all objects of a sequence in a representative frame (not necessarily the first frame of the sequence as in the semi-supervised track).
 
-For every sequence of DAVIS 2017 there are 3 different sets of scribbles, annotated by different users. The figure below illustrates an example of three different user annotations on the same sequence `dogs-jump`. Note that annotations were performed on different frames, chosen by the respective users.
+For every sequence in the `train`, `val` and `test-dev` subsets of DAVIS 2017, there are 3 different sets of scribbles annotated by different users. The figure below illustrates an example of three different user annotations on the same sequence `dogs-jump`. Note that annotations were performed on different frames, chosen by the respective users. More information on how to download the scribbles in the [Installation](/user_guide/installation) guide.
 
 <div style="white-space: nowrap;">
 
@@ -18,14 +18,14 @@ For every sequence of DAVIS 2017 there are 3 different sets of scribbles, annota
 
 The aim of this challenge is to evaluate interactive models that can provide high quality segmentation masks, using scribbles and multiple interactions. Scribbles are a realistic form of supervision when it comes to video object segmentation, as they can be obtained much faster than full segmentation masks.
 
-The workflow to evaluate these interactive models is as follows. A video sequence and a set of scribbles are given to the user. 
+The workflow to evaluate these interactive models is as follows. To start, a video sequence and a scribble for each object in a certain frame is given to the user. 
 
 !!! note
-	Since there are 3 annotations per each sequence, the same sequence will be evaluated multiple times, starting from different annotated scribbles.
+	Since there are 3 annotations per each sequence, the same sequence is evaluated multiple times, starting from different human annotated scribbles.
 
-The user must run their model to perform a prediction of the masks for the entire sequence, starting from the given scribble. As timing is important, the time taken to perform this prediction is measured. Once the user has made the prediction and submited their results, a new set of scribbles for this sequence will be returned, simulating human interaction. The returned annotation is an additional set of scribbles on the frame where the prediction failed the most (i.e. worst Jaccard score). These annotations are performed automatically, simulating human behaviour.
+Then, the user's model has to predict the segmentation masks for all the frames in the sequence, taking into account the given scribbles. As timing is important, the time taken to perform this prediction is measured. After that, the user submits the predicted masks to a server that returns a new set of scribbles for this sequence, simulating a human interaction. The returned scribbles are all in the frame with the worst prediction from a list of frames specified by the user (by default all the frames in the sequence).
 
-The following images show an example. The method makes a prediction, given the scribbles from the previous iteration(s) (left). Once the results are submitted, there are evaluated, and an additional set of scribbles is generated (right). The robot focuses on the zones where the error in prediction is the highest and tries to give feedback, as a human would do.
+In the following images, we show an example of the simulated human interaction. In the left, the mask predicted by the method given the scribbles from the previous iteration(s) is shown. Once the results are submitted and the frame with the worst performance is computed, the additional set of scribbles generated is shown in the right image. The robot focuses on the areas where the prediction error is the highest and tries to give feedback, as a human would do. These scribbles can either be in false positive or false negative regions.
 
 <div style="white-space: nowrap;">
 
@@ -33,7 +33,7 @@ The following images show an example. The method makes a prediction, given the s
 
 </div>
 
-The additional annotation given to the user should be used again by its model to perform a new prediction of the masks. This procedure will be repeated until a maximum number of interactions or a timeout is reached. The timeout is proportional to the number of objects in the sequence.
+The additional scribbles given to the user should be used by his/her model to estimate again the masks. This procedure is repeated until a maximum number of interactions or a timeout is reached. The timeout is proportional to the number of objects in the sequence.
 
 !!! example
 	If the maximum number of interactions is set to 8, and the timeout to perform all interactions is 240s, this leads to a maximum time of 30 seconds per interaction. However, the timeout is proportional to the number of objects in the sequence. Thus the timeout for a sequence with a single object (eg. `blackswan`) will be 30s per interaction, while for a sequence with 10 objects (eg. `salsa`) the limit is set to 300s. This behaviour favours models for which the prediction time is proportional to the number of objects in the sequence.
@@ -45,19 +45,19 @@ This framework also provides the possibility to evaluate the methods locally. Lo
 ### Remote
 
 !!! failure
-    The remote evaluation server for the Challenge is unavailable until the next edition.
+    The remote evaluation server for the challenge is unavailable until the next edition (5th May 2019 23:59 UTC - 24th May 2019 23:59 UTC.).
 
-In order to submit results to the Interactive Challenge, the frameworks allows to evaluate models agains a remote server. For remote evaluation, only the `test-dev` subset will be available and the results will be used for ranking in the challenge.
+In order to submit results to the interactive challenge, this framework allows to evaluate models agains a remote server. For remote evaluation, only the `test-dev` subset is available and the results are used for the ranking of the challenge.
 
-In order to participate to the challenge a registration is required. To register, please go to https://server.davischallenge.org and fill in the form with your information. A mail will be sent to the provided email with a user key required for the remote evaluation. This key should be put in your code in order to identify every user.
+In order to participate to the challenge a registration is required. To register, please go to https://server.davischallenge.org and fill in the form with your information. A mail will be sent to the provided email with a user key required for the remote evaluation. This key should be introduced in your code in order to identify your submissions. See the [Usage](/user_guide/usage) guide for more details.
 
-In addition, when the evaluation session is finished and a global sumary of the session is generated, a session ID will be given to the user. This session ID will allow the user identify its run and match them in the leaderboard.
+In addition, when the evaluation session has finished and a global sumary of the session has been generated, a session ID is given to the user. This session ID allows users to identify their run and show it in the leaderboard.
 
 ## Evaluation
 
-The main metric used to evaluate the predicted masks is the Jaccard similarity. The time that each method takes to make a prediction is also taken into account. The average jaccard for all objects and for all starting scribbles will be reported in every interaction.  We are aware that some models may hit the timeout and not reach the maximum number of interactions. In this case, for every sample with missing interactions, the evaluation of these particular interactions will be the same as the last interaction performed with 0 time cost.
+The evaluation metric used to evaluate the predicted masks is the mean of the Region similarity $\mathcal{J}$ and the Contour Accuracy $\mathcal{F}$ (more information of the metrics [here](https://www.cv-foundation.org/openaccess/content_cvpr_2016/papers/Perazzi_A_Benchmark_Dataset_CVPR_2016_paper.pdf)). The time that each method takes to make a prediction is also taken into account. The average jaccard for all objects and for all starting scribbles is reported in every interaction.  We are aware that some models may hit the timeout and not reach the maximum number of interactions. In this case, for every sample with missing interactions, the evaluation of these particular interactions is the same as the last interaction performed with 0 time cost.
 
-In the end, a curve showing Jaccard as a function of Accumulated Time will be generated. In the following example you can see an example of how the curve looks like for a baseline method [Scribble-OSVOS](https://github.com/kmaninis/Scribble-OSVOS):
+At the end, a curve showing Jaccard as a function of Accumulated Time is generated. In the following example you can see an example of how the curve looks like for a baseline method [Scribble-OSVOS](https://github.com/kmaninis/Scribble-OSVOS):
 
 <div style="white-space: nowrap;">
 
@@ -65,7 +65,7 @@ In the end, a curve showing Jaccard as a function of Accumulated Time will be ge
 
 </div>
 
-Given this curve, two parameters will be extracted to rank the user's models in order to compare them:
+Given this curve, two parameters are extracted to rank the user's models in order to compare them:
 
 * $AUC$: Area under the curve. The area under the previous curve will be computed and normalized by the total available time.
 

@@ -12,7 +12,7 @@ The scribbles are stored in a key-value dictionary which can be encoded in a `js
 
 The fields represent the following:
 
-* `scribbles`: a list of length equal to the number of frames of the sequence. For each frame there will be a list of all paths or lines of the scribbles
+* `scribbles`: a list of length equal to the number of frames of the sequence. For each frame there is a list of all paths or lines of the scribbles
 * `sequence`: sequence name of the scribble.
 * `annotated_frame` (optional): number of the frame that is annotated for fast lookup.
 

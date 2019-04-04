@@ -27,9 +27,9 @@ Let us explain every component in detail to give a better understanding about ho
 
 ## Session
 
-A session is a sequence of samples (a DAVIS sequence plus an initial scribble annotated by a human).
+A session is a sequence of samples where a sample is defined as a DAVIS sequence plus an initial set of scribbles annotated by a human.
 Every sample is going to be evaluated interactively for a number of iterations (in a defined time window).
-In order to be more realistic, we provide 3 manually annotated scribbles per sequence. Submitted methods will be evaluated starting from all 3 scribbles for each sequence, and the results will be averaged.
+In order to be more realistic, we provide 3 manually annotated scribbles per sequence. Methods are evaluated starting from all 3 scribbles for each sequence, and the results are averaged.
 
 The first step is to create a session to evaluate:
 
@@ -38,32 +38,32 @@ with DavisInteractiveSession(host='localhost', davis_root='path/to/davis') as se
 ```
 
 This instructs the server where to perform the evaluation (`localhost` or remote), as well as the path of the DAVIS dataset files. 
-In case of development and local testing  (`host='localhost'`), 
-parameters such as the maximum number of interactions per sample, the maximum interaction time per object, as well as the dataset split used, can be tuned. 
+When testing in the `train` and `val` subsets the evaluation should be done locally  (`host='localhost'`) and
+parameters such as the maximum number of interactions per sample, the maximum interaction time per object, as well as the dataset split used, can be modified. 
 
 !!! failure
-    The remote evaluation server for the Challenge is unavailable until the next edition.
+    The remote evaluation server for the challenge is unavailable until the next edition.
 
-In case of evaluation for the Challenge and remote testing (`host='https://server.davischallenge.org'`) and the `user_key` parameter should be specified to the given user key. For more information about the user key and how to register to the Challenge, please check [Challenge Section](/challenge/#remote). In this case, the maximum number of interactions and the maximum interaction time will be set by the remote server so any value given to the `DavisInteractiveSession` class will be ignored.
+The evalaution in the `test-dev` during the challange is performed remotely (`host='https://server.davischallenge.org'`), the `user_key` parameter should be set to the key sent in the registration email. For more information on how to obtain the user key and how to register to the challenge, please check [Challenge Section](/challenge/#remote). During the challenge, the maximum number of interactions and the maximum interaction time is set by the remote server so any value given to the `DavisInteractiveSession` class is ignored.
 
-For more information about the class and its possible values please check [DavisInteractiveSession](/docs/session).
+For more information about the DavisInteractiveSession class and its parameters please check [DavisInteractiveSession](/docs/session).
 
 ## Control Flow
 
-In order to simplify the control flow for the user, the session provides a function to move to the following interaction/sequence:
+In order to simplify the control flow for the user, the session object provides a function to move to the following interaction/sequence:
 
 ```python
 while sess.next():
 ```
 
-Once the timeout or the maximum number of iterations is reached, this functions will move the evaluation to a new sequence or the same sequence with a different initial scribble. Otherwise, it will keep the current sequence in order to continue with more interactions.
+Once the timeout or the maximum number of iterations is reached, this functions moves the evaluation to a new sequence or the same sequence with a different initial scribble. Otherwise, it provides more interactions for the current sequence.
 
 ## Obtain Scribbles
 
-For every sample, there will be multiple iterations (depending on the time limit or the maximum number of iterations per sample). For every iteration you can call `get_scribbles` to obtain the scribbles for the next iteration. A tuple of three elements will be returned:
+For a certain video sequence with an initial set of scribbles, there are multiple iterations (the number of iterations depends on the time limit or the maximum number of iterations per sample). In every iteration, the user has to call `get_scribbles` to obtain the scribbles for the next iteration. This returns a tuple with three elements:
 
-* `sequence`: the name of the sequence in the case you are using a model that depends on the sequence of the DAVIS dataset which you are evaluating.
-* `scribbles`: the scribbles of the current iteration. This scribbles by default will be all the scribbles generated for the current sample (the first human annotated and all the automatic generated at next iterations). If you call the method setting a flag `get_scribbles(only_last=True)` only the last iteration's scribbles will be returned.
+* `sequence`: the name of the current sequence. This may be useful in case you are using a model that depends on the sequence of the DAVIS dataset which you are evaluating.
+* `scribbles`: the scribbles of the current iteration. These scribbles by default are all the scribbles generated so far for the current sample (the first human annotated ones as well as all the ones automatically generated in the following iterations). If you call the method setting a flag `get_scribbles(only_last=True)` only the scribbles for the last iteration are returned.
 * `new_sequence`: this is a flag indicating whether the given scribbles correspond to the first iteration of the sample.
 
 ```python
@@ -81,16 +81,16 @@ with DavisInteractiveSession(host='localhost', davis_root='path/to/davis') as se
 
 The scribbles are represented as the different paths of the lines over each object ID. For more information about the scribbles format, check the page [Scribbles Format](scribbles).
 
-This format may not be convenient for everybody, and that is why some useful transformations are included on this framework:
+This format may not be convenient for everybody, therefore we include some transformations in this framework:
 
-* [`scribbles2mask`](/docs/utils.scribbles): it converts the paths of lines into a mask where the closest pixels of all the path points are set to the object ID of the line. This method also provides the possibility to apply the Bressenham's algorithm to fill in the path if two points of a line are sampled very distant on the mask.
+* [`scribbles2mask`](/docs/utils.scribbles): it converts the paths of lines into a mask where the closest pixels of all the path points are set to the object ID of the line. This method also provides the possibility to apply the Bressenham's algorithm to fill in the path if two points of a line are sampled very distant in the mask.
 * [`scribbles2points`](/docs/utils.scribbles): from the scribble, it extracts all the (x, y) coordinates of all the line points as well as its object ID.
 
 If you think there is any new transformation or a modification to the current ones that might be useful to work with scribble data, please do not hesitate to send a [pull request](https://github.com/albertomontesg/davis-interactive/pulls).
 
 ## Prediction Submission
 
-After each iteration, it is mandatory to submit the scribbles to evaluate and at the same time to automatically generate the scribble for the next iteration.
+At the end of each iteration, the user must submit the mask predicted by his/her model to be evaluated in the server. As an optional parameter, the user may specify which frames have to be considered in order to compute the next scribbles (using the paramter `next_scribble_frame_candidates` in the `submit_masks` function). By default, all the frames in a sequences are considered.
 
 ```python
 pred_masks = model.predict()
@@ -99,6 +99,6 @@ sess.submit_masks(pred_masks)
 
 ## Final Result
 
-Once the session has finished a report can be asked using the `get_report` method. This method returns a Pandas DataFrame where every row is the evaluation of every sequence, iteration and frame; as well as the timing of every iteration. From this report, information of the performance against processing time can be extracted for comparison among interactive methods.
+Once the session has finished a report can be obtained using the `get_report` method. This method returns a Pandas DataFrame where every row contains the evaluation of every sequence, iteration and frame; as well as the timing of every iteration. From this report, information of the performance against processing time can be extracted for comparison among interactive methods.
 
 For a global summary with the values and the evaluation curve, use the `get_global_summary` method. This method returns a dictionary with all the metrics and values used to evaluate and compare models. For more information about how the evaluation works, please go to the [Challenge Section](/challenge/#evaluation).

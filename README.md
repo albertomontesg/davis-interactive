@@ -5,7 +5,7 @@
 
 This is a framework to evaluate interactive segmentation models over the [DAVIS 2017](http://davischallenge.org/index.html) dataset. The code aims to provide an easy-to-use interface to test and validate interactive segmentation models.
 
-This is the tool used to evaluate the interactive track on the DAVIS Challenge on Video Object Segmentation 2018. More info about the challenge on the [official website](http://davischallenge.org/challenge2018/interactive.html).
+This tool is also used to evaluate the Interactive Track of the DAVIS Challenges on Video Object Segmentation. More info about the latest challenge edition in the [DAVIS website](https://davischallenge.org/) and the [Challenge](/challenge) subsection.
 
 You can find an example of how to use the package in the following repository:
 
@@ -14,7 +14,7 @@ You can find an example of how to use the package in the following repository:
 
 ## DAVIS Scribbles
 
-In the DAVIS **Main** Challenge track, the task consists on object segmentation in a *semi-supervised* manner, i.e. the given input is the ground truth mask of the first frame. In the DAVIS **Interactive** Challenge, in contrast, the user input is in form of scribbles, which can be drawn much faster by humans and thus is a more realistic type of input. The same objects as the ones of the **Main** track have been annotated with scribbles.
+In the classical DAVIS Semi-supervised Challenge track, the task is to segment an object in a *semi-supervised* manner, i.e. the given input is the ground truth mask of the first frame. In the **DAVIS Interactive Challenge**, in contrast, the user input is scribbles, which can be drawn much faster by humans and thus are a more realistic type of input. 
 
 <div style="white-space: nowrap;">
 
@@ -22,12 +22,15 @@ In the DAVIS **Main** Challenge track, the task consists on object segmentation 
 
 </div>
 
-The interactive annotation and segmentation consist in an iterative loop which is going to be evaluated as follows:
+The interactive annotation and segmentation consist in an iterative loop which is evaluated as follows:
 
-* On the first iteration, a human-annotated scribble is provided to the segmentation model. <br> **Note**: the annotated frame can be any of the sequence, as the annotators were instructed to annotate the most relevant and meaningful frame. This is in contrast to the **Main** track, where - only and strictly - the first frame is annotated.
-* During the rest of the iterations, once the predicted masks have been submitted, a scribble is simulated by the server. The new annotation will be performed on a single frame and this frame will be chosen as the one on which the current result is the worst.
+* In the first iteration, a human-annotated scribble for each object in the video sequence is provided to the segmentation model. As a result, the model has to predict a segmentation mask containing all the objects for all the frames. <br> **Note**: all the scribbles are annotated in a single frame, but this does not have to be the first frame in the sequence, as the annotators were instructed to annotate the most relevant and meaningful frame. This is in contrast to the semi-supervised track, where - only and strictly - the first frame is annotated.
+* Then, the predicted masks are submitted to a server that returns human-simulated scribbles. These scribbles are always annotated in a single frame. The frame is selected as the one with the worst evaluation result among a list of frames specified by the user. By default, this list contains all the frames in the sequence.
+* During the following steps, the segmentation model keeps iterating between predicting the masks using the new scribbles and submitting the masks to obatain new scribbles.
 
-**Evaluation**: For now, the evaluation metric will be the Jaccard similarity $\mathcal{J}$.
+**Evaluation**: The evaluation metric is the mean of the Region similarity $\mathcal{J}$ and the Contour Accuracy $\mathcal{F}$. More information of the metrics [here](https://www.cv-foundation.org/openaccess/content_cvpr_2016/papers/Perazzi_A_Benchmark_Dataset_CVPR_2016_paper.pdf). The evaluation for the `train` and `val` subsets can be done offline at any time, whereas the evaluation for the `test-dev` has to be done against a server that is only available during the challanges period.
+
+**More information**: Please check the [Installation](/user_guide/installation) guide to install the package and dowload the scribbles. Moreover, refer to the [Usage](/user_guide/usage) guide to learn how to interface your code with the server.
 
 ## Citation
 
