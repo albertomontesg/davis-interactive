@@ -90,7 +90,7 @@ If you think there is any new transformation or a modification to the current on
 
 ## Prediction Submission
 
-At the end of each iteration, the user must submit the mask predicted by his/her model to be evaluated in the server. As an optional parameter, the user may specify which frames have to be considered in order to compute the next scribbles (using the paramter `next_scribble_frame_candidates` in the `submit_masks` function). By default, all the frames in a sequences are considered.
+At the end of each iteration, the user must submit the mask predicted by his/her model to be evaluated in the server. As an optional parameter, the user may specify which frames have to be considered in order to compute the next scribbles (using the parameter `next_scribble_frame_candidates` in the `submit_masks` function). By default, all the frames in a sequences are considered.
 
 ```python
 pred_masks = model.predict()

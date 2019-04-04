@@ -16,9 +16,9 @@ pip install davisinteractive
 
 ## DAVIS Dataset
 
-In addition to installing the framework, you will need to download the `train`, `val` and `test-dev` (for the challenge) DAVIS 2017 subsets with 480p resolution from [here](http://davischallenge.org/davis2017/code.html).
+In addition to installing the framework, you will need to download the `train`, `val` and `test-dev` (for the challenge) DAVIS 2017 subsets with 480p resolution from <a href="http://davischallenge.org/davis2017/code.html" target="_blank">here</a>.
 
-Moreover, you can download the `train` and `val` scribbles from [here](https://data.vision.ee.ethz.ch/csergi/share/DAVIS-Interactive/DAVIS-2017-scribbles-trainval.zip).
+Moreover, you can download the `train` and `val` scribbles from <a href="https://data.vision.ee.ethz.ch/csergi/share/DAVIS-Interactive/DAVIS-2017-scribbles-trainval.zip" target="_blank">here</a>.
 You have to unzip the scibbles zip file in the folder containing DAVIS (in /path/to supposing DAVIS is in /path/to/DAVIS).
 
 The scribbles for the `test-dev` are provided directly by the server that is online during the challange periods.
