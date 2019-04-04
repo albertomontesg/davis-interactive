@@ -56,6 +56,9 @@ In addition, when the evaluation session has finished and a global sumary of the
 ## Evaluation
 The evaluation metric used to evaluate the predicted masks is the mean of the Region similarity $\mathcal{J}$ and the Contour Accuracy $\mathcal{F}$ (more information of the metrics <a href="https://www.cv-foundation.org/openaccess/content_cvpr_2016/papers/Perazzi_A_Benchmark_Dataset_CVPR_2016_paper.pdf" target="_blank">here</a>). The time that each method takes to make a prediction is also taken into account. The average $\mathcal{J}\&\mathcal{F}$ for all objects and for all starting scribbles is reported in every interaction.  We are aware that some models may hit the timeout and not reach the maximum number of interactions. In this case, for every sample with missing interactions, the evaluation of these particular interactions is the same as the last interaction performed with 0 time cost.
 
+!!! note
+    For the challenge, the maximum number of interactions is 8 and the maximum time is 30 seconds per object for each interaction (so if there are 2 objects in a sequence, your method has 1 minute for each interaction). Therefore, in order to do 8 interactions, the timeout to interact with a certain sequence is computed as 30*num_obj*8. If the timeout is reached before finishing the 8 interactions, the last interaction will be discarded and only the previous will be considered for evaluation.
+
 At the end, a curve showing $\mathcal{J}\&\mathcal{F}$ as a function of Accumulated Time is generated. In the following example you can see an example of how the curve looks like for a baseline method  <a href="https://github.com/kmaninis/Scribble-OSVOS"target="_blank">Scribble-OSVOS</a>:
 
 <div style="white-space: nowrap;">
@@ -69,3 +72,6 @@ Given this curve, two parameters are extracted to rank the user's models in orde
 * $AUC$: Area under the curve. The area under the previous curve will be computed and normalized by the total available time.
 
 * $\mathcal{J}_{60s}$: $\mathcal{J}\&\mathcal{F}$ at 60 seconds. This metric will be computed performing a interpolation of the previous curve at 60 seconds. This will encourage the users to implement and test fast models capable of giving good predictions in a short time.
+
+
+
