@@ -54,10 +54,10 @@ In order to participate to the challenge a registration is required. To register
 In addition, when the evaluation session has finished and a global sumary of the session has been generated, a session ID is given to the user. This session ID allows users to identify their run and show it in the leaderboard.
 
 ## Evaluation
+$\&$
+The evaluation metric used to evaluate the predicted masks is the mean of the Region similarity $\mathcal{J}$ and the Contour Accuracy $\mathcal{F}$ (more information of the metrics [here](https://www.cv-foundation.org/openaccess/content_cvpr_2016/papers/Perazzi_A_Benchmark_Dataset_CVPR_2016_paper.pdf)). The time that each method takes to make a prediction is also taken into account. The average $\mathcal{J}\&\mathcal{F}$ for all objects and for all starting scribbles is reported in every interaction.  We are aware that some models may hit the timeout and not reach the maximum number of interactions. In this case, for every sample with missing interactions, the evaluation of these particular interactions is the same as the last interaction performed with 0 time cost.
 
-The evaluation metric used to evaluate the predicted masks is the mean of the Region similarity $\mathcal{J}$ and the Contour Accuracy $\mathcal{F}$ (more information of the metrics [here](https://www.cv-foundation.org/openaccess/content_cvpr_2016/papers/Perazzi_A_Benchmark_Dataset_CVPR_2016_paper.pdf)). The time that each method takes to make a prediction is also taken into account. The average jaccard for all objects and for all starting scribbles is reported in every interaction.  We are aware that some models may hit the timeout and not reach the maximum number of interactions. In this case, for every sample with missing interactions, the evaluation of these particular interactions is the same as the last interaction performed with 0 time cost.
-
-At the end, a curve showing Jaccard as a function of Accumulated Time is generated. In the following example you can see an example of how the curve looks like for a baseline method [Scribble-OSVOS](https://github.com/kmaninis/Scribble-OSVOS):
+At the end, a curve showing $\mathcal{J}\&\mathcal{F}$ as a function of Accumulated Time is generated. In the following example you can see an example of how the curve looks like for a baseline method [Scribble-OSVOS](https://github.com/kmaninis/Scribble-OSVOS):
 
 <div style="white-space: nowrap;">
 
@@ -69,4 +69,4 @@ Given this curve, two parameters are extracted to rank the user's models in orde
 
 * $AUC$: Area under the curve. The area under the previous curve will be computed and normalized by the total available time.
 
-* $\mathcal{J}_{60s}$: Jaccard at 60 seconds. This metric will be computed performing a interpolation of the previous curve at 60 seconds. This will encourage the users to implement and test fast models capable of giving good predictions in a short time.
+* $\mathcal{J}_{60s}$: $\mathcal{J}\&\mathcal{F}$ at 60 seconds. This metric will be computed performing a interpolation of the previous curve at 60 seconds. This will encourage the users to implement and test fast models capable of giving good predictions in a short time.

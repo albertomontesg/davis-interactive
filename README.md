@@ -5,7 +5,7 @@
 
 This is a framework to evaluate interactive segmentation models over the [DAVIS 2017](http://davischallenge.org/index.html) dataset. The code aims to provide an easy-to-use interface to test and validate interactive segmentation models.
 
-This tool is also used to evaluate the Interactive Track of the DAVIS Challenges on Video Object Segmentation. More info about the latest challenge edition in the [DAVIS website](https://davischallenge.org/) and the [Challenge](/challenge) subsection.
+This tool is also used to evaluate the [Interactive Track](/challenge) of the DAVIS Challenges on Video Object Segmentation. More information about the latest challenge edition in the <a href="https://davischallenge.org/" target="_blank">DAVIS website</a>.
 
 You can find an example of how to use the package in the following repository:
 
