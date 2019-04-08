@@ -16,12 +16,12 @@ pip install davisinteractive
 
 ## DAVIS Dataset
 
-In addition to installing the framework, you will need to download the `trainval` DAVIS 2017 Dataset with 480p resolution from [here](http://davischallenge.org/davis2017/code.html).
+In addition to installing the framework, you will need to download the `train`, `val` and `test-dev` (for the challenge) DAVIS 2017 subsets with 480p resolution from <a href="http://davischallenge.org/davis2017/code.html" target="_blank">here</a>.
 
-Moreover, you can download the `trainval` scribbles from [here](https://data.vision.ee.ethz.ch/csergi/share/DAVIS-Interactive/DAVIS-2017-scribbles-trainval.zip).
+Moreover, you can download the `train` and `val` scribbles from <a href="https://data.vision.ee.ethz.ch/csergi/share/DAVIS-Interactive/DAVIS-2017-scribbles-trainval.zip" target="_blank">here</a>.
 You have to unzip the scibbles zip file in the folder containing DAVIS (in /path/to supposing DAVIS is in /path/to/DAVIS).
 
-*Note*: A script to download automatically the dataset and the scribbles is coming soon.
+The scribbles for the `test-dev` are provided directly by the server that is online during the challange periods.
 
 ## Install from Source
 
@@ -36,7 +36,7 @@ python setup.py install
 
 ## Development
 
-If you want to contribute to this package you will need to have a copy of the code to work with. First, download the code from Github:
+If you want to contribute to this package you need to have a copy of the code to work with. First, download the code from Github:
 
 ```bash
 git clone https://github.com/albertomontesg/davis-interactive.git && cd davis-interactive
@@ -46,18 +46,21 @@ git checkout -b my/new/branch
 To have a development copy of the package installed for Python you can run the following:
 
 ```bash
-pip3 install -e .
+# Python 3 strongly recommended
+# Install numpy and Cython as are required to build our package
+pip install numpy Cython
+pip install -e .
 ```
 
-This will link the available copy of the package to your current copy so all the modifications that you made on the code will be visible by any script.
+This links the available copy of the package to your current copy so all the modifications that you made on the code is visible by any script.
 
-If you want to help us improve the documentation it will be necessary to have some additional packages:
+If you want to help us improve the documentation it is necessary to have some additional packages:
 
 ```bash
-pip3 install mkdocs pydoc-markdown mkdocs-material
+pip install mkdocs pydoc-markdown mkdocs-material requests
 ```
 
-Then you serve the documentation live on your local machine to check the changes you make on the documentation.
+Then you serve the documentation live in your local machine in order to check the changes that you make in the documentation.
 
 ```bash
 cd docs
