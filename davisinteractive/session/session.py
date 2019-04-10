@@ -37,6 +37,9 @@ class DavisInteractiveSession:
             sample.
         max_nb_interactins: Integer. Maximum number of interactions to
             evaluate per sample.
+        metric_to_optimize: Enum. Metric targeting to optimize. Possible values:
+            J, F or J_AND_F. This value will be ignored when running
+            against a remote server.
         report_save_dir: String. Path to the directory where the report will
             be stored during the evaluation. By default is the current working
             directory. A temporal file will be storing snapshots of the results
@@ -51,6 +54,7 @@ class DavisInteractiveSession:
                  shuffle=False,
                  max_time=None,
                  max_nb_interactions=5,
+                 metric_to_optimize='J_AND_F',
                  report_save_dir=None):
         self.davis_root = davis_root
 
@@ -61,6 +65,7 @@ class DavisInteractiveSession:
         self.max_nb_interactions = min(
             max_nb_interactions,
             16) if max_nb_interactions is not None else max_nb_interactions
+        self.metric_to_optimize = metric_to_optimize
 
         self.running_model = False
         self.running = True
@@ -92,7 +97,9 @@ class DavisInteractiveSession:
     def __enter__(self):
         # Create connector
         samples, max_t, max_i = self.connector.get_samples(
-            self.subset, davis_root=self.davis_root)
+            self.subset,
+            davis_root=self.davis_root,
+            metric_to_optimize=self.metric_to_optimize)
         if self.shuffle:
             logging.verbose('Shuffling samples', 1)
             random.shuffle(samples)
@@ -140,7 +147,6 @@ class DavisInteractiveSession:
             if change_because_interaction:
                 logging.info('Maximum number of interaction have been reached.')
         if self.max_time and self.sample_start_time:
-            # _, _, nb_objects = self.samples[self.sample_idx]
             seq, _ = self.samples[self.sample_idx]
             nb_objects = Davis.dataset[seq]['num_objects']
             max_time = self.max_time * nb_objects
@@ -160,7 +166,6 @@ class DavisInteractiveSession:
         end = self.sample_idx >= len(self.samples)
         if not end and sample_change:
             seq, _ = self.samples[self.sample_idx]
-            # seq, _, _ = self.samples[self.sample_idx]
             logging.info('Start evaluation for sequence %s' % seq)
 
         # Save report on final version if the evaluation ends
@@ -183,7 +188,6 @@ class DavisInteractiveSession:
 
         return not end
 
-    # , return_scribbles_mask=False):
     def get_scribbles(self, only_last=False):
         """ Ask for the next scribble
 
@@ -236,8 +240,8 @@ class DavisInteractiveSession:
         """ Iterate over all the samples and iterations to evaluate.
 
         Instead of running a while loop with
-        #DavisInteractiveSession.next and then call to
-        #DavisInteractiveSession.get_scribbles, you can iterate with this
+        `DavisInteractiveSession.next` and then call to
+        `DavisInteractiveSession.get_scribbles`, you can iterate with this
         generator:
 
         # Example
@@ -259,7 +263,7 @@ class DavisInteractiveSession:
         while self.next():
             yield self.get_scribbles(*args, **kwargs)
 
-    def submit_masks(self, pred_masks):
+    def submit_masks(self, pred_masks, next_scribble_frame_candidates=None):
         """ Submit the predicted masks.
 
         # Arguments
@@ -267,6 +271,11 @@ class DavisInteractiveSession:
                 the current sample. The array must be of `dtype=np.int` and
                 of size equal to the 480p resolution of the DAVIS
                 dataset.
+            next_scribble_frame_candidates: List of Integers. Optional value
+                specifying the possible frames from which generate the next
+                scribble. If values given, the next scribble will be performed
+                in the frame where the evaluation metric scores the least on
+                the list of given frames. Invalid frames indexes are ignored.
         """
         if not self.running_model:
             raise RuntimeError('You must have called .get_scribbles before '
@@ -295,7 +304,12 @@ class DavisInteractiveSession:
         sequence, scribble_idx = self.samples[self.sample_idx]
 
         self.sample_last_scribble = self.connector.post_predicted_masks(
-            sequence, scribble_idx, pred_masks, timing, self.interaction_nb)
+            sequence,
+            scribble_idx,
+            pred_masks,
+            timing,
+            self.interaction_nb,
+            next_scribble_frame_candidates=next_scribble_frame_candidates)
         self.sample_scribbles = fuse_scribbles(self.sample_scribbles,
                                                self.sample_last_scribble)
 

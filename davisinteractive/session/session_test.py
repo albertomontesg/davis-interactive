@@ -10,7 +10,6 @@ from functools import wraps
 import numpy as np
 import pandas as pd
 import pytest
-
 from davisinteractive.common import Path, patch
 from davisinteractive.connector.local import LocalConnector
 from davisinteractive.dataset import Davis
@@ -128,9 +127,9 @@ class TestDavisInteractiveSession(unittest.TestCase):
                 assert temp_csv.exists()
 
                 df = pd.read_csv(temp_csv, index_col=0)
-                assert df.shape == (count * 2, 8)
+                assert df.shape == (count * 2, 10)
 
-                seq, scribble, new_seq = session.get_scribbles()
+                seq, scribble, new_seq = session.get_scribbles(only_last=True)
                 assert new_seq == (count == 0)
                 assert seq == 'bear'
                 if count == 0:
@@ -138,12 +137,18 @@ class TestDavisInteractiveSession(unittest.TestCase):
                                               '001.json').open() as fp:
                         sc = json.load(fp)
                         assert sc == scribble
-                assert not is_empty(scribble)
+                else:
+                    assert annotated_frames(scribble) == [1]
+                    assert not is_empty(scribble)
+                    assert len(scribble['scribbles']) == 2
+                    assert len(scribble['scribbles'][1]) > 0
+                    assert len(scribble['scribbles'][0]) == 0
 
                 # Simulate model predicting masks
                 pred_masks = np.zeros((2, 480, 854))
 
-                session.submit_masks(pred_masks)
+                session.submit_masks(
+                    pred_masks, next_scribble_frame_candidates=[1])
 
                 if count > 0:
                     assert df.sequence.unique() == ['bear']
@@ -244,7 +249,7 @@ class TestDavisInteractiveSession(unittest.TestCase):
                 assert not is_empty(scribble)
 
                 # Simulate model predicting masks
-                pred_masks = np.zeros((2, 480, 854))
+                pred_masks = np.ones((2, 480, 854))
 
                 session.submit_masks(pred_masks)
 
@@ -255,18 +260,95 @@ class TestDavisInteractiveSession(unittest.TestCase):
 
         assert mock_davis.call_count == 0
 
-        assert df.shape == (2 * 4 * 2 * 1 + 4 * 2 * 2, 8)
-        assert np.all(df.jaccard == 0.)
+        assert df.shape == (2 * 4 * 2 * 1 + 4 * 2 * 2, 10)
 
         global_summary_file = os.path.join(tempfile.mkdtemp(), 'summary.json')
         summary = session.get_global_summary()
         self.assertFalse(os.path.exists(global_summary_file))
         self.assertTrue('auc' in summary)
-        self.assertTrue('jaccard_at_threshold' in summary)
-        self.assertEqual(summary['jaccard_at_threshold']['threshold'], 60)
+        self.assertTrue('metric_at_threshold' in summary)
+        self.assertEqual(summary['metric_at_threshold']['threshold'], 60)
+        np.testing.assert_almost_equal(summary['metric_at_threshold']['metric'],
+                                       0.035155)
         self.assertTrue('curve' in summary)
         curve = summary['curve']
-        self.assertEqual(len(curve['jaccard']), 6)
+        self.assertEqual(len(curve['metric']), 6)
+        self.assertEqual(len(curve['time']), 6)
+
+        summary = session.get_global_summary(save_file=global_summary_file)
+        self.assertTrue(os.path.exists(global_summary_file))
+
+    @dataset(
+        'train',
+        bear={
+            'num_frames': 2,
+            'num_scribbles': 2
+        },
+        tennis={
+            'num_frames': 2,
+            'num_scribbles': 1
+        })
+    @patch.object(Davis, '_download_scribbles', return_value=None)
+    def test_integration_multiple_sequences_metric(self, mock_davis):
+        dataset_dir = Path(__file__).parent.joinpath('test_data', 'DAVIS')
+
+        with DavisInteractiveSession(
+                davis_root=dataset_dir,
+                subset='train',
+                max_nb_interactions=4,
+                report_save_dir=tempfile.mkdtemp(),
+                metric_to_optimize='J',
+                max_time=None) as session:
+            count = 0
+
+            for seq, scribble, new_seq in session.scribbles_iterator():
+                assert new_seq == (count == 0 or count == 4 or count == 8)
+                if count < 8:
+                    assert seq == 'bear', count
+                else:
+                    assert seq == 'tennis', count
+                if count == 0:
+                    with dataset_dir.joinpath('Scribbles', 'bear',
+                                              '001.json').open() as fp:
+                        sc = json.load(fp)
+                        assert sc == scribble
+                if count == 4:
+                    with dataset_dir.joinpath('Scribbles', 'bear',
+                                              '002.json').open() as fp:
+                        sc = json.load(fp)
+                        assert sc == scribble
+                if count == 8:
+                    with dataset_dir.joinpath('Scribbles', 'tennis',
+                                              '001.json').open() as fp:
+                        sc = json.load(fp)
+                        assert sc == scribble
+                assert not is_empty(scribble)
+
+                # Simulate model predicting masks
+                pred_masks = np.ones((2, 480, 854))
+
+                session.submit_masks(pred_masks)
+
+                count += 1
+
+            assert count == 12
+            df = session.get_report()
+
+        assert mock_davis.call_count == 0
+
+        assert df.shape == (2 * 4 * 2 * 1 + 4 * 2 * 2, 10)
+
+        global_summary_file = os.path.join(tempfile.mkdtemp(), 'summary.json')
+        summary = session.get_global_summary()
+        self.assertFalse(os.path.exists(global_summary_file))
+        self.assertTrue('auc' in summary)
+        self.assertTrue('metric_at_threshold' in summary)
+        self.assertEqual(summary['metric_at_threshold']['threshold'], 60)
+        np.testing.assert_almost_equal(summary['metric_at_threshold']['metric'],
+                                       0.07031)
+        self.assertTrue('curve' in summary)
+        curve = summary['curve']
+        self.assertEqual(len(curve['metric']), 6)
         self.assertEqual(len(curve['time']), 6)
 
         summary = session.get_global_summary(save_file=global_summary_file)

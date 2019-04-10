@@ -18,12 +18,12 @@ class LocalStorage(AbstractStorage):
         self.report = pd.DataFrame(columns=self.COLUMNS)
         logging.verbose('Report DataFrame created')
         self.annotated_frames = pd.DataFrame(
-            columns=['sequence', 'scribble_idx', 'frame'])
+            columns=['sequence', 'scribble_idx', 'frame', 'override'])
         logging.verbose('Annotated frames created')
 
     def store_interactions_results(self, user_id, session_id, sequence,
                                    scribble_idx, interaction, timing,
-                                   objects_idx, frames, jaccard):
+                                   objects_idx, frames, jaccard, contour):
         """ The information of a single interaction is given and stored.
 
         # Arguments
@@ -39,12 +39,18 @@ class LocalStorage(AbstractStorage):
             frames: List of Integers: List of frame index matching with the
                 jaccard metric.
             jaccard: List of Floats: List of jaccard metric.
+            contour: List of Floats: List of contour metric.
         """
         # Check the data.
         objects_idx = list(objects_idx)
         frames = list(frames)
         jaccard = list(jaccard)
+        contour = list(contour)
+        assert len(jaccard) == len(contour)
+        j_and_f = [.5 * j + .5 * f for j, f in zip(jaccard, contour)]
         if (min(jaccard) < 0.) or (max(jaccard) > 1.):
+            raise ValueError('Jaccard values must be between 0 and 1')
+        if (min(contour) < 0.) or (max(contour) > 1.):
             raise ValueError('Jaccard values must be between 0 and 1')
 
         nb = len(jaccard)
@@ -59,10 +65,10 @@ class LocalStorage(AbstractStorage):
             raise RuntimeError(('For {} and scribble {} already exist a '
                                 'result for interaction {}').format(
                                     sequence, scribble_idx, interaction))
-        if interaction > 1 and self.report.loc[(
-                self.report.sequence == sequence) & (
-                    self.report.scribble_idx == scribble_idx) & (
-                        self.report.interaction == interaction - 1)].size == 0:
+        if interaction > 1 and self.report.loc[
+            (self.report.sequence == sequence) &
+            (self.report.scribble_idx == scribble_idx) &
+            (self.report.interaction == interaction - 1)].size == 0:
             raise RuntimeError(('For {} and scribble {} does not exist a '
                                 'result for previous interaction {}').format(
                                     sequence, scribble_idx, interaction - 1))
@@ -76,6 +82,8 @@ class LocalStorage(AbstractStorage):
         sample['object_id'] = objects_idx
         sample['frame'] = frames
         sample['jaccard'] = jaccard
+        sample['contour'] = contour
+        sample['j_and_f'] = j_and_f
         sample = pd.DataFrame(data=sample, columns=self.COLUMNS)
         self.report = pd.concat([self.report, sample], ignore_index=True)
         logging.info('Successfully stored sample interaction entry')
@@ -95,48 +103,52 @@ class LocalStorage(AbstractStorage):
         df = df.loc[df['session_id'] == session_id].reset_index(drop=True)
         return df
 
-    def get_and_store_frame_to_annotate(self, session_id, sequence,
-                                        scribble_idx, jaccard):
+    def get_annotated_frames(self, session_id, sequence, scribble_idx):
+        """Get the previous annotated frames for the given iteration.
+
+        # Arguments
+            session_id: String. Ignored.
+            sequence: String. Sequence name.
+            scribble_idx: Integer. Scribble index of the sample.
+
+        # Returns
+            List of Integers. List of the frames that have been previously
+                annotated in the current iteration.
+        """
+        del session_id
+
+        df = self.annotated_frames.copy()
+        prev_frames = df.loc[
+            (df['sequence'] == sequence) &
+            (df['scribble_idx'] == scribble_idx)]['frame'].values
+        prev_frames = np.unique(prev_frames)
+
+        if len(prev_frames) == Davis.dataset[sequence]['num_frames']:
+            return tuple()
+
+        return tuple(prev_frames)
+
+    def store_annotated_frame(self, session_id, sequence, scribble_idx,
+                              annotated_frame, override):
         """ Get and store the frame to generate the scribble.
 
         This function will check all the previous generated scribbles frames
-        and return the frame with lower jaccard that the robot hasn't generated
+        and return the frame with lower metric that the robot hasn't generated
         a scribble.
 
         # Arguments
             session_id: String. Ignored.
             sequence: String. Sequence name.
             scribble_idx: Integer. Scribble index of the sample.
-            jaccard: Numpy Array. Array with computed jaccard values. Must
-                have the same length as the number of frames of the sequence.
-
-        # Returns
-            Integer. Index of the frame to generate the next scribble.
+            annotated_frame: Integer. Index of the frame of the next scribble
+                iteration.
+            override: Boolean. Whether or not the annotated frame was override
+                by the user or not.
         """
-        df = self.annotated_frames.copy()
-        prev_frames = df.loc[(df['sequence'] == sequence) &
-                             (df['scribble_idx'] == scribble_idx)][
-                                 'frame'].values
+        del session_id
 
-        jaccard = np.asarray(jaccard, dtype=np.float).ravel()
-        nb_frames = Davis.dataset[sequence]['num_frames']
-        if jaccard.shape[0] != nb_frames:
-            raise ValueError(
-                ('jaccard shape does not match the number of frames in {}'
-                ).format(sequence))
-
-        jac_idx = jaccard.argsort()
-        i = 0
-        while i < nb_frames and jac_idx[i] in prev_frames:
-            i += 1
-
-        if i == nb_frames:  # All the frames have been annotated
-            return jaccard.argmin()
-
-        frame_to_annotate = jac_idx[i]
         new_row = pd.DataFrame(
-            [[sequence, scribble_idx, frame_to_annotate]],
-            columns=['sequence', 'scribble_idx', 'frame'])
-        self.annotated_frames = pd.concat(
-            [self.annotated_frames, new_row], ignore_index=True)
-        return frame_to_annotate
+            [[sequence, scribble_idx, annotated_frame, override]],
+            columns=['sequence', 'scribble_idx', 'frame', 'override'])
+        self.annotated_frames = pd.concat([self.annotated_frames, new_row],
+                                          ignore_index=True)

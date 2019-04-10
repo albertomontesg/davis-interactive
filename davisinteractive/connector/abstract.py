@@ -9,8 +9,13 @@ class AbstractConnector:
     def get_scribble(self, sequence, scribble_idx):
         raise NotImplementedError('This is an abstract class')
 
-    def post_predicted_masks(self, sequence, scribble_idx, pred_masks, timming,
-                             interaction):
+    def post_predicted_masks(self,
+                             sequence,
+                             scribble_idx,
+                             pred_masks,
+                             timming,
+                             interaction,
+                             next_scribble_frame_candidates=None):
         raise NotImplementedError('This is an abstract class')
 
     def get_report(self):

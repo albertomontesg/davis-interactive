@@ -23,23 +23,38 @@ class LocalConnector(AbstractConnector):
         self.user_key = user_key or getpass.getuser()
         self.session_key = session_key
 
-    def get_samples(self, subset, davis_root=None):
+    def get_samples(self, subset, davis_root=None,
+                    metric_to_optimize='J_AND_F'):
         if subset not in self.VALID_SUBSETS:
             raise ValueError(
                 'For local connector, `subset` must be a valid subset: {}'.
                 format(self.VALID_SUBSETS))
 
-        self.service = EvaluationService(subset, davis_root=davis_root)
+        self.service = EvaluationService(
+            subset,
+            davis_root=davis_root,
+            metric_to_optimize=metric_to_optimize)
         return self.service.get_samples()
 
     def get_scribble(self, sequence, scribble_idx):
         return self.service.get_scribble(sequence, scribble_idx)
 
-    def post_predicted_masks(self, sequence, scribble_idx, pred_masks, timming,
-                             interaction):
+    def post_predicted_masks(self,
+                             sequence,
+                             scribble_idx,
+                             pred_masks,
+                             timming,
+                             interaction,
+                             next_scribble_frame_candidates=None):
         return self.service.post_predicted_masks(
-            sequence, scribble_idx, pred_masks, timming, interaction,
-            self.user_key, self.session_key)
+            sequence,
+            scribble_idx,
+            pred_masks,
+            timming,
+            interaction,
+            self.user_key,
+            self.session_key,
+            next_scribble_frame_candidates=next_scribble_frame_candidates)
 
     def get_report(self):
         return self.service.get_report(

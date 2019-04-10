@@ -1,13 +1,15 @@
 ---
 sudo: false
 language: python
+dist: xenial
 python:
-  - "2.7"
-  - "3.5"
-  - "3.6"
+  - 2.7
+  - 3.5
+  - 3.6
+  - 3.7
 cache: pip
 install:
-  - pip install codecov pytest pytest-cov cython numpy
+  - pip install -U codecov pytest pytest-cov cython numpy
   - pip install -e .
 script:
   - pytest --cov=./
@@ -23,11 +25,11 @@ deploy:
     github-token: $GITHUB_TOKEN
     local-dir: docs/site
     on:
-      python: "3.6"
+      python: 3.6
       tags: true
   - provider: script
     skip_cleanup: true
     script: bash scripts/deploy_pypi.sh
     on:
-      python: "3.6"
+      python: 3.6
       tags: true

@@ -40,7 +40,11 @@ class RemoteConnector(AbstractConnector):  # pragma: no cover
         if self._handle_response(r):
             raise NameError('Server {} not found'.format(self.host))
 
-    def get_samples(self, subset, davis_root=None):
+    def get_samples(self, subset, davis_root=None,
+                    metric_to_optimize='J_AND_F'):
+        # This will be set in the server side
+        del metric_to_optimize
+
         if subset not in self.VALID_SUBSETS:
             raise ValueError('subset must be a valid one: {}'.format(
                 self.VALID_SUBSETS))
@@ -56,16 +60,22 @@ class RemoteConnector(AbstractConnector):  # pragma: no cover
 
     def get_scribble(self, sequence, scribble_idx):
         r = requests.get(
-            os.path.join(self.host,
-                         self.GET_SCRIBBLE_URL.format(
-                             sequence=sequence, scribble_idx=scribble_idx)),
+            os.path.join(
+                self.host,
+                self.GET_SCRIBBLE_URL.format(
+                    sequence=sequence, scribble_idx=scribble_idx)),
             headers=self.headers)
         self._handle_response(r, raise_error=True)
         scribble = r.json()
         return scribble
 
-    def post_predicted_masks(self, sequence, scribble_idx, pred_masks, timing,
-                             interaction):
+    def post_predicted_masks(self,
+                             sequence,
+                             scribble_idx,
+                             pred_masks,
+                             timing,
+                             interaction,
+                             next_scribble_frame_candidates=None):
         nb_objects = Davis.dataset[sequence]['num_objects']
         pred_masks_enc = mask_api.encode_batch_masks(
             pred_masks, nb_objects=nb_objects)
@@ -77,6 +87,9 @@ class RemoteConnector(AbstractConnector):  # pragma: no cover
             'timing': timing,
             'interaction': interaction,
         }
+        if next_scribble_frame_candidates is not None:
+            body[
+                'next_scribble_frame_candidates'] = next_scribble_frame_candidates
 
         r = requests.post(
             os.path.join(self.host, self.POST_PREDICTED_MASKS_URL),
@@ -108,9 +121,9 @@ class RemoteConnector(AbstractConnector):  # pragma: no cover
         """
         if response.status_code >= 400 and response.status_code < 500:
             logging.error('Remote server error')
-            e_body = response.text
+            e_body = response.content
             logging.error(response.status_code)
-            logging.error(response.text)
+            logging.error(response.content)
             e_body = response.json()
             error_name, error_msg = e_body.get('error', ''), e_body.get(
                 'message', '')

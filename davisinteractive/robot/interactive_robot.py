@@ -139,7 +139,8 @@ class InteractiveScribblesRobot(object):
             raise TypeError('G must be a nx.Graph instance')
         S = []  # List of subgraphs of G
 
-        for g in nx.connected_component_subgraphs(G):
+        for c in nx.connected_components(G):
+            g = G.subgraph(c).copy()
 
             # Remove all cycles that we may find
             has_cycles = True

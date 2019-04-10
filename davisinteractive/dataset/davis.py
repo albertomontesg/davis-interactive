@@ -206,6 +206,7 @@ class Davis:
 
         for f in range(num_frames):
             ann_path = root_path / '{:05d}.png'.format(f)
+            ann_path = str(ann_path.resolve())
             mask = Image.open(ann_path)
             mask = np.asarray(mask)
             assert mask.shape == tuple(img_size[::-1])
@@ -240,6 +241,7 @@ class Davis:
 
         for f in range(num_frames):
             img_path = root_path / '{:05d}.jpg'.format(f)
+            img_path = str(img_path.resolve())
             img = Image.open(img_path)
             img = np.asarray(img)
             assert img.shape[:2] == tuple(img_size[::-1])

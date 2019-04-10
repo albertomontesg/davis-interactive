@@ -12,7 +12,7 @@ class TestLogging:
 
         assert not caplog.records
 
-        logging.warn('Test warn')
+        logging.warning('Test warn')
         assert len(caplog.records) == 1
         record = caplog.records[0]
         assert record.levelname == 'WARNING'

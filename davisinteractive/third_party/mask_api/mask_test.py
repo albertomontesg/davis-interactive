@@ -17,6 +17,7 @@ class TestSingleMaskEncoding(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         img_path = Path(__file__).parent / 'test_files' / '00000.png'
+        img_path = str(img_path.resolve())
         mask = np.asarray(Image.open(img_path))
         cls.test_mask = mask
 
@@ -39,6 +40,7 @@ class TestMultiMaskEncoding(unittest.TestCase):
         masks = []
         for i in range(4):
             img_path = img_dir / '{:05}.png'.format(i)
+            img_path = str(img_path.resolve())
             masks.append(np.asarray(Image.open(img_path)))
 
         masks = np.stack(masks, axis=0)

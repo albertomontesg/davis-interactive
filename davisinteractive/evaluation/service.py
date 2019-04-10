@@ -5,7 +5,7 @@ import pandas as pd
 
 from .. import logging
 from ..dataset.davis import Davis
-from ..metrics import batched_jaccard
+from ..metrics import batched_f_measure, batched_jaccard
 from ..robot import InteractiveScribblesRobot
 from ..storage import LocalStorage
 
@@ -37,9 +37,13 @@ class EvaluationService:
         max_i: Integer. Maximum number of interactions to evaluate per sample.
             This value will overwrite the specified from the user at
             `DavisInteractiveSession` class.
+        metric_to_optimize: Enum. Metric targeting to optimize. Possible values:
+            J, F or J_AND_F.
         time_threshold: Integer. Time in seconds to use it as threshold to
             compute the jaccard and compare the evaluation of different methods.
     """
+
+    _AVAILABLE_METRICS = ('J', 'F', 'J_AND_F')
 
     def __init__(self,
                  subset,
@@ -48,6 +52,7 @@ class EvaluationService:
                  robot_parameters=None,
                  max_t=None,
                  max_i=None,
+                 metric_to_optimize='J_AND_F',
                  time_threshold=None):
         if subset not in Davis.sets:
             raise ValueError('Subset must be a valid subset: {}'.format(
@@ -78,6 +83,11 @@ class EvaluationService:
         # Parameters
         self.max_t = max_t
         self.max_i = max_i
+        if metric_to_optimize not in self._AVAILABLE_METRICS:
+            raise ValueError(
+                'metric_to_optimize not between available metrics: {}'.format(
+                    self._AVAILABLE_METRICS))
+        self.metric_to_optimize = metric_to_optimize
 
         # Num entries
         self.num_entries = 0
@@ -126,11 +136,19 @@ class EvaluationService:
 
         return scribble
 
-    def post_predicted_masks(self, sequence, scribble_idx, pred_masks, timing,
-                             interaction, user_key, session_key):
+    def post_predicted_masks(self,
+                             sequence,
+                             scribble_idx,
+                             pred_masks,
+                             timing,
+                             interaction,
+                             user_key,
+                             session_key,
+                             next_scribble_frame_candidates=None):
         """ Post the predicted masks and return new scribble.
 
-        When the predicted masks are given, the metrics are computed and stored.
+        When the predicted masks are given, the metrics are computed and
+        stored.
 
         # Arguments
             sequence: String. Sequence name of the predicted masks.
@@ -140,6 +158,11 @@ class EvaluationService:
             interaction: Integer. Interaction number.
             user_key: String. User identifier.
             session_key: String. Session identifier.
+            next_scribble_frame_candidates: List of Integers. Optional value
+                specifying the possible frames from which generate the next
+                scribble. If values given, the next scribble will be performed
+                in the frame where the evaluation metric scores the least on
+                the list of given frames. Invalid frames indexes are ignored.
 
         # Returns
             Dictionary: Scribble returned by the scribble robot
@@ -171,6 +194,11 @@ class EvaluationService:
             pred_masks,
             average_over_objects=False,
             nb_objects=nb_objects)
+        contour = batched_f_measure(
+            gt_masks,
+            pred_masks,
+            average_over_objects=False,
+            nb_objects=nb_objects)
         nb_frames, _ = jaccard.shape
 
         frames_idx = np.arange(nb_frames)
@@ -183,17 +211,54 @@ class EvaluationService:
             user_key, session_key, sequence, scribble_idx, interaction, timing,
             objects_idx.ravel().tolist(),
             frames_idx.ravel().tolist(),
-            jaccard.ravel().tolist())
+            jaccard.ravel().tolist(),
+            contour.ravel().tolist())
+
+        if self.metric_to_optimize == 'J':
+            metric = jaccard.mean(axis=1)
+        elif self.metric_to_optimize == 'F':
+            metric = contour.mean(axis=1)
+        elif self.metric_to_optimize == 'J_AND_F':
+            metric = .5 * jaccard + .5 * contour
+            metric = metric.mean(axis=1)
+        else:
+            raise ValueError('Invalid metric_to_optimize: {}'.format(
+                self.metric_to_optimize))
+
+        prev_frames_used = self.storage.get_annotated_frames(
+            session_key, sequence, scribble_idx)
+        prev_frames_used = set(prev_frames_used)
+
+        override = next_scribble_frame_candidates is not None
+        next_scribble_frame_candidates = next_scribble_frame_candidates or [
+            i for i in range(nb_frames)
+        ]
+        next_scribble_frame_candidates = set(next_scribble_frame_candidates)
+
+        # Next frames candidates will be the ones requested by the used except
+        # the ones previously used.
+        next_frame = next_scribble_frame_candidates - prev_frames_used
+        if not next_frame:
+            # In case all the request frames have been previously used, use all
+            # the requested frames as candidates.
+            next_frame = next_scribble_frame_candidates
+
+        metric_idx = metric.argsort()
+        i = 0
+        while i < nb_frames and metric_idx[i] not in next_frame:
+            i += 1
+
+        next_frame = metric_idx[i]
+        self.storage.store_annotated_frame(session_key, sequence, scribble_idx,
+                                           next_frame, override)
 
         # Generate next scribble
-        worst_frame = self.storage.get_and_store_frame_to_annotate(
-            session_key, sequence, scribble_idx, jaccard.mean(axis=1))
         next_scribble = self.robot.interact(
             sequence,
             pred_masks,
             gt_masks,
             nb_objects=nb_objects,
-            frame=worst_frame)
+            frame=next_frame)
 
         return next_scribble
 
@@ -234,7 +299,7 @@ class EvaluationService:
         dfr = self._reconstruct_report(df)
         df_average = dfr.groupby(['interaction']).mean()
         df_average['timing'] = df_average['timing'].cumsum()
-        df_average.loc[0] = [0, 0]
+        df_average.loc[0] = [0, 0, 0, 0]
         df_average = df_average.sort_index()
 
         df_time = dfr.reset_index().groupby(
@@ -247,7 +312,15 @@ class EvaluationService:
         df_time = df_time.sort_index()
 
         time = df_time['timing'].values
-        jaccard = df_average['jaccard'].values
+        if self.metric_to_optimize == 'J':
+            metric = df_average['jaccard'].values
+        elif self.metric_to_optimize == 'F':
+            metric = df_average['contour'].values
+        elif self.metric_to_optimize == 'J_AND_F':
+            metric = df_average['j_and_f'].values
+        else:
+            raise ValueError('Invalid metric_to_optimize: {}'.format(
+                self.metric_to_optimize))
 
         if self.max_t:
             global_timeout = self.avg_nb_objects * self.max_t
@@ -257,23 +330,23 @@ class EvaluationService:
             global_timeout = max_interactions * df['timing'].max()
 
         time = np.concatenate((time, [global_timeout]))
-        jaccard = np.concatenate((jaccard, jaccard[-1:]))
+        metric = np.concatenate((metric, metric[-1:]))
 
-        jaccard_th = np.interp(self.time_threshold, time, jaccard)
+        metric_th = np.interp(self.time_threshold, time, metric)
         if time.max() == 0.:
             auc = 0.
         else:
-            auc = np.trapz(jaccard, x=time) / time.max()
+            auc = np.trapz(metric, x=time) / time.max()
 
         return {
             'auc': auc,
-            'jaccard_at_threshold': {
+            'metric_at_threshold': {
                 'threshold': self.time_threshold,
-                'jaccard': jaccard_th
+                'metric': metric_th
             },
             'curve': {
                 'time': time.tolist(),
-                'jaccard': jaccard.tolist()
+                'metric': metric.tolist()
             }
         }
 
@@ -307,7 +380,7 @@ class EvaluationService:
             nb_objects = Davis.dataset[seq]['num_objects']
 
             for scribble_idx in range(1, nb_scribbles + 1):
-                prev_result = np.zeros((nb_objects, 2), dtype=np.float)
+                prev_result = np.zeros((nb_objects, 4), dtype=np.float)
                 for it in range(1, max_i + 1):
                     result_iter = df.loc[it, seq, scribble_idx, :]
                     if np.any(pd.isna(result_iter)):
