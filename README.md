@@ -32,6 +32,8 @@ The interactive annotation and segmentation consist in an iterative loop which i
 
 **More information**: Please check the [Installation](user_guide/installation.md) guide to install the package and dowload the scribbles. Moreover, refer to the [Usage](user_guide/usage.md) guide to learn how to interface your code with the server.
 
+**Contributions**: If you would like to add new features to the package, please do not hesitate to send a [pull request](https://github.com/albertomontesg/davis-interactive/pulls).
+
 ## Citation
 
 Please cite both papers in your publications if DAVIS or this code helps your research.

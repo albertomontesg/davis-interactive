@@ -86,11 +86,10 @@ This format may not be convenient for everybody, therefore we include some trans
 * [`scribbles2mask`](/docs/utils.scribbles): it converts the paths of lines into a mask where the closest pixels of all the path points are set to the object ID of the line. This method also provides the possibility to apply the Bressenham's algorithm to fill in the path if two points of a line are sampled very distant in the mask.
 * [`scribbles2points`](/docs/utils.scribbles): from the scribble, it extracts all the (x, y) coordinates of all the line points as well as its object ID.
 
-If you think there is any new transformation or a modification to the current ones that might be useful to work with scribble data, please do not hesitate to send a [pull request](https://github.com/albertomontesg/davis-interactive/pulls).
 
 ## Prediction Submission
 
-At the end of each iteration, the user must submit the mask predicted by his/her model to be evaluated in the server. As an optional parameter, the user may specify which frames have to be considered in order to compute the next scribbles (using the parameter `next_scribble_frame_candidates` in the `submit_masks` function). By default, all the frames in a sequences are considered.
+At the end of each iteration, the user must submit the mask predicted by his/her model to be evaluated in the server. As an optional parameter, the user may specify which frames have to be considered in order to compute the next scribbles. In order to do so, use the parameter `next_scribble_frame_candidates` in the [submit_masks](/docs/session) function, for example sess.submit_masks(pred_masks, [0, 1]) to always obtain scribbles in worst of the first two frames. By default, all the frames in a sequences are considered.
 
 ```python
 pred_masks = model.predict()
