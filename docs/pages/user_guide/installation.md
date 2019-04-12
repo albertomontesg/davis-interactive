@@ -31,6 +31,7 @@ If you prefer, you can install the package downloading the source code and insta
 # Download the code
 git clone https://github.com/albertomontesg/davis-interactive.git && cd davis-interactive
 # Install it - Python 3 recommended
+pip install numpy Cython
 python setup.py install
 ```
 
