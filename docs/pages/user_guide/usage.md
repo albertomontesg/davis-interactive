@@ -7,7 +7,17 @@ from davisinteractive.session import DavisInteractiveSession
 
 model = SegmentationModel() # Your segmentation model
 
-with DavisInteractiveSession(host='localhost', davis_root='path/to/DAVIS') as sess:
+# Configuration used in the challenges
+max_nb_interactions = 8 # Maximum number of interactions 
+max_time_per_interaction = 30 # Maximum time per interaction per object
+
+# Total time available to interact with a sequence and an initial set of scribbles
+max_time = max_nb_interactions * max_time_per_interaction # Maximum time per object
+
+with DavisInteractiveSession(host='localhost', 
+                             davis_root='path/to/DAVIS', 
+                             max_nb_interactions=max_nb_interactions, 
+                             max_time=max_time) as sess:
     while sess.next():
         # Get the current iteration's scribbles
         sequence, scribbles, _ = sess.get_scribbles()
@@ -34,19 +44,22 @@ In order to be more realistic, we provide 3 manually annotated scribbles per seq
 The first step is to create a session to evaluate:
 
 ```python
-with DavisInteractiveSession(host='localhost', davis_root='path/to/davis') as sess:
+with DavisInteractiveSession(host='localhost', 
+                             davis_root='path/to/DAVIS', 
+                             max_nb_interactions=max_nb_interactions, 
+                             max_time=max_time) as sess:
 ```
 
-This instructs the server where to perform the evaluation (`localhost` or remote), as well as the path of the DAVIS dataset files. 
+This instructs the server where to perform the evaluation (`localhost` in the example), as well as the path of the DAVIS dataset files. 
 When testing in the `train` and `val` subsets the evaluation should be done locally  (`host='localhost'`) and
-parameters such as the maximum number of interactions per sample, the maximum interaction time per object, as well as the dataset split used, can be modified. 
+parameters such as the `max_nb_interactions` per sample, the `max_time` per object, as well as the dataset split used, can be modified. 
 
 !!! failure
     The remote evaluation server for the challenge is unavailable until the next edition.
 
-The evalaution in the `test-dev` during the challange is performed remotely (`host='https://server.davischallenge.org'`), the `user_key` parameter should be set to the key sent in the registration email. For more information on how to obtain the user key and how to register to the challenge, please check [Challenge Section](/challenge/#remote). During the challenge, the maximum number of interactions and the maximum interaction time is set by the remote server so any value given to the `DavisInteractiveSession` class is ignored.
+The evalaution in the `test-dev` during the challange is performed remotely (`host='https://server.davischallenge.org'`), the `user_key` parameter should be set to the key sent in the registration email. For more information on how to obtain the user key and how to register to the challenge, please check [Challenge Section](/challenge/#remote). During the challenge, the `max_nb_interactions` and the `max_time` is set by the remote server so any value given to the `DavisInteractiveSession` class is ignored.
 
-For more information about the DavisInteractiveSession class and its parameters please check [DavisInteractiveSession](/docs/session).
+If you would like to not enforce a timeout and set only `max_nb_interactions`, you can set `max_time` to `None`. On the other hand, if you would like to not define the `max_nb_interactions`, you can set it to `None`. Then, you can keep interacting with the server until the timeout specified by `max_time` and proportional to the number of objects is reached for each sample. For more information about the DavisInteractiveSession class and its parameters please check [DavisInteractiveSession](/docs/session).
 
 ## Control Flow
 
@@ -56,7 +69,7 @@ In order to simplify the control flow for the user, the session object provides 
 while sess.next():
 ```
 
-Once the timeout or the maximum number of iterations is reached, this functions moves the evaluation to a new sequence or the same sequence with a different initial scribble. Otherwise, it provides more interactions for the current sequence.
+Once the timeout (`max_time` mutiplied by the number of objects in a sequence) or the maximum number of iterations (`max_nb_interactions`) is reached, this functions moves the evaluation to a new sequence or the same sequence with a different initial scribble. Otherwise, it provides more interactions for the current sequence.
 
 ## Obtain Scribbles
 

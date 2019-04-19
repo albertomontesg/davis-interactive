@@ -22,7 +22,7 @@ class DavisInteractiveSession:
 
     # Arguments
         host: String. Host of the evuation server. Only `localhost`
-            available for now.
+            outside challenge timeframe.
         user_key: String. User identifier (e.g. email). If the session is being
             run in `localhost`, `user_key` does not need to be specified
             (username will be used).
@@ -31,11 +31,14 @@ class DavisInteractiveSession:
         subset: String. Subset to evaluate. If `host='localhost'` subset
             can only be `train` or `val` subsets. If the evaluation is
             performed against a remote server, this parameter is ignored
-            and the evaulated subset will be given by the remote server.
+            and the subset will be given by the remote server.
         shuffle: Boolean. Shuffle the samples when evaluating.
-        max_time: Integer. Number of seconds maximum to evaluate a single
-            sample.
-        max_nb_interactins: Integer. Maximum number of interactions to
+        max_time: Integer. Maximum time to evaluate a sample (a sequence with
+            a certain set of initial scribbles). This time should be set per
+            object as it adapts to the number of objects internally. If
+            `max_nb_interactions` is also specified, this time is defined
+            as the time available to perform all the interactions.
+        max_nb_interactions: Integer. Maximum number of interactions to
             evaluate per sample.
         metric_to_optimize: Enum. Metric targeting to optimize. Possible values:
             J, F or J_AND_F. This value will be ignored when running
