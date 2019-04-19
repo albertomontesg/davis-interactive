@@ -25,7 +25,7 @@ The workflow to evaluate these interactive models is as follows. To start, a vid
 
 Then, the user's model has to predict the segmentation masks for all the frames in the sequence, taking into account the given scribbles. As timing is important, the time taken to perform this prediction is measured. After that, the user submits the predicted masks to a server that returns a new set of scribbles for this sequence, simulating a human interaction. The returned scribbles are all in the frame with the worst prediction from a list of frames specified by the user (by default all the frames in the sequence).
 
-In the following images, we show an example of the simulated human interaction. In the left, the mask predicted by the method given the scribbles from the previous iteration(s) is shown. Once the results are submitted and the frame with the worst performance is computed, the additional set of scribbles generated is shown in the right image. The robot focuses on the areas where the prediction error is the highest and tries to give feedback, as a human would do. These scribbles can either be in false positive or false negative regions.
+In the following images, we show an example of the simulated human interaction. In the left, the mask predicted by the method given the scribbles from the previous interaction(s) is shown. Once the results are submitted and the frame with the worst performance is computed, the additional set of scribbles generated is shown in the right image. The robot focuses on the areas where the prediction error is the highest and tries to give feedback, as a human would do. These scribbles can either be in false positive or false negative regions.
 
 <div style="white-space: nowrap;">
 
