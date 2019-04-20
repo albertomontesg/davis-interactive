@@ -123,6 +123,9 @@ class Davis:
         zipinfo = zipdata.infolist()
 
         for info in zipinfo:
+            # In all the zip files, the root directory is called DAVIS. With
+            # this we allow the user to have a different root directory name for
+            # the Davis dataset.
             info.filename = info.filename.replace('DAVIS/',
                                                   '{}/'.format(davis_root_dir))
             zipdata.extract(info, str(self.davis_root.parent))
@@ -183,6 +186,7 @@ class Davis:
                 scribble_file = seq_scribbles_path / '{:03d}.json'.format(i)
                 if not scribble_file.exists():
                     self._download_scribbles()
+                    assert scribble_file.exists()
 
             # Check annotations files required for the evaluation
             nb_frames = self.dataset[seq]['num_frames']
@@ -190,9 +194,7 @@ class Davis:
                 annotation_file = seq_annotations_path / '{:05}.png'.format(i)
                 if not annotation_file.exists():
                     self._download_annotations()
-                    # raise FileNotFoundError(('Annotations file not found for '
-                    #                          'sequence {} and frame {}').format(
-                    #                              seq, i))
+                    assert annotation_file.exists()
 
         return True
 

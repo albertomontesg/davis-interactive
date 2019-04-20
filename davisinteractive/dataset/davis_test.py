@@ -6,16 +6,9 @@ import unittest
 
 import numpy as np
 import pytest
-
 from davisinteractive.common import Path, patch
 from davisinteractive.dataset import Davis
 from davisinteractive.utils.scribbles import annotated_frames, is_empty
-
-# Python2/3 Compatibility
-try:
-    FileNotFoundError
-except NameError:
-    FileNotFoundError = IOError  # pylint: disable=redefined-builtin
 
 FIXTURE_DIR = os.path.join(tempfile.mkdtemp(), 'DAVIS')
 
@@ -40,19 +33,16 @@ class TestDavis(unittest.TestCase):
 
     def test_path(self):
         with pytest.raises(ValueError):
-            davis = Davis()
-
-        with pytest.raises(ValueError):
-            davis = Davis(davis_root='/tmp')
+            Davis()
 
         with patch.dict('os.environ', {'DATASET_DAVIS': '/tmp/DAVIS'}):
-            davis = Davis()
-        davis = Davis(davis_root='/tmp/DAVIS')
+            davis1 = Davis()
+        davis2 = Davis(davis_root='/tmp/DAVIS')
+        self.assertEqual(davis1.davis_root, davis2.davis_root)
 
-    def test_checking_fail(self):
-        davis = Davis(FIXTURE_DIR)
-        with pytest.raises(FileNotFoundError):
-            davis.check_files(Davis.sets['train'])
+    def test_checking_success(self):
+        davis = Davis(os.path.join(tempfile.mkdtemp(), 'DAVIS_2019'))
+        davis.check_files(Davis.sets['train'])
 
     def test_load_scribble(self):
         dataset_dir = Path(__file__).parent / 'test_data' / 'DAVIS'
