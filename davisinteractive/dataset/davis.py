@@ -1,5 +1,6 @@
 from __future__ import absolute_import, division
 
+import collections
 import hashlib
 import json
 import os
@@ -22,7 +23,7 @@ except NameError:
 with Path(__file__).parent.joinpath('davis.json').open() as fp:
     _DATASET = json.load(fp)
 
-_SETS = {s: [] for s in _DATASET['sets']}
+_SETS = collections.defaultdict(list)
 for s in _DATASET['sequences'].values():
     _SETS[s['set']].append(s['name'])
 _SETS['trainval'] = _SETS['train'] + _SETS['val']
@@ -67,10 +68,14 @@ class Davis:
     """
 
     # Download information
-    # pylint: disable=line-too-long
-    SCRIBBLES_URL = 'https://data.vision.ee.ethz.ch/csergi/share/DAVIS-Interactive/DAVIS-2017-scribbles-trainval.zip'
-    SCRIBBLES_HASH = '6c6811c67ef757091212a98b68b841305f92b57f6cd2938e0fa94ae8591c3226'
-    # pylint: enable=line-too-long
+    SCRIBBLES_URL = ('https://data.vision.ee.ethz.ch/csergi/share/'
+                     'DAVIS-Interactive/DAVIS-2017-scribbles-trainval.zip')
+    SCRIBBLES_HASH = ('6c6811c67ef757091212a98b68b84130'
+                      '5f92b57f6cd2938e0fa94ae8591c3226')
+    ANNOTATIONS_URL = ('https://data.vision.ee.ethz.ch/csergi/share/'
+                       'davis/DAVIS-2017-trainval-480p.zip')
+    ANNOTATIONS_HASH = ('e3d0b5b77c3d031b000a19e0e25e3e2c'
+                        'ac65d183755601bc2cf066df1a2aa492')
 
     VERSION = '2017'
     IMAGES_SUBDIR = 'JPEGImages'
@@ -90,8 +95,6 @@ class Davis:
                 'environmental variable DAVIS_DATASET or give it as parameter '
                 'in davis_root.')
         self.davis_root = Path(self.davis_root).expanduser()
-        if self.davis_root.name != 'DAVIS':
-            raise ValueError('Davis root folder must be named "DAVIS"')
 
         if not self.davis_root.exists():
             logging.warning('DAVIS root path do not exists. Creating path.')
@@ -100,6 +103,7 @@ class Davis:
     def _download_scribbles(self):
         file_name = Path(self.SCRIBBLES_URL).name
         download_file = Path(tempfile.mkdtemp()) / file_name
+        davis_root_dir = self.davis_root.name
 
         # Downloading
         logging.info('Downloading Scribbles')
@@ -114,10 +118,43 @@ class Davis:
                               'Obtained: {}').format(self.SCRIBBLES_HASH, md5))
 
         # Extract file
-        logging.info('Extracting file')
-        zipfile.ZipFile(download_file.open(mode='rb')).extractall(
-            str(self.davis_root.parent))
-        download_file.unlink()
+        logging.info('Extracting Scribbles')
+        zipdata = zipfile.ZipFile(str(download_file))
+        zipinfo = zipdata.infolist()
+
+        for info in zipinfo:
+            info.filename = info.filename.replace('DAVIS/',
+                                                  '{}/'.format(davis_root_dir))
+            zipdata.extract(info, str(self.davis_root.parent))
+        logging.info('Download completed')
+
+    def _download_annotations(self):
+        file_name = Path(self.ANNOTATIONS_URL).name
+        download_file = Path(tempfile.mkdtemp()) / file_name
+        davis_root_dir = self.davis_root.name
+
+        # Downloading
+        logging.info('Downloading Annotations')
+        urllib.request.urlretrieve(self.ANNOTATIONS_URL, str(download_file))
+
+        # Check integrity
+        logging.info('Checking hash')
+        md5 = hashlib.sha256(download_file.read_bytes()).hexdigest()
+        if md5 != self.ANNOTATIONS_HASH:
+            raise ValueError(('Downloaded file do not have a correct hash.\n'
+                              'Expected {}\n'
+                              'Obtained: {}').format(self.ANNOTATIONS_HASH,
+                                                     md5))
+
+        # Extract file
+        logging.info('Extracting Annotations')
+        zipdata = zipfile.ZipFile(str(download_file))
+        zipinfo = zipdata.infolist()
+
+        for info in zipinfo:
+            info.filename = info.filename.replace('DAVIS/',
+                                                  '{}/'.format(davis_root_dir))
+            zipdata.extract(info, str(self.davis_root.parent))
         logging.info('Download completed')
 
     def check_files(self, sequences):
@@ -152,9 +189,10 @@ class Davis:
             for i in range(nb_frames):
                 annotation_file = seq_annotations_path / '{:05}.png'.format(i)
                 if not annotation_file.exists():
-                    raise FileNotFoundError(('Annotations file not found for '
-                                             'sequence {} and frame {}').format(
-                                                 seq, i))
+                    self._download_annotations()
+                    # raise FileNotFoundError(('Annotations file not found for '
+                    #                          'sequence {} and frame {}').format(
+                    #                              seq, i))
 
         return True
 
@@ -201,8 +239,8 @@ class Davis:
         num_frames = self.dataset[sequence]['num_frames']
         img_size = self.dataset[sequence]['image_size']
 
-        annotations = np.empty(
-            (num_frames, img_size[1], img_size[0]), dtype=dtype)
+        annotations = np.empty((num_frames, img_size[1], img_size[0]),
+                               dtype=dtype)
 
         for f in range(num_frames):
             ann_path = root_path / '{:05d}.png'.format(f)
@@ -236,8 +274,8 @@ class Davis:
         num_frames = self.dataset[sequence]['num_frames']
         img_size = self.dataset[sequence]['image_size']
 
-        images = np.empty(
-            (num_frames, img_size[1], img_size[0], 3), dtype=dtype)
+        images = np.empty((num_frames, img_size[1], img_size[0], 3),
+                          dtype=dtype)
 
         for f in range(num_frames):
             img_path = root_path / '{:05d}.jpg'.format(f)
