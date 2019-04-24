@@ -80,7 +80,10 @@ For a certain video sequence with an initial set of scribbles, there are multipl
 * `new_sequence`: this is a flag indicating whether the given scribbles correspond to the first interaction of the sample.
 
 ```python
-with DavisInteractiveSession(host='localhost', davis_root='path/to/davis') as sess:
+with DavisInteractiveSession(host='localhost', 
+                             davis_root='path/to/DAVIS', 
+                             max_nb_interactions=max_nb_interactions, 
+                             max_time=max_time) as sess:
     while sess.next():
         sequence, scribbles, new_sequence = sess.get_scribbles(only_last)
         if new_sequence:
@@ -102,7 +105,7 @@ This format may not be convenient for everybody, therefore we include some trans
 
 ## Prediction Submission
 
-At the end of each interaction, the user must submit the mask predicted by his/her model to be evaluated in the server. As an optional parameter, the user may specify which frames have to be considered in order to compute the next scribbles. In order to do so, use the parameter `next_scribble_frame_candidates` in the [submit_masks](/docs/session) function, for example sess.submit_masks(pred_masks, [0, 1]) to always obtain scribbles in worst of the first two frames. By default, all the frames in a sequences are considered.
+At the end of each interaction, the user must submit the masks predicted by his/her model to be evaluated in the server. As an optional parameter, the user may specify which frames have to be considered in order to compute the next scribbles. In order to do so, the parameter `next_scribble_frame_candidates` in the [submit_masks](/docs/session) function should be used. For example, `sess.submit_masks(pred_masks, [0, 1])` returns scribbles in the worst frame of the first two. By default, all the frames in a sequences are considered.
 
 ```python
 pred_masks = model.predict()
