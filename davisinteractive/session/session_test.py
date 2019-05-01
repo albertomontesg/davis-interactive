@@ -268,11 +268,11 @@ class TestDavisInteractiveSession(unittest.TestCase):
         self.assertTrue('auc' in summary)
         self.assertTrue('metric_at_threshold' in summary)
         self.assertEqual(summary['metric_at_threshold']['threshold'], 60)
-        np.testing.assert_almost_equal(summary['metric_at_threshold']['metric'],
+        np.testing.assert_almost_equal(summary['metric_at_threshold']['J_AND_F'],
                                        0.035155)
         self.assertTrue('curve' in summary)
         curve = summary['curve']
-        self.assertEqual(len(curve['metric']), 6)
+        self.assertEqual(len(curve['J_AND_F']), 6)
         self.assertEqual(len(curve['time']), 6)
 
         summary = session.get_global_summary(save_file=global_summary_file)
@@ -344,11 +344,11 @@ class TestDavisInteractiveSession(unittest.TestCase):
         self.assertTrue('auc' in summary)
         self.assertTrue('metric_at_threshold' in summary)
         self.assertEqual(summary['metric_at_threshold']['threshold'], 60)
-        np.testing.assert_almost_equal(summary['metric_at_threshold']['metric'],
+        np.testing.assert_almost_equal(summary['metric_at_threshold']['J'],
                                        0.07031)
         self.assertTrue('curve' in summary)
         curve = summary['curve']
-        self.assertEqual(len(curve['metric']), 6)
+        self.assertEqual(len(curve['J']), 6)
         self.assertEqual(len(curve['time']), 6)
 
         summary = session.get_global_summary(save_file=global_summary_file)
