@@ -23,7 +23,11 @@ class LocalConnector(AbstractConnector):
         self.user_key = user_key or getpass.getuser()
         self.session_key = session_key
 
-    def get_samples(self, subset, davis_root=None,
+    def get_samples(self,
+                    subset,
+                    max_t,
+                    max_i,
+                    davis_root=None,
                     metric_to_optimize='J_AND_F'):
         if subset not in self.VALID_SUBSETS:
             raise ValueError(
@@ -33,6 +37,8 @@ class LocalConnector(AbstractConnector):
         self.service = EvaluationService(
             subset,
             davis_root=davis_root,
+            max_t=max_t,
+            max_i=max_i,
             metric_to_optimize=metric_to_optimize)
         return self.service.get_samples()
 

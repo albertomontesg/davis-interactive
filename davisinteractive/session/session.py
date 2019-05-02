@@ -101,6 +101,8 @@ class DavisInteractiveSession:
         # Create connector
         samples, max_t, max_i = self.connector.get_samples(
             self.subset,
+            self.max_time,
+            self.max_nb_interactions,
             davis_root=self.davis_root,
             metric_to_optimize=self.metric_to_optimize)
         if self.shuffle:
