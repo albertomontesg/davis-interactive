@@ -40,10 +40,16 @@ class RemoteConnector(AbstractConnector):  # pragma: no cover
         if self._handle_response(r):
             raise NameError('Server {} not found'.format(self.host))
 
-    def get_samples(self, subset, davis_root=None,
+    def get_samples(self,
+                    subset,
+                    max_t,
+                    max_i,
+                    davis_root=None,
                     metric_to_optimize='J_AND_F'):
         # This will be set in the server side
         del metric_to_optimize
+        del max_t
+        del max_i
 
         if subset not in self.VALID_SUBSETS:
             raise ValueError('subset must be a valid one: {}'.format(
