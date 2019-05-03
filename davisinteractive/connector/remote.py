@@ -5,11 +5,33 @@ import random
 
 import pandas as pd
 import requests
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
 
 from .. import logging
 from ..dataset import Davis
 from ..third_party import mask_api
 from .abstract import AbstractConnector
+
+
+def _requests_retry_session(
+        retries=3,
+        backoff_factor=0.3,
+        status_forcelist=(500, 502, 504),
+        session=None,
+):
+    session = session or requests.Session()
+    retry = Retry(
+        total=retries,
+        read=retries,
+        connect=retries,
+        backoff_factor=backoff_factor,
+        status_forcelist=status_forcelist,
+    )
+    adapter = HTTPAdapter(max_retries=retry)
+    session.mount('http://', adapter)
+    session.mount('https://', adapter)
+    return session
 
 
 class RemoteConnector(AbstractConnector):  # pragma: no cover
@@ -36,7 +58,8 @@ class RemoteConnector(AbstractConnector):  # pragma: no cover
 
         if user_key is None or session_key is None:
             raise ValueError('user_key and session_key must be specified')
-        r = requests.get(os.path.join(self.host, self.HEALTHCHECK_URL))
+        r = _requests_retry_session().get(
+            os.path.join(self.host, self.HEALTHCHECK_URL))
         if self._handle_response(r):
             raise NameError('Server {} not found'.format(self.host))
 
@@ -54,7 +77,7 @@ class RemoteConnector(AbstractConnector):  # pragma: no cover
         if subset not in self.VALID_SUBSETS:
             raise ValueError('subset must be a valid one: {}'.format(
                 self.VALID_SUBSETS))
-        r = requests.get(
+        r = _requests_retry_session().get(
             os.path.join(self.host, self.GET_SAMPLES_URL), headers=self.headers)
         self._handle_response(r, raise_error=True)
         response = r.json()
@@ -65,7 +88,7 @@ class RemoteConnector(AbstractConnector):  # pragma: no cover
         return samples, max_t, max_i
 
     def get_scribble(self, sequence, scribble_idx):
-        r = requests.get(
+        r = _requests_retry_session().get(
             os.path.join(
                 self.host,
                 self.GET_SCRIBBLE_URL.format(
@@ -97,7 +120,7 @@ class RemoteConnector(AbstractConnector):  # pragma: no cover
             body[
                 'next_scribble_frame_candidates'] = next_scribble_frame_candidates
 
-        r = requests.post(
+        r = _requests_retry_session().post(
             os.path.join(self.host, self.POST_PREDICTED_MASKS_URL),
             json=body,
             headers=self.headers)
@@ -106,14 +129,14 @@ class RemoteConnector(AbstractConnector):  # pragma: no cover
         return response
 
     def get_report(self):
-        r = requests.get(
+        r = _requests_retry_session().get(
             os.path.join(self.host, self.GET_REPORT_URL), headers=self.headers)
         self._handle_response(r, raise_error=True)
         df = pd.DataFrame.from_dict(r.json())
         return df
 
     def post_finish(self):
-        r = requests.post(
+        r = _requests_retry_session().post(
             os.path.join(self.host, self.POST_FINISH),
             json={},
             headers=self.headers)
