@@ -1,5 +1,6 @@
 from __future__ import absolute_import, division
 
+import json
 import os
 import random
 
@@ -16,8 +17,8 @@ from .abstract import AbstractConnector
 
 def _requests_retry_session(
         retries=3,
-        backoff_factor=0.3,
-        status_forcelist=(500, 502, 504),
+        backoff_factor=2,
+        status_forcelist=(500, 502, 503, 504),
         session=None,
 ):
     session = session or requests.Session()
@@ -169,4 +170,10 @@ class RemoteConnector(AbstractConnector):  # pragma: no cover
             logging.error('Uknown Error')
             logging.fatal(response.json())
             return True
+        # Tries to decode the JSON response and if error print conent.
+        if response.status_code == 200:
+            try:
+                response.json()
+            except json.decoder.JSONDecodeError:
+                logging.error(response.content)
         return False
