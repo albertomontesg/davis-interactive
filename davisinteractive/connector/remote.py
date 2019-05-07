@@ -170,6 +170,13 @@ class RemoteConnector(AbstractConnector):  # pragma: no cover
             logging.error('Uknown Error')
             logging.fatal(response.json())
             return True
+        elif response.status_code == 503:
+            logging.error('Server Unavailable')
+            if raise_error:
+                raise Exception('Servier Unavailable.')
+        elif response.status_code > 500:
+            logging.error('Error in server')
+            logging.error(response.content)
         # Tries to decode the JSON response and if error print conent.
         if response.status_code == 200:
             try:
