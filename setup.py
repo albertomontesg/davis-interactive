@@ -29,7 +29,7 @@ setup(
         'pathlib2;python_version<"3.5"',
         'requests>=2.21.0',
         'scikit-image>=0.13.1',
-        'scikit-learn>=0.18',
+        'scikit-learn==0.20.3',
         'scipy>=1.0.0',
         'six>=1.10.0',
     ],
