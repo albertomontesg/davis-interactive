@@ -40,7 +40,7 @@ def batched_jaccard(y_true, y_pred, average_over_objects=True, nb_objects=None):
     if y_pred.ndim != 3:
         raise ValueError('y_pred array must have 3 dimensions.')
     if y_true.shape != y_pred.shape:
-        raise ValueError('y_true and y_pred must have the same shape')
+        raise ValueError('y_true and y_pred must have the same shape. {} != {}'.format(y_true.shape, y_pred.shape))
 
     if nb_objects is None:
         objects_ids = np.unique(y_true[(y_true < 255) & (y_true > 0)])
@@ -228,7 +228,7 @@ def batched_f_measure(y_true,
     if y_pred.ndim != 3:
         raise ValueError('y_pred array must have 3 dimensions.')
     if y_true.shape != y_pred.shape:
-        raise ValueError('y_true and y_pred must have the same shape')
+        raise ValueError('y_true and y_pred must have the same shape. {} != {}'.format(y_true.shape, y_pred.shape))
 
     if nb_objects is None:
         objects_ids = np.unique(y_true[(y_true < 255) & (y_true > 0)])
