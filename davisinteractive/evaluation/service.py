@@ -342,10 +342,12 @@ class EvaluationService:
             'auc': auc,
             'metric_at_threshold': {
                 'threshold': self.time_threshold,
+                # 'metric': metric_th
                 self.metric_to_optimize: metric_th
             },
             'curve': {
                 'time': time.tolist(),
+                # 'metric': metric.tolist()
                 self.metric_to_optimize: metric.tolist()
             }
         }

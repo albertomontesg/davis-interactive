@@ -22,10 +22,10 @@ setup(
     install_requires=[
         'Pillow>=4.1.1',
         'absl-py>=0.1.13',
-        'networkx>=2.0',
+        'networkx>=2.3',
         'numpy>=1.12.1',
         'opencv-python>=4.0.0.21',
-        'pandas>=0.21.1',
+        'pandas>=1.0.0',
         'pathlib2;python_version<"3.5"',
         'requests>=2.21.0',
         'scikit-image>=0.13.1',
