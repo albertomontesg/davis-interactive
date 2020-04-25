@@ -24,7 +24,6 @@ deploy:
     local-dir: docs/site
     on:
       python: 3.7
-      tags: true
   - provider: script
     skip_cleanup: true
     script: bash scripts/deploy_pypi.sh
