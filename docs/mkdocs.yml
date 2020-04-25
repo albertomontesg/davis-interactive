@@ -11,40 +11,39 @@ edit_uri: '#'
 copyright: 'Copyright &copy; 2018 Alberto Montes'
 
 # This tree needs to be the same as in pydocmd.yml
-pages:
-  - Home: index.md
-  - Challenge: challenge.md
-  - User Guide:
-      - Installation: user_guide/installation.md
-      - Usage: user_guide/usage.md
-      - Scribbles Format: user_guide/scribbles.md
+nav:
+  - Home: 'index.md'
+  - Challenge: 'challenge.md'
+  - 'User Guide':
+      - Installation: 'user_guide/installation.md'
+      - Usage: 'user_guide/usage.md'
+      - 'Scribbles Format': 'user_guide/scribbles.md'
   - API:
-      - Interactive Session:
-          - session: docs/session.md
+      - 'Interactive Session':
+          - 'session': 'docs/session.md'
       - Dataset:
-          - dataset.davis: docs/dataset.davis.md
+          - 'dataset.davis': 'docs/dataset.davis.md'
       - Evaluation:
-          - evaluation.service: docs/evaluation.service.md
+          - 'evaluation.service': 'docs/evaluation.service.md'
       - Robot:
-          - robot.interactive_robot: docs/robot.md
+          - 'robot.interactive_robot': 'docs/robot.md'
       - Metrics:
-          - metrics.jaccard: docs/metrics.jaccard.md
+          - 'metrics.jaccard': 'docs/metrics.jaccard.md'
       - Utils:
-          - utils.operations: docs/utils.operations.md
-          - utils.scribbles: docs/utils.scribbles.md
-          - utils.mask: docs/utils.mask.md
-          - utils.visualization: docs/utils.visualization.md
-      - Third Party:
-          - third_party.mask_api: docs/third_party/mask_api.md
-  - License: license.md
+          - 'utils.operations': 'docs/utils.operations.md'
+          - 'utils.scribbles': 'docs/utils.scribbles.md'
+          - 'utils.mask': 'docs/utils.mask.md'
+          - 'utils.visualization': 'docs/utils.visualization.md'
+      - 'Third Party':
+          - 'third_party.mask_api': 'docs/third_party/mask_api.md'
+  - License: 'license.md'
 
 # Theme
 theme:
   font:
     text: Roboto
     code: Roboto Mono
-  logo:
-    icon: laptop
+  logo: 'docs/images/logo.svg'
   name: material
   palette:
     primary: blue grey
@@ -81,12 +80,10 @@ markdown_extensions:
       custom_checkbox: true
   - pymdownx.tilde
 
-google_analytics:
-  - '$GOOGLE_ANALYTICS'
-  - 'auto'
+google_analytics: ['$GOOGLE_ANALYTICS', 'interactive.davischallenge.org']
 
 # Customization
 extra:
   social:
-    - type: github-alt
+    - icon: fontawesome/brands/github-alt
       link: https://github.com/albertomontesg/davis-interactive
