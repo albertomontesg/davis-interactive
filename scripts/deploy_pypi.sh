@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 python setup.py clean --all
 python setup.py sdist
 

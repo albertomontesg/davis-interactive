@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 [[ -d _build/docs/images ]] && rm -r _build/docs/images
 
 mkdir -p _build/docs
